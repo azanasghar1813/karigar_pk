@@ -5,7 +5,8 @@ import PublicLayout from './components/PublicLayout'
 import AdminLayout from './components/AdminLayout'
 import KarigarLayout from './components/KarigarLayout'
 import KarigarRoute from './components/KarigarRoute'
-
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 // Public pages
 import Home from './pages/Home'
 import ServicesPage from './pages/ServicesPage'
@@ -118,6 +119,8 @@ function App() {
           </Route>
         </Routes>
       </Router>
+      <Analytics />
+      <SpeedInsights />
     </AuthProvider>
   )
 }
