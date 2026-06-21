@@ -20,7 +20,7 @@ function KarigarModal({ karigar, onClose, onApprove, onReject, onRestrict, onDel
   const [rejectionReason, setRejectionReason] = useState('')
   const [showRejectForm, setShowRejectForm] = useState(false)
   const [newRate, setNewRate] = useState(karigar.hourlyRate || '')
-  const BASE = 'http://localhost:5000'
+  const BASE = 'https://karigar-pk-xuea.onrender.com'
 
   if (!karigar) return null
 

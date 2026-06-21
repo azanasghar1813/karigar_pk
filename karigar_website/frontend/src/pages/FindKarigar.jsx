@@ -128,7 +128,7 @@ export default function FindKarigar() {
                         <div>
                           <div className="w-10 h-10 sm:w-16 sm:h-16 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center text-white font-poppins font-bold text-sm sm:text-lg mx-auto mb-2 sm:mb-3">
                             {karigar.profilePhoto ? (
-                              <img src={karigar.profilePhoto.startsWith('http') ? karigar.profilePhoto : `http://localhost:5000/${karigar.profilePhoto}`} alt={karigar.fullName} className="w-full h-full object-cover rounded-lg" />
+                              <img src={karigar.profilePhoto.startsWith('http') ? karigar.profilePhoto : `https://karigar-pk-xuea.onrender.com/${karigar.profilePhoto}`} alt={karigar.fullName} className="w-full h-full object-cover rounded-lg" />
                             ) : (
                               karigar.fullName.substring(0, 2).toUpperCase()
                             )}

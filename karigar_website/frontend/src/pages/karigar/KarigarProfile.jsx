@@ -152,7 +152,7 @@ export default function KarigarProfile() {
               <label className="block text-sm font-semibold text-slate-700 mb-2">Profile Photo (Optional)</label>
               <div className="flex items-center gap-4">
                 {user?.profilePhoto && !files.profilePhoto && (
-                  <img src={user.profilePhoto.startsWith('http') ? user.profilePhoto : `http://localhost:5000/${user.profilePhoto}`} alt="Profile" className="w-16 h-16 rounded-full object-cover border border-slate-200" />
+                  <img src={user.profilePhoto.startsWith('http') ? user.profilePhoto : `https://karigar-pk-xuea.onrender.com/${user.profilePhoto}`} alt="Profile" className="w-16 h-16 rounded-full object-cover border border-slate-200" />
                 )}
                 {files.profilePhoto && (
                   <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-xs text-center border border-slate-200">New</div>
