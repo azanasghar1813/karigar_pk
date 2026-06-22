@@ -24,26 +24,52 @@ import '../screens/karigar/karigar_schedule_screen.dart';
 import '../screens/karigar/karigar_earnings_screen.dart';
 import '../screens/karigar/karigar_profile_screen.dart';
 
-final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
+// ─────────────────────────────────────────────────────────────────────────────
+// ALL keys are top-level file-scope constants. They are created ONCE for the
+// entire lifetime of the app process. Flutter crashes when the same GlobalKey
+// appears twice in the widget tree — so these must NEVER be created inside a
+// class, build method, or any callable that can be invoked more than once.
+// ─────────────────────────────────────────────────────────────────────────────
 
+/// Root navigator key — used by GoRouter and standalone (modal) routes.
+final GlobalKey<NavigatorState> rootNavigatorKey =
+    GlobalKey<NavigatorState>(debugLabel: 'root');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// createRouter() is called EXACTLY ONCE from main(). The returned GoRouter is
+// stored by the caller and passed into MaterialApp.router.
+//
+// IMPORTANT: StatefulShellRoute.indexedStack MUST NOT have parentNavigatorKey.
+// It manages its own internal GlobalKey<StatefulNavigationShellState>. If you
+// pass parentNavigatorKey, go_router re-inserts the shell under the root
+// navigator on every refresh, causing duplicate-GlobalKey crashes.
+// Only regular GoRoutes that should appear as modal overlays (above the shell)
+// need parentNavigatorKey: rootNavigatorKey.
+// ─────────────────────────────────────────────────────────────────────────────
 GoRouter createRouter(AuthProvider authProvider) {
   return GoRouter(
-    navigatorKey: _rootNavigatorKey,
+    navigatorKey: rootNavigatorKey,
     refreshListenable: authProvider,
     initialLocation: '/',
     redirect: (context, state) {
       final isAuth = authProvider.isAuthenticated;
       final isKarigar = authProvider.user?.userType == 'karigar';
-      final isGoingToKarigarPath = state.uri.path.startsWith('/karigar');
-      
-      if (isAuth && isKarigar && !isGoingToKarigarPath) {
+      final path = state.uri.path;
+      final isGoingToKarigarPath = path.startsWith('/karigar');
+      final isAuthRoute =
+          path == '/login' || path == '/signup' || path == '/register-karigar';
+
+      // Karigar logged in → redirect to karigar dashboard (except auth routes)
+      if (isAuth && isKarigar && !isGoingToKarigarPath && !isAuthRoute) {
         return '/karigar/dashboard';
       }
-      
+
+      // Regular customer logged in → can't visit karigar portal
       if (isAuth && !isKarigar && isGoingToKarigarPath) {
         return '/';
       }
-      
+
+      // Not logged in → can't visit karigar portal
       if (!isAuth && isGoingToKarigarPath) {
         return '/login';
       }
@@ -51,10 +77,11 @@ GoRouter createRouter(AuthProvider authProvider) {
       return null;
     },
     routes: [
+      // ── Customer Shell ────────────────────────────────────────────────────
+      // NO parentNavigatorKey — StatefulShellRoute manages its own key.
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) {
-          return AppScaffold(navigationShell: navigationShell);
-        },
+        builder: (context, state, navigationShell) =>
+            AppScaffold(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(
             routes: [
@@ -97,10 +124,12 @@ GoRouter createRouter(AuthProvider authProvider) {
           ),
         ],
       ),
+
+      // ── Karigar Shell ─────────────────────────────────────────────────────
+      // NO parentNavigatorKey — same rule applies.
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) {
-          return KarigarScaffold(navigationShell: navigationShell);
-        },
+        builder: (context, state, navigationShell) =>
+            KarigarScaffold(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(
             routes: [
@@ -144,7 +173,13 @@ GoRouter createRouter(AuthProvider authProvider) {
           ),
         ],
       ),
+
+      // ── Modal / standalone routes (pushed on top of the shell) ────────────
+      // These routes overlay on top of the shell, so they DO need
+      // parentNavigatorKey: rootNavigatorKey so they use the root navigator
+      // instead of the shell's nested navigator.
       GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
         path: '/worker/:id',
         name: 'worker-profile',
         builder: (context, state) => WorkerProfileScreen(
@@ -152,6 +187,7 @@ GoRouter createRouter(AuthProvider authProvider) {
         ),
       ),
       GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
         path: '/book/:id',
         name: 'book-now',
         builder: (context, state) => BookNowScreen(
@@ -159,36 +195,43 @@ GoRouter createRouter(AuthProvider authProvider) {
         ),
       ),
       GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
         path: '/login',
         name: 'login',
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
         path: '/signup',
         name: 'signup',
         builder: (context, state) => const SignupScreen(),
       ),
       GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
         path: '/register-karigar',
         name: 'register-karigar',
         builder: (context, state) => const RegisterKarigarScreen(),
       ),
       GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
         path: '/join-karigar',
         name: 'join-karigar',
         builder: (context, state) => const JoinKarigarScreen(),
       ),
       GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
         path: '/about',
         name: 'about',
         builder: (context, state) => const AboutScreen(),
       ),
       GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
         path: '/blog',
         name: 'blog',
         builder: (context, state) => const BlogScreen(),
       ),
       GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
         path: '/contact',
         name: 'contact',
         builder: (context, state) => const ContactScreen(),

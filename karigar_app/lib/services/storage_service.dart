@@ -6,6 +6,12 @@ import '../models/user.dart';
 class StorageService {
   SharedPreferences? _prefs;
 
+  /// Called from main() with the already-loaded SharedPreferences instance.
+  /// This ensures storageService never awaits getInstance() again — zero delay.
+  void injectPrefs(SharedPreferences prefs) {
+    _prefs = prefs;
+  }
+
   Future<void> init() async {
     _prefs ??= await SharedPreferences.getInstance();
   }

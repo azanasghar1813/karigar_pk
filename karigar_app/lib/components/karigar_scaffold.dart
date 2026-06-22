@@ -203,12 +203,3 @@ class _KarigarDrawer extends StatelessWidget {
   }
 }
 
-class ShellTabBody extends StatelessWidget {
-  final Widget child;
-  const ShellTabBody({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return child;
-  }
-}

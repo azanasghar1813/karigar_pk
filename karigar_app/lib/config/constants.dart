@@ -5,7 +5,10 @@ class AppConstants {
   // API
   static const String baseUrl = 'https://karigar-pk-xuea.onrender.com';
   static const String apiVersion = '/api';
-  static const Duration apiTimeout = Duration(seconds: 30);
+  // Render.com free tier spins down — 10s is enough; 30s just hangs the UI.
+  static const Duration apiTimeout = Duration(seconds: 10);
+  // Warmup timeout: we only need the server to wake up, not respond fully.
+  static const Duration warmupTimeout = Duration(seconds: 5);
 
   // Contact — WhatsApp (country code + number, no + or spaces)
   static const String whatsappNumber = '923427066034';

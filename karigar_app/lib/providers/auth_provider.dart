@@ -12,28 +12,41 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   bool _isAuthenticated = false;
+  bool _isInitialized = false;
 
   User? get user => _user;
   String? get token => _token;
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get isAuthenticated => _isAuthenticated;
+  bool get isInitialized => _isInitialized;
 
   AuthProvider({required StorageService storageService})
       : _storageService = storageService {
+    // Fire-and-forget — does NOT block the constructor.
+    // The UI paints immediately; auth state resolves in background.
     _initializeAuth();
   }
 
   Future<void> _initializeAuth() async {
-    _token = await _storageService.getToken();
-    if (_token != null) {
-      _isAuthenticated = true;
-      final userData = await _storageService.getUserData();
-      if (userData != null) {
-        _user = userData;
+    try {
+      // StorageService has already-loaded SharedPreferences (injected from main).
+      // getToken() / getUserData() are still async-signature but resolve
+      // in a single microtask since no I/O is needed.
+      _token = await _storageService.getToken();
+      if (_token != null) {
+        _isAuthenticated = true;
+        final userData = await _storageService.getUserData();
+        if (userData != null) {
+          _user = userData;
+        }
       }
+    } catch (_) {
+      // Storage failure — stay logged out.
+    } finally {
+      _isInitialized = true;
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   Future<bool> login(String email, String password, {bool isKarigar = false}) async {

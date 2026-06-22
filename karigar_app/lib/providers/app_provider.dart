@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/constants.dart';
 
 class AppProvider extends ChangeNotifier {
@@ -18,6 +19,13 @@ class AppProvider extends ChangeNotifier {
   List<String> get services => AppConstants.services;
   List<String> get cities => AppConstants.cities;
   List<double> get ratings => AppConstants.ratings;
+
+  /// Call this with the pre-loaded SharedPreferences from main()
+  /// so the theme is read synchronously before the first frame.
+  void initFromPrefs(SharedPreferences prefs) {
+    _isDarkMode = prefs.getBool(AppConstants.themeKey) ?? false;
+    // No notifyListeners needed — this is called before runApp.
+  }
 
   void setSelectedService(String service) {
     _selectedService = service;
@@ -42,6 +50,10 @@ class AppProvider extends ChangeNotifier {
   void toggleTheme() {
     _isDarkMode = !_isDarkMode;
     notifyListeners();
+    // Persist the new value asynchronously — fire and forget.
+    SharedPreferences.getInstance().then(
+      (prefs) => prefs.setBool(AppConstants.themeKey, _isDarkMode),
+    );
   }
 
   void resetFilters() {
