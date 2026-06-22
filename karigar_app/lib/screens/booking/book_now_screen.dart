@@ -47,9 +47,9 @@ class _BookNowScreenState extends State<BookNowScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: ColorScheme.dark(
               primary: AppTheme.primaryColor,
-              surface: AppTheme.darkCard,
+              surface: Theme.of(context).cardColor,
             ),
           ),
           child: child!,
@@ -68,9 +68,9 @@ class _BookNowScreenState extends State<BookNowScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: ColorScheme.dark(
               primary: AppTheme.primaryColor,
-              surface: AppTheme.darkCard,
+              surface: Theme.of(context).cardColor,
             ),
           ),
           child: child!,
@@ -140,7 +140,7 @@ class _BookNowScreenState extends State<BookNowScreen> {
                   // Karigar Summary
                   Container(
                     padding: const EdgeInsets.all(16),
-                    color: AppTheme.darkCard,
+                    color: Theme.of(context).cardColor,
                     child: Row(
                       children: [
                         CircleAvatar(
@@ -248,9 +248,9 @@ class _BookNowScreenState extends State<BookNowScreen> {
                               vertical: 14,
                             ),
                             decoration: BoxDecoration(
-                              color: AppTheme.darkCard,
+                              color: Theme.of(context).cardColor,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppTheme.darkBorder),
+                              border: Border.all(color: Theme.of(context).dividerColor),
                             ),
                             child: Row(
                               mainAxisAlignment:
@@ -286,9 +286,9 @@ class _BookNowScreenState extends State<BookNowScreen> {
                               vertical: 14,
                             ),
                             decoration: BoxDecoration(
-                              color: AppTheme.darkCard,
+                              color: Theme.of(context).cardColor,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppTheme.darkBorder),
+                              border: Border.all(color: Theme.of(context).dividerColor),
                             ),
                             child: Row(
                               mainAxisAlignment:

@@ -59,7 +59,7 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> {
                 // Header
                 Container(
                   padding: const EdgeInsets.all(24),
-                  color: AppTheme.darkCard,
+                  color: Theme.of(context).cardColor,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -202,10 +202,10 @@ class _WorkerProfileScreenState extends State<WorkerProfileScreen> {
                               margin: const EdgeInsets.only(bottom: 12),
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: AppTheme.darkCard,
+                                color: Theme.of(context).cardColor,
                                 borderRadius: BorderRadius.circular(8),
                                 border:
-                                Border.all(color: AppTheme.darkBorder),
+                                Border.all(color: Theme.of(context).dividerColor),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,

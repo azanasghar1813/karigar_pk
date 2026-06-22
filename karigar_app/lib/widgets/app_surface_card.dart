@@ -27,10 +27,11 @@ class _AppSurfaceCardState extends State<AppSurfaceCard> {
 
   @override
   Widget build(BuildContext context) {
-    final bg = widget.color ?? AppTheme.darkCard;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = widget.color ?? Theme.of(context).cardTheme.color ?? Theme.of(context).cardColor;
     final borderColor = _hovered && widget.onTap != null
         ? AppTheme.primaryColor.withValues(alpha: 0.5)
-        : AppTheme.darkBorder;
+        : (isDark ? Theme.of(context).dividerColor : Colors.grey.shade300);
 
     final decoration = BoxDecoration(
       color: bg,

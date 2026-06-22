@@ -196,16 +196,16 @@ class _RegisterKarigarScreenState extends State<RegisterKarigarScreen> {
                             vertical: 14,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.darkCard,
+                            color: Theme.of(context).cardColor,
                             borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(12),
                               bottomLeft: Radius.circular(12),
                             ),
-                            border: Border.all(color: AppTheme.darkBorder),
+                            border: Border.all(color: Theme.of(context).dividerColor),
                           ),
-                          child: const Text(
+                          child: Text(
                             '🇵🇰 +92',
-                            style: TextStyle(color: AppTheme.textSecondary),
+                            style: TextStyle(color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey)),
                           ),
                         ),
                         Expanded(
@@ -516,9 +516,9 @@ class _RegisterKarigarScreenState extends State<RegisterKarigarScreen> {
   Widget _buildImagePickerItem(String title, File? file, String type) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.darkCard,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.darkBorder),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: ListTile(
         leading: file != null

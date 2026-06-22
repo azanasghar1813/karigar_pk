@@ -146,7 +146,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       margin: const EdgeInsets.symmetric(horizontal: 8),
                       color: _currentStep > 0
                           ? AppTheme.primaryColor
-                          : AppTheme.darkBorder,
+                          : Theme.of(context).dividerColor,
                     ),
                   ),
                   _stepCircle(1),
@@ -174,7 +174,7 @@ class _SignupScreenState extends State<SignupScreen> {
         shape: BoxShape.circle,
         color: _currentStep >= index
             ? AppTheme.primaryColor
-            : AppTheme.darkBorder,
+            : Theme.of(context).dividerColor,
       ),
       child: Center(
         child: Text(
@@ -273,16 +273,16 @@ class _SignupScreenState extends State<SignupScreen> {
                 vertical: 14,
               ),
               decoration: BoxDecoration(
-                color: AppTheme.darkCard,
+                color: Theme.of(context).cardColor,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(12),
                   bottomLeft: Radius.circular(12),
                 ),
-                border: Border.all(color: AppTheme.darkBorder),
+                border: Border.all(color: Theme.of(context).dividerColor),
               ),
-              child: const Text(
+              child: Text(
                 '🇵🇰 +92',
-                style: TextStyle(color: AppTheme.textSecondary),
+                style: TextStyle(color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey)),
               ),
             ),
             Expanded(

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../config/theme.dart';
-import '../data/mock_data.dart';
 import '../models/karigar.dart';
 import '../providers/auth_provider.dart';
 import '../providers/booking_provider.dart';
@@ -27,29 +26,18 @@ class QuickBookingService {
       final proceed = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Quick booking'),
+          title: const Text('Sign In Required'),
           content: const Text(
-            'Sign in for faster booking, or continue as guest with demo account.\n\n'
-            'Demo: ${MockData.demoEmail} / ${MockData.demoPassword}',
+            'Please sign in to your account to book a karigar.',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Cancel'),
             ),
-            TextButton(
+            FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: const Text('Login'),
-            ),
-            FilledButton(
-              onPressed: () async {
-                Navigator.pop(ctx, false);
-                await auth.login(MockData.demoEmail, MockData.demoPassword);
-                if (ctx.mounted) {
-                  await bookKarigar(context, karigar: karigar);
-                }
-              },
-              child: const Text('Guest book'),
             ),
           ],
         ),

@@ -223,13 +223,13 @@ class _AppDrawer extends StatelessWidget {
     return ListTile(
       leading: Icon(
         icon,
-        color: isSelected ? AppTheme.secondaryColor : AppTheme.textSecondary,
+        color: isSelected ? AppTheme.secondaryColor : (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
       ),
       title: Text(
         title,
         style: TextStyle(
           fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-          color: isSelected ? AppTheme.textPrimary : AppTheme.textSecondary,
+          color: isSelected ? AppTheme.textPrimary : (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
         ),
       ),
       selected: isSelected,

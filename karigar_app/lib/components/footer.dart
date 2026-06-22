@@ -17,9 +17,8 @@ class AppFooter extends StatelessWidget {
         vertical: 32,
         horizontal: Responsive.horizontalPadding(context),
       ),
-      decoration: const BoxDecoration(
-        color: AppTheme.darkCard,
-        border: Border(top: BorderSide(color: AppTheme.darkBorder)),
+      decoration: BoxDecoration(color: Theme.of(context).cardColor,
+        border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
       ),
       child: ResponsiveContainer(
         padding: EdgeInsets.zero,

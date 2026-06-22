@@ -59,7 +59,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                 // Profile Section
                 Container(
                   padding: const EdgeInsets.all(24),
-                  color: AppTheme.darkCard,
+                  color: Theme.of(context).cardColor,
                   child: Row(
                     children: [
                       CircleAvatar(
@@ -171,10 +171,10 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                                 margin: const EdgeInsets.only(bottom: 12),
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.darkCard,
+                                  color: Theme.of(context).cardColor,
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                      color: AppTheme.darkBorder),
+                                      color: Theme.of(context).dividerColor),
                                 ),
                                 child: Column(
                                   crossAxisAlignment:
@@ -272,9 +272,9 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.darkCard,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.darkBorder),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

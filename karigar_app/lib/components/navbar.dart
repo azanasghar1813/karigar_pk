@@ -110,7 +110,7 @@ class _NavLink extends StatelessWidget {
       onPressed: () => context.go(path),
       style: TextButton.styleFrom(
         foregroundColor:
-            active ? AppTheme.secondaryColor : AppTheme.textSecondary,
+            active ? AppTheme.secondaryColor : (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
       ),
       child: Text(
         label,

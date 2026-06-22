@@ -63,11 +63,11 @@ class _KarigarScheduleScreenState extends State<KarigarScheduleScreen> {
               itemBuilder: (context, index) {
                 final booking = scheduledBookings[index];
                 return Card(
-                  color: AppTheme.darkCard,
+                  color: Theme.of(context).cardColor,
                   margin: const EdgeInsets.only(bottom: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: AppTheme.darkBorder),
+                    side: BorderSide(color: Theme.of(context).dividerColor),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),

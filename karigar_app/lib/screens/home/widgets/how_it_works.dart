@@ -51,9 +51,9 @@ class _StepCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: AppTheme.darkCard,
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.darkBorder),
+            border: Border.all(color: Theme.of(context).dividerColor),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,7 +94,7 @@ class _StepCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Icon(
               Icons.keyboard_arrow_down_rounded,
-              color: AppTheme.darkBorder,
+              color: Theme.of(context).dividerColor,
             ),
           ),
       ],
