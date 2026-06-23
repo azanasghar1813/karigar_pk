@@ -3,6 +3,9 @@ import 'dart:convert';
 import '../config/constants.dart';
 import '../models/user.dart';
 
+/// App-wide storage singleton — inject prefs once at startup via [injectPrefs].
+final StorageService storageService = StorageService();
+
 class StorageService {
   SharedPreferences? _prefs;
 
@@ -30,6 +33,15 @@ class StorageService {
   Future<String?> getToken() async {
     final prefs = await _preferences;
     return prefs.getString(AppConstants.userTokenKey);
+  }
+
+  /// Instant read when [injectPrefs] has already run (startup path).
+  String? getTokenSync() => _prefs?.getString(AppConstants.userTokenKey);
+
+  User? getUserDataSync() {
+    final jsonString = _prefs?.getString(AppConstants.userDataKey);
+    if (jsonString == null) return null;
+    return User.fromJson(jsonDecode(jsonString) as Map<String, dynamic>);
   }
 
   Future<void> clearToken() async {

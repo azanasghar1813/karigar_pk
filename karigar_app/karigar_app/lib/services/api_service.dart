@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../main.dart';
+import 'storage_service.dart';
 import '../config/constants.dart';
 import '../data/mock_data.dart';
 import '../models/karigar.dart';
@@ -20,7 +20,8 @@ class ApiService {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final token = await storageService.getToken();
+          final token =
+              storageService.getTokenSync() ?? await storageService.getToken();
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }

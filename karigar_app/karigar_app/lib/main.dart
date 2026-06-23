@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,15 +15,32 @@ import 'providers/app_provider.dart';
 import 'providers/karigar_portal_provider.dart';
 import 'services/storage_service.dart';
 
-final StorageService storageService = StorageService();
+Future<void> main() async {
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // Fire a background warmup ping to the Render server immediately
+  // Wake Render server in parallel — never block UI on this.
   _warmupServer();
 
-  runApp(const AppInitializer());
+  final prefs = await SharedPreferences.getInstance();
+  storageService.injectPrefs(prefs);
+
+  final authProvider = AuthProvider(storageService: storageService);
+  final appProvider = AppProvider()..initFromPrefs(prefs);
+  final router = createRouter(authProvider);
+
+  runApp(
+    KarigarApp(
+      authProvider: authProvider,
+      appProvider: appProvider,
+      router: router,
+    ),
+  );
+
+  // Drop native splash as soon as the first frame is ready.
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    FlutterNativeSplash.remove();
+  });
 }
 
 void _warmupServer() {
@@ -32,69 +50,9 @@ void _warmupServer() {
       connectTimeout: AppConstants.warmupTimeout,
       receiveTimeout: AppConstants.warmupTimeout,
     ),
-  ).get('/api/health').catchError((_) => Response(requestOptions: RequestOptions(path: '/')));
-}
-
-class AppInitializer extends StatefulWidget {
-  const AppInitializer({super.key});
-
-  @override
-  State<AppInitializer> createState() => _AppInitializerState();
-}
-
-class _AppInitializerState extends State<AppInitializer> {
-  late Future<SharedPreferences> _initFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize SharedPreferences using a Future so the UI doesn't block natively.
-    _initFuture = _initializeApp();
-  }
-
-  Future<SharedPreferences> _initializeApp() async {
-    final prefs = await SharedPreferences.getInstance();
-    storageService.injectPrefs(prefs);
-    return prefs;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<SharedPreferences>(
-      future: _initFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting || !snapshot.hasData) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            home: Scaffold(
-              backgroundColor: AppTheme.primaryColor,
-              body: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset('assets/images/app_logo.png', width: 120, height: 120),
-                    const SizedBox(height: 24),
-                    const CircularProgressIndicator(color: Colors.white),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
-
-        final prefs = snapshot.data!;
-        final authProvider = AuthProvider(storageService: storageService);
-        final appProvider = AppProvider()..initFromPrefs(prefs);
-        final router = createRouter(authProvider);
-
-        return KarigarApp(
-          authProvider: authProvider,
-          appProvider: appProvider,
-          router: router,
-        );
-      },
-    );
-  }
+  )
+      .get('/api/health')
+      .catchError((_) => Response(requestOptions: RequestOptions(path: '/')));
 }
 
 class KarigarApp extends StatelessWidget {

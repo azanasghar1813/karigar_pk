@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/constants.dart';
+import '../services/storage_service.dart';
 
 class AppProvider extends ChangeNotifier {
   String _selectedService = 'All';
@@ -51,9 +52,7 @@ class AppProvider extends ChangeNotifier {
     _isDarkMode = !_isDarkMode;
     notifyListeners();
     // Persist the new value asynchronously — fire and forget.
-    SharedPreferences.getInstance().then(
-      (prefs) => prefs.setBool(AppConstants.themeKey, _isDarkMode),
-    );
+    storageService.setTheme(_isDarkMode);
   }
 
   void resetFilters() {

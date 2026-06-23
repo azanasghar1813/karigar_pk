@@ -23,6 +23,7 @@ import '../screens/karigar/karigar_requests_screen.dart';
 import '../screens/karigar/karigar_schedule_screen.dart';
 import '../screens/karigar/karigar_earnings_screen.dart';
 import '../screens/karigar/karigar_profile_screen.dart';
+import '../widgets/shell_lazy_tab.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ALL keys are top-level file-scope constants. They are created ONCE for the
@@ -52,6 +53,9 @@ GoRouter createRouter(AuthProvider authProvider) {
     refreshListenable: authProvider,
     initialLocation: '/',
     redirect: (context, state) {
+      // Wait until cached auth is loaded — avoids wrong redirects on cold start.
+      if (!authProvider.isInitialized) return null;
+
       final isAuth = authProvider.isAuthenticated;
       final isKarigar = authProvider.user?.userType == 'karigar';
       final path = state.uri.path;
@@ -88,7 +92,10 @@ GoRouter createRouter(AuthProvider authProvider) {
               GoRoute(
                 path: '/',
                 name: 'home',
-                builder: (context, state) => const HomeScreen(),
+                builder: (context, state) => const ShellLazyTab(
+                  branchIndex: 0,
+                  child: HomeScreen(),
+                ),
               ),
             ],
           ),
@@ -97,7 +104,10 @@ GoRouter createRouter(AuthProvider authProvider) {
               GoRoute(
                 path: '/services',
                 name: 'services',
-                builder: (context, state) => const ServicesScreen(),
+                builder: (context, state) => const ShellLazyTab(
+                  branchIndex: 1,
+                  child: ServicesScreen(),
+                ),
               ),
             ],
           ),
@@ -106,9 +116,12 @@ GoRouter createRouter(AuthProvider authProvider) {
               GoRoute(
                 path: '/find-karigar',
                 name: 'find-karigar',
-                builder: (context, state) => FindKarigarScreen(
-                  service: state.uri.queryParameters['service'],
-                  city: state.uri.queryParameters['city'],
+                builder: (context, state) => ShellLazyTab(
+                  branchIndex: 2,
+                  child: FindKarigarScreen(
+                    service: state.uri.queryParameters['service'],
+                    city: state.uri.queryParameters['city'],
+                  ),
                 ),
               ),
             ],
@@ -118,7 +131,10 @@ GoRouter createRouter(AuthProvider authProvider) {
               GoRoute(
                 path: '/my-account',
                 name: 'my-account',
-                builder: (context, state) => const MyAccountScreen(),
+                builder: (context, state) => const ShellLazyTab(
+                  branchIndex: 3,
+                  child: MyAccountScreen(),
+                ),
               ),
             ],
           ),
@@ -135,7 +151,10 @@ GoRouter createRouter(AuthProvider authProvider) {
             routes: [
               GoRoute(
                 path: '/karigar/dashboard',
-                builder: (context, state) => const KarigarDashboardScreen(),
+                builder: (context, state) => const ShellLazyTab(
+                  branchIndex: 0,
+                  child: KarigarDashboardScreen(),
+                ),
               ),
             ],
           ),
@@ -143,7 +162,10 @@ GoRouter createRouter(AuthProvider authProvider) {
             routes: [
               GoRoute(
                 path: '/karigar/requests',
-                builder: (context, state) => const KarigarRequestsScreen(),
+                builder: (context, state) => const ShellLazyTab(
+                  branchIndex: 1,
+                  child: KarigarRequestsScreen(),
+                ),
               ),
             ],
           ),
@@ -151,7 +173,10 @@ GoRouter createRouter(AuthProvider authProvider) {
             routes: [
               GoRoute(
                 path: '/karigar/schedule',
-                builder: (context, state) => const KarigarScheduleScreen(),
+                builder: (context, state) => const ShellLazyTab(
+                  branchIndex: 2,
+                  child: KarigarScheduleScreen(),
+                ),
               ),
             ],
           ),
@@ -159,7 +184,10 @@ GoRouter createRouter(AuthProvider authProvider) {
             routes: [
               GoRoute(
                 path: '/karigar/earnings',
-                builder: (context, state) => const KarigarEarningsScreen(),
+                builder: (context, state) => const ShellLazyTab(
+                  branchIndex: 3,
+                  child: KarigarEarningsScreen(),
+                ),
               ),
             ],
           ),
@@ -167,7 +195,10 @@ GoRouter createRouter(AuthProvider authProvider) {
             routes: [
               GoRoute(
                 path: '/karigar/profile',
-                builder: (context, state) => const KarigarProfileScreen(),
+                builder: (context, state) => const ShellLazyTab(
+                  branchIndex: 4,
+                  child: KarigarProfileScreen(),
+                ),
               ),
             ],
           ),

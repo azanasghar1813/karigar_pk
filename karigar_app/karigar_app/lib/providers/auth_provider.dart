@@ -23,29 +23,20 @@ class AuthProvider extends ChangeNotifier {
 
   AuthProvider({required StorageService storageService})
       : _storageService = storageService {
-    // Fire-and-forget — does NOT block the constructor.
-    // The UI paints immediately; auth state resolves in background.
-    _initializeAuth();
+    _restoreSessionFromCache();
   }
 
-  Future<void> _initializeAuth() async {
+  void _restoreSessionFromCache() {
     try {
-      // StorageService has already-loaded SharedPreferences (injected from main).
-      // getToken() / getUserData() are still async-signature but resolve
-      // in a single microtask since no I/O is needed.
-      _token = await _storageService.getToken();
+      _token = _storageService.getTokenSync();
       if (_token != null) {
         _isAuthenticated = true;
-        final userData = await _storageService.getUserData();
-        if (userData != null) {
-          _user = userData;
-        }
+        _user = _storageService.getUserDataSync();
       }
     } catch (_) {
       // Storage failure — stay logged out.
     } finally {
       _isInitialized = true;
-      notifyListeners();
     }
   }
 

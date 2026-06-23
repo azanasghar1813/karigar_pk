@@ -18,7 +18,10 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<BookingProvider>().fetchMyBookings();
+      final auth = context.read<AuthProvider>();
+      if (auth.isAuthenticated && auth.user != null) {
+        context.read<BookingProvider>().fetchMyBookings();
+      }
     });
   }
 
