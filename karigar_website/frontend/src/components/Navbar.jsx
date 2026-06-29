@@ -123,8 +123,17 @@ export default function Navbar() {
                     )}
 
                     {/* Customer links */}
-                    {user.role !== 'karigar' && (
+                    {user.role === 'user' && (
                       <>
+                        <Link
+                          to="/customer-dashboard"
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 text-sm text-secondary hover:bg-gray-800 font-semibold transition-colors"
+                        >
+                          <LayoutDashboard size={16} />
+                          My Dashboard
+                        </Link>
+                        <div className="border-t border-gray-700 my-1" />
                         <Link
                           to="/find-karigar"
                           onClick={() => setDropdownOpen(false)}
@@ -203,6 +212,16 @@ export default function Navbar() {
               {user.role === 'karigar' && (
                 <Link
                   to="/karigar"
+                  className="flex items-center gap-2 py-2 text-secondary font-semibold mt-4"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <LayoutDashboard size={16} />
+                  My Dashboard
+                </Link>
+              )}
+              {user.role === 'user' && (
+                <Link
+                  to="/customer-dashboard"
                   className="flex items-center gap-2 py-2 text-secondary font-semibold mt-4"
                   onClick={() => setIsOpen(false)}
                 >

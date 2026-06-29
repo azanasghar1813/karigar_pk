@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const admin = require('../config/firebase');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -168,5 +169,75 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getMe, forgotPassword, resetPassword };
+// @desc    Update FCM Token
+// @route   POST /api/auth/fcm-token
+// @access  Private
+const updateFcmToken = async (req, res) => {
+  try {
+    const { fcmToken } = req.body;
+    if (!fcmToken) return res.status(400).json({ message: 'No FCM token provided' });
 
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.fcmToken = fcmToken;
+    await user.save();
+    res.json({ message: 'FCM Token updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Google Sign-in
+// @route   POST /api/auth/google-login
+// @access  Public
+const googleLogin = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) return res.status(400).json({ message: 'No ID token provided' });
+
+    // Verify token with Firebase Admin
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const { email, name, picture } = decodedToken;
+
+    // Check if user exists in Karigar or User collection
+    let user = await User.findOne({ email });
+    let role = user ? user.role : null;
+
+    if (!user) {
+      const Karigar = require('../models/Karigar');
+      user = await Karigar.findOne({ email });
+      if (user) {
+        role = 'karigar';
+      }
+    }
+
+    if (!user) {
+      // Create a new Customer user by default if they don't exist
+      user = await User.create({
+        fullName: name || 'Google User',
+        email: email,
+        password: crypto.randomBytes(20).toString('hex'), // Random password since they use Google
+        phone: '000-0000000', // Default or prompt them later
+        cnic: '00000-0000000-0', // Default
+        address: 'Google Sign In',
+        role: 'customer'
+      });
+      role = 'customer';
+    }
+
+    res.json({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      phone: user.phone,
+      role: role,
+      token: generateToken(user._id),
+    });
+  } catch (error) {
+    console.error('Google login error:', error);
+    res.status(500).json({ message: 'Failed to authenticate with Google' });
+  }
+};
+
+module.exports = { registerUser, loginUser, getMe, forgotPassword, resetPassword, updateFcmToken, googleLogin };

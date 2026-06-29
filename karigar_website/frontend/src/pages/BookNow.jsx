@@ -12,7 +12,7 @@ export default function BookNow() {
   const [formData, setFormData] = useState({
     serviceType: '',
     address: '',
-    city: 'Lahore',
+    city: 'Your City',
     phone: '',
     email: user ? user.email : '',
     description: '',
@@ -226,7 +226,7 @@ export default function BookNow() {
                   onChange={handleChange}
                   className="form-input"
                 >
-                  <option>Lahore</option>
+                  <option>Your City</option>
                   <option>Karachi</option>
                   <option>Islamabad</option>
                   <option>Rawalpindi</option>

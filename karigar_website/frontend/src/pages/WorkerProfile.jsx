@@ -9,7 +9,7 @@ export default function WorkerProfile() {
     id: id,
     name: 'Ahmad Khan',
     service: 'Electrician',
-    city: 'Lahore',
+    city: 'Your City',
     rating: 4.9,
     reviews: 128,
     price: '500/hr',

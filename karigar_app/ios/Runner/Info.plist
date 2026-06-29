@@ -53,5 +53,9 @@
 		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>This app requires access to your location to set your address for bookings.</string>
+		<key>NSLocationAlwaysUsageDescription</key>
+		<string>This app requires access to your location to set your address for bookings.</string>
 	</dict>
 </plist>

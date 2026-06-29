@@ -62,8 +62,15 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const googleLogin = async (idToken) => {
+    const { data } = await api.post('/auth/google-login', { idToken });
+    localStorage.setItem('karigarUser', JSON.stringify(data));
+    setUser(data);
+    return data;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, loginKarigar, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, loginKarigar, googleLogin, logout, loading }}>
       {!loading && children}
     </AuthContext.Provider>
   );

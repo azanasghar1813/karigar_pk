@@ -13,7 +13,7 @@ export default function RegisterKarigar() {
     fullName: '',
     phone: '',
     otp: '',
-    city: 'Lahore',
+    city: 'Your City',
     services: preselectedService ? [preselectedService] : [],
     cnicNumber: '',
     cnicFrontFile: null,
@@ -40,7 +40,7 @@ export default function RegisterKarigar() {
       .catch(err => console.error('Failed to fetch services:', err))
   }, [])
 
-  const cities = ['Lahore', 'Islamabad', 'Karachi', 'Chowk Azam', 'Layyah']
+  const cities = ['Your City', 'Islamabad', 'Karachi', 'Chowk Azam', 'Layyah']
 
   const formatCnic = (value) => {
     const digits = value.replace(/\D/g, '').slice(0, 13)

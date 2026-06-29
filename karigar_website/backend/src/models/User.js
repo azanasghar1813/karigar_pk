@@ -28,6 +28,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   role: { type: String, enum: ['customer', 'admin'], default: 'customer' },
   isRestricted: { type: Boolean, default: false },
+  fcmToken: { type: String },
   lastActive: { type: Date, default: Date.now },
   resetPasswordToken: String,
   resetPasswordExpire: Date

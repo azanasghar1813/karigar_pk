@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../services/auth_service.dart';
 import '../services/storage_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import '../services/socket_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
+  final SocketService _socketService = SocketService();
   final StorageService _storageService;
 
   User? _user;
@@ -53,8 +56,10 @@ class AuthProvider extends ChangeNotifier {
       );
       _isAuthenticated = true;
 
-      await _storageService.saveToken(_token!);
       await _storageService.saveUserData(_user!);
+
+      _updateFcmToken();
+      _socketService.initialize(_user!.id);
 
       _isLoading = false;
       notifyListeners();
@@ -96,6 +101,8 @@ class AuthProvider extends ChangeNotifier {
 
       await _storageService.saveToken(_token!);
       await _storageService.saveUserData(_user!);
+
+      _updateFcmToken();
 
       _isLoading = false;
       notifyListeners();
@@ -153,6 +160,8 @@ class AuthProvider extends ChangeNotifier {
       await _storageService.saveToken(_token!);
       await _storageService.saveUserData(_user!);
 
+      _updateFcmToken();
+
       _isLoading = false;
       notifyListeners();
       return true;
@@ -192,6 +201,7 @@ class AuthProvider extends ChangeNotifier {
       _token = null;
       _isAuthenticated = false;
       await _storageService.clearUserData();
+      _socketService.disconnect();
       _isLoading = false;
       notifyListeners();
       return true;
@@ -226,5 +236,17 @@ class AuthProvider extends ChangeNotifier {
   void clearError() {
     _error = null;
     notifyListeners();
+  }
+
+  Future<void> _updateFcmToken() async {
+    try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken != null && _token != null) {
+        final isKarigar = _user?.userType == 'karigar';
+        await _authService.updateFcmToken(fcmToken, _token!, isKarigar: isKarigar);
+      }
+    } catch (e) {
+      print('Failed to get or send FCM token: $e');
+    }
   }
 }

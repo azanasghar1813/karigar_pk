@@ -14,10 +14,33 @@ import 'providers/booking_provider.dart';
 import 'providers/app_provider.dart';
 import 'providers/karigar_portal_provider.dart';
 import 'services/storage_service.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'firebase_options.dart';
+import 'services/notification_service.dart';
 
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+}
 void main() async {
   // 1. Core Flutter initialization — must be first.
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  await NotificationService().initialize();
+
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print(message.notification?.title);
+    print(message.notification?.body);
+  });
 
   // 2. Hold the native splash screen until SplashScreen calls remove().
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);

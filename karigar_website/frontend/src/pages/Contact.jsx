@@ -143,7 +143,7 @@ export default function Contact() {
               <h3 className="font-poppins font-bold text-white mb-2 text-center">Address</h3>
               <p className="text-gray-400 mb-3 text-center text-sm">Visit us</p>
               <address className="text-secondary font-semibold transition-colors block text-center not-italic">
-                Lahore, Pakistan
+                Your City, Pakistan
               </address>
               <p className="text-gray-500 text-xs mt-3 text-center">Available for site visits</p>
             </div>

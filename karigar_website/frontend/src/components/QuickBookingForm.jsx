@@ -3,7 +3,7 @@ import { ChevronDown, Send } from 'lucide-react'
 import api from '../config/api'
 
 export default function QuickBookingForm() {
-  const [city, setCity] = useState('Lahore')
+  const [city, setCity] = useState('Your City')
   const [area, setArea] = useState('')
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
@@ -21,7 +21,7 @@ export default function QuickBookingForm() {
   }, [])
 
   const cityAreas = {
-    Lahore: ['DHA', 'Gulberg', 'Johar Town', 'Model Town', 'Bahria Town'],
+    'Your City': ['Area 1', 'Area 2', 'Area 3', 'Area 4', 'Area 5'],
     Islamabad: ['F-6', 'F-7', 'F-10', 'G-11', 'Bahria Enclave'],
     Karachi: ['DHA', 'Clifton', 'Gulshan-e-Iqbal', 'North Nazimabad', 'Malir'],
     'Chowk Azam': ['Main Bazar', 'College Road', 'Canal Road', 'Station Road'],
@@ -123,7 +123,7 @@ export default function QuickBookingForm() {
                 onChange={(e) => { setCity(e.target.value); setArea('') }}
                 className="w-full px-4 py-3 pr-10 rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none"
               >
-                <option>Lahore</option>
+                <option>Your City</option>
                 <option>Islamabad</option>
                 <option>Karachi</option>
                 <option>Chowk Azam</option>

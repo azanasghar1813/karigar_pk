@@ -5,6 +5,7 @@ import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../providers/booking_provider.dart';
 import '../../providers/karigar_provider.dart';
+import 'location_picker_screen.dart';
 
 class BookNowScreen extends StatefulWidget {
   final String workerId;
@@ -25,7 +26,8 @@ class _BookNowScreenState extends State<BookNowScreen> {
   late String selectedService;
   String description = '';
   String address = '';
-  String city = '';
+  double? latitude;
+  double? longitude;
 
   @override
   void initState() {
@@ -101,7 +103,9 @@ class _BookNowScreenState extends State<BookNowScreen> {
       bookingDate: bookingDate,
       description: description,
       address: address,
-      city: city,
+      city: 'Your City', // Handled by coordinates context or generic now
+      latitude: latitude,
+      longitude: longitude,
       totalPrice: 5000, // This should be calculated based on service
     );
 
@@ -308,41 +312,57 @@ class _BookNowScreenState extends State<BookNowScreen> {
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 12),
-                        TextFormField(
-                          decoration: const InputDecoration(
-                            hintText: 'Enter your address',
-                            prefixIcon: Icon(Icons.location_on_outlined),
-                          ),
-                          onSaved: (value) => address = value ?? '',
-                          validator: (value) => value?.isEmpty ?? true
-                              ? 'Please enter your address'
-                              : null,
-                          maxLines: 2,
-                        ),
-                        const SizedBox(height: 20),
+                        GestureDetector(
+                          onTap: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LocationPickerScreen(),
+                              ),
+                            );
 
-                        // City
-                        Text(
-                          'City',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 12),
-                        DropdownButtonFormField<String>(
-                          initialValue: city.isEmpty ? null : city,
-                          items: AppConstants.cities
-                              .map((c) => DropdownMenuItem(
-                            value: c,
-                            child: Text(c),
-                          ))
-                              .toList(),
-                          onChanged: (value) =>
-                              setState(() => city = value ?? ''),
-                          decoration: const InputDecoration(
-                            hintText: 'Select your city',
+                            if (result != null) {
+                              setState(() {
+                                address = result['address'];
+                                latitude = result['latitude'];
+                                longitude = result['longitude'];
+                              });
+                            }
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).cardColor,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Theme.of(context).dividerColor),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.location_on_outlined, color: AppTheme.primaryColor),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    address.isEmpty ? 'Select location on Map' : address,
+                                    style: address.isEmpty
+                                        ? Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                            color: Colors.grey,
+                                          )
+                                        : Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          validator: (value) =>
-                          value == null ? 'Please select a city' : null,
                         ),
+                        if (address.isEmpty)
+                           Padding(
+                             padding: const EdgeInsets.only(top: 8.0, left: 12.0),
+                             child: Text('Please select an address', style: TextStyle(color: AppTheme.errorColor, fontSize: 12)),
+                           ),
                         const SizedBox(height: 20),
 
                         // Description

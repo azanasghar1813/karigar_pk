@@ -36,7 +36,7 @@ async function seedAdmin() {
         password: ADMIN_PASSWORD, // plain text — pre-save hook hashes it
         phone: '03000000000',
         cnic: '0000000000000',
-        address: 'Lahore, Pakistan',
+        address: 'Your City, Pakistan',
         role: 'admin',
       });
       console.log(`✅ Created admin user: ${ADMIN_EMAIL}`);

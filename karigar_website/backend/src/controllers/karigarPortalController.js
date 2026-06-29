@@ -1,6 +1,8 @@
 const Karigar = require('../models/Karigar');
 const Booking = require('../models/Booking');
 const Review = require('../models/Review');
+const User = require('../models/User');
+const admin = require('../config/firebase');
 
 // @desc    Get dashboard stats
 // @route   GET /api/karigar-portal/stats
@@ -99,6 +101,32 @@ const updateBookingStatus = async (req, res) => {
     if (declineReason) booking.declineReason = declineReason;
     
     await booking.save();
+
+    // Emit Socket.io event to Customer
+    if (req.io) {
+      req.io.to(booking.customer.toString()).emit('bookingStatusChanged', booking);
+    }
+
+    // Send Push Notification to Customer
+    const customer = await User.findById(booking.customer);
+    if (customer && customer.fcmToken) {
+      try {
+        await admin.messaging().send({
+          token: customer.fcmToken,
+          notification: {
+            title: `Booking ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+            body: `Your booking for ${booking.serviceType} has been ${status}.`
+          },
+          data: {
+            bookingId: booking._id.toString(),
+            type: 'booking_update'
+          }
+        });
+      } catch (err) {
+        console.error('FCM send error (updateBookingStatus):', err);
+      }
+    }
+
     res.json(booking);
   } catch (error) {
     res.status(500).json({ message: error.message });

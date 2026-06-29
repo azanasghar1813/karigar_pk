@@ -221,6 +221,20 @@ class AuthService {
     }
   }
 
+  Future<void> updateFcmToken(String fcmToken, String jwtToken, {bool isKarigar = false}) async {
+    if (AppConstants.useMockData) return;
+    try {
+      final endpoint = isKarigar ? '/karigars/fcm-token' : '/auth/fcm-token';
+      await _dio.post(
+        endpoint,
+        data: {'fcmToken': fcmToken},
+        options: Options(headers: {'Authorization': 'Bearer $jwtToken'}),
+      );
+    } catch (e) {
+      print('Error updating FCM token: $e');
+    }
+  }
+
   String _handleError(dynamic error) {
     if (error is String) return error;
     if (error is DioException) {

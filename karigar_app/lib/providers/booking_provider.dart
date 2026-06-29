@@ -24,6 +24,8 @@ class BookingProvider extends ChangeNotifier {
     required String address,
     required String city,
     required double totalPrice,
+    double? latitude,
+    double? longitude,
   }) async {
     _isLoading = true;
     _error = null;
@@ -38,6 +40,8 @@ class BookingProvider extends ChangeNotifier {
         address: address,
         city: city,
         totalPrice: totalPrice,
+        latitude: latitude,
+        longitude: longitude,
       );
 
       _currentBooking = booking;

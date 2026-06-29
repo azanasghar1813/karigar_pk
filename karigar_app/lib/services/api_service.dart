@@ -112,6 +112,8 @@ class ApiService {
     required String address,
     required String city,
     required double totalPrice,
+    double? latitude,
+    double? longitude,
   }) async {
     if (AppConstants.useMockData) {
       await _mockDelay();
@@ -137,6 +139,8 @@ class ApiService {
           'address': address,
           'city': city,
           'totalPrice': totalPrice,
+          if (latitude != null) 'latitude': latitude,
+          if (longitude != null) 'longitude': longitude,
         },
       );
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/karigar_portal_provider.dart';
+import '../../services/socket_service.dart';
 
 class KarigarRequestsScreen extends StatefulWidget {
   const KarigarRequestsScreen({super.key});
@@ -17,6 +18,16 @@ class _KarigarRequestsScreenState extends State<KarigarRequestsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<KarigarPortalProvider>().fetchMyBookings();
     });
+    
+    // Listen for real-time new bookings
+    SocketService().onNewBooking = (data) {
+      if (mounted) {
+        context.read<KarigarPortalProvider>().fetchMyBookings();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('New booking request received!')),
+        );
+      }
+    };
   }
 
   @override

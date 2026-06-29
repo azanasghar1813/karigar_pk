@@ -24,6 +24,7 @@ import Blog from './pages/Blog'
 import Contact from './pages/Contact'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsAndConditions from './pages/TermsAndConditions'
+import CustomerDashboard from './pages/CustomerDashboard'
 
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -65,6 +66,7 @@ function App() {
           <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
           <Route path="/privacy-policy" element={<PublicLayout><PrivacyPolicy /></PublicLayout>} />
           <Route path="/terms-and-conditions" element={<PublicLayout><TermsAndConditions /></PublicLayout>} />
+          <Route path="/customer-dashboard" element={<PublicLayout><CustomerDashboard /></PublicLayout>} />
 
           {/* Admin routes — protected by AdminRoute guard, wrapped in AdminLayout */}
           <Route path="/admin" element={

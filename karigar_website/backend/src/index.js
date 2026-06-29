@@ -1,10 +1,13 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
+require('./config/firebase');
 
 // Handle Uncaught Exceptions
 process.on('uncaughtException', (err) => {
@@ -20,12 +23,42 @@ const leadRoutes = require('./routes/contactRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
 const karigarPortalRoutes = require('./routes/karigarPortalRoutes');
-
+const reviewRoutes = require('./routes/reviewRoutes');
 // Connect to MongoDB
 connectDB();
 
 const app = express();
 const path = require('path');
+
+// Create HTTP server and integrate Socket.io
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+    origin: '*', // Adjust this for production
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE']
+  }
+});
+
+// Socket.io connection logic
+io.on('connection', (socket) => {
+  console.log('A client connected:', socket.id);
+  
+  // Clients join a room named by their user/karigar ID to receive private events
+  socket.on('join', (userId) => {
+    socket.join(userId.toString());
+    console.log(`User/Karigar ${userId} joined room`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id);
+  });
+});
+
+// Inject io into the request object for use in controllers
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 
 // GLOBAL MIDDLEWARES
 
@@ -77,7 +110,7 @@ app.use('/api/leads', leadRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/karigar-portal', karigarPortalRoutes);
-
+app.use('/api/reviews', reviewRoutes);
 // Base route
 app.get('/', (req, res) => {
   res.send('Karigar API is running securely...');
@@ -108,7 +141,8 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-const server = app.listen(PORT, () => {
+// Use server.listen instead of app.listen for Socket.io
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 

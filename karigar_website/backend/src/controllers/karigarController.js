@@ -100,4 +100,23 @@ const getKarigarById = async (req, res) => {
   }
 };
 
-module.exports = { registerKarigar, loginKarigar, getKarigars, getKarigarById };
+// @desc    Update FCM Token for Karigar
+// @route   POST /api/karigars/fcm-token
+// @access  Private (Karigar)
+const updateFcmToken = async (req, res) => {
+  try {
+    const { fcmToken } = req.body;
+    if (!fcmToken) return res.status(400).json({ message: 'No FCM token provided' });
+
+    const karigar = await Karigar.findById(req.karigar._id);
+    if (!karigar) return res.status(404).json({ message: 'Karigar not found' });
+
+    karigar.fcmToken = fcmToken;
+    await karigar.save();
+    res.json({ message: 'FCM Token updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { registerKarigar, loginKarigar, getKarigars, getKarigarById, updateFcmToken };

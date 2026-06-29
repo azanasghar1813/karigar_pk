@@ -5,6 +5,7 @@ import '../../config/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/booking_provider.dart';
 import '../../utils/responsive.dart';
+import '../../services/socket_service.dart';
 
 class MyAccountScreen extends StatefulWidget {
   const MyAccountScreen({super.key});
@@ -23,6 +24,25 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
         context.read<BookingProvider>().fetchMyBookings();
       }
     });
+
+    // Listen for real-time booking status updates
+    SocketService().onBookingStatusChanged = (data) {
+      if (mounted) {
+        context.read<BookingProvider>().fetchMyBookings();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Your booking status has been updated!')),
+        );
+      }
+    };
+
+    SocketService().onBookingCancelled = (data) {
+      if (mounted) {
+        context.read<BookingProvider>().fetchMyBookings();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Your booking was cancelled!')),
+        );
+      }
+    };
   }
 
   @override
