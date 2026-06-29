@@ -65,6 +65,3 @@ class AppFooter extends StatelessWidget {
   }
 }
 
-class Footer extends AppFooter {
-  const Footer({super.key});
-}

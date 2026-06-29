@@ -15,13 +15,14 @@ import 'providers/app_provider.dart';
 import 'providers/karigar_portal_provider.dart';
 import 'services/storage_service.dart';
 
-Future<void> main() async {
+void main() async {
+  // 1. Core Flutter initialization — must be first.
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+
+  // 2. Hold the native splash screen until SplashScreen calls remove().
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  // Wake Render server in parallel — never block UI on this.
-  _warmupServer();
-
+  // 3. Load preferences synchronously so theme is known before frame 1.
   final prefs = await SharedPreferences.getInstance();
   storageService.injectPrefs(prefs);
 
@@ -29,20 +30,18 @@ Future<void> main() async {
   final appProvider = AppProvider()..initFromPrefs(prefs);
   final router = createRouter(authProvider);
 
-  runApp(
-    KarigarApp(
-      authProvider: authProvider,
-      appProvider: appProvider,
-      router: router,
-    ),
-  );
+  // 4. Fire background server warmup — non-blocking.
+  Future.microtask(() => _warmupServer());
 
-  // Drop native splash as soon as the first frame is ready.
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    FlutterNativeSplash.remove();
-  });
+  // 5. Launch the app — ONE MaterialApp.router, no nested MaterialApp.
+  runApp(KarigarApp(
+    authProvider: authProvider,
+    appProvider: appProvider,
+    router: router,
+  ));
 }
 
+/// Wakes the Render.com free-tier server in the background.
 void _warmupServer() {
   Dio(
     BaseOptions(
@@ -54,6 +53,13 @@ void _warmupServer() {
       .get('/api/health')
       .catchError((_) => Response(requestOptions: RequestOptions(path: '/')));
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Single root widget — one MaterialApp.router, providers, done.
+// The splash → home transition is handled entirely inside GoRouter:
+//   initialLocation: '/splash'  →  SplashScreen navigates to '/'  →
+//   GoRouter redirect picks the right destination (karigar portal / home / …)
+// ─────────────────────────────────────────────────────────────────────────────
 
 class KarigarApp extends StatelessWidget {
   final AuthProvider authProvider;
@@ -72,20 +78,21 @@ class KarigarApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: authProvider),
+        // Lazy by default — won't inflate until the tab is first visited.
         ChangeNotifierProvider(create: (_) => KarigarProvider()),
         ChangeNotifierProvider(create: (_) => BookingProvider()),
         ChangeNotifierProvider.value(value: appProvider),
         ChangeNotifierProvider(create: (_) => KarigarPortalProvider()),
       ],
       child: Consumer<AppProvider>(
-        builder: (context, appProvider, child) {
+        builder: (context, app, _) {
           return MaterialApp.router(
             title: 'Karigar PK',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
+            themeMode: app.isDarkMode ? ThemeMode.dark : ThemeMode.light,
             routerConfig: router,
-            themeMode: appProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
             scrollBehavior: const MaterialScrollBehavior().copyWith(
               physics: const BouncingScrollPhysics(
                 parent: AlwaysScrollableScrollPhysics(),

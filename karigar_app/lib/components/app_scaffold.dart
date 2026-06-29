@@ -34,9 +34,8 @@ class AppScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final useRail = !Responsive.isMobile(context);
-
     final isMobile = Responsive.isMobile(context);
+    final useRail = !isMobile;
 
     return Scaffold(
       appBar: const KarigarNavbar(),

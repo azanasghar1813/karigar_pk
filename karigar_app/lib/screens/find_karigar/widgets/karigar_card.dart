@@ -27,15 +27,16 @@ class KarigarCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // AppSurfaceCard already wraps an InkWell — pass onTap here so there is
+    // only ONE tap region, eliminating the previous triple-InkWell overlap.
     return AppSurfaceCard(
+      onTap: onTap,
       padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InkWell(
-            onTap: onTap,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: Container(
+          // ── Avatar header ──────────────────────────────────────────────────
+          Container(
             height: 88,
             width: double.infinity,
             decoration: BoxDecoration(
@@ -91,15 +92,14 @@ class KarigarCard extends StatelessWidget {
               ],
             ),
           ),
-          ),
+
+          // ── Details ────────────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                InkWell(
-                  onTap: onTap,
-                  child: Row(
+                Row(
                   children: [
                     Expanded(
                       child: Text(
@@ -116,7 +116,6 @@ class KarigarCard extends StatelessWidget {
                         size: 18,
                       ),
                   ],
-                ),
                 ),
                 const SizedBox(height: 2),
                 Text(

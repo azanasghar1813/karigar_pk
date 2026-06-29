@@ -25,7 +25,7 @@ class AuthService {
           'user': MockData.demoUser.toJson(),
         };
       }
-      throw 'Invalid credentials. Demo: ${MockData.demoEmail} / ${MockData.demoPassword}';
+      throw 'Invalid email or password';
     }
 
     try {

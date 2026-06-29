@@ -1,4 +1,4 @@
-import 'package:flutter/gestures.dart';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -234,97 +234,50 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Social Login
+                    // Divider
                     Row(
                       children: [
                         Expanded(
-                          child: Divider(
-                            color: Theme.of(context).dividerColor,
-                          ),
+                          child: Divider(color: Theme.of(context).dividerColor),
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Text(
-                            'or',
+                            'New to Karigar PK?',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ),
                         Expanded(
-                          child: Divider(
-                            color: Theme.of(context).dividerColor,
-                          ),
+                          child: Divider(color: Theme.of(context).dividerColor),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
+
+                    // Sign Up Button
                     SizedBox(
                       width: double.infinity,
                       height: 50,
                       child: OutlinedButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Login with Google not implemented yet'),
-                              backgroundColor: AppTheme.warningColor,
-                            ),
-                          );
-                        },
-                        child: const Text('Login with Google'),
+                        onPressed: () => context.pushNamed('signup'),
+                        child: const Text('Sign Up as Customer'),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 12),
 
-                    // Sign Up Link
-                    Center(
-                      child: RichText(
-                        text: TextSpan(
-                          text: 'Don\'t have an account? ',
-                          style: Theme.of(context).textTheme.bodySmall,
-                          children: [
-                            TextSpan(
-                              text: 'Sign up',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                color: AppTheme.secondaryColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              recognizer:
-                              TapGestureRecognizer()
-                                ..onTap = () =>
-                                    context.pushNamed('signup'),
-                            ),
-                          ],
+                    // Join as Karigar Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.5),
+                          ),
+                          foregroundColor: AppTheme.primaryColor,
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Register as Karigar
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Theme.of(context).dividerColor),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Are you a service professional?',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton(
-                              onPressed: () =>
-                                  context.pushNamed('register-karigar'),
-                              child: const Text('Register as Karigar'),
-                            ),
-                          ),
-                        ],
+                        onPressed: () => context.pushNamed('register-karigar'),
+                        child: const Text('Join as Karigar'),
                       ),
                     ),
                   ],

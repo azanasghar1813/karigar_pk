@@ -100,8 +100,8 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                             if (user.isPhoneVerified)
-                              Row(
-                                children: const [
+                              const Row(
+                                children: [
                                   Icon(
                                     Icons.verified,
                                     size: 14,
@@ -248,9 +248,10 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                             backgroundColor: AppTheme.errorColor,
                           ),
                           onPressed: () async {
+                            final router = GoRouter.of(context);
                             await authProvider.logout();
                             if (mounted) {
-                              context.go('/');
+                              router.go('/');
                             }
                           },
                           child: const Text('Logout'),

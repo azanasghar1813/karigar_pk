@@ -86,16 +86,7 @@ class _TestimonialCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: List.generate(
-              5,
-              (i) => Icon(
-                i < rating ? Icons.star_rounded : Icons.star_outline_rounded,
-                color: AppTheme.warningColor,
-                size: 18,
-              ),
-            ),
-          ),
+          _StarRow(rating: rating),
           const SizedBox(height: 12),
           Text(
             '"$comment"',
@@ -135,3 +126,26 @@ class _TestimonialCard extends StatelessWidget {
     );
   }
 }
+
+/// Extracted so the List.generate only runs inside this widget's build,
+/// not on every rebuild of the parent Testimonials widget.
+class _StarRow extends StatelessWidget {
+  final int rating;
+  const _StarRow({required this.rating});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(
+        5,
+        (i) => Icon(
+          i < rating ? Icons.star_rounded : Icons.star_outline_rounded,
+          color: AppTheme.warningColor,
+          size: 18,
+        ),
+      ),
+    );
+  }
+}
+

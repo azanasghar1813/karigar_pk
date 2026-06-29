@@ -1,10 +1,18 @@
 flutter_native_splash:
-  color: "#ffffff"
+  # Dark branded background — matches the Flutter splash so there's no jarring color jump.
+  color: "#0A0E27"
+  color_dark: "#0A0E27"
+
+  # App logo shown in the center of the native splash.
   image: assets/images/app_logo.png
-  color_dark: "#0a0e27"
   image_dark: assets/images/app_logo.png
+
+  # Keep the native splash visible until Flutter calls
+  # FlutterNativeSplash.remove() — we control the exact moment.
+  fullscreen: false
+
   android_12:
+    color: "#0A0E27"
+    color_dark: "#0A0E27"
     image: assets/images/app_logo.png
-    icon_background_color: "#ffffff"
     image_dark: assets/images/app_logo.png
-    icon_background_color_dark: "#0a0e27"

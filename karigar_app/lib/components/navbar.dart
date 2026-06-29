@@ -13,8 +13,8 @@ class KarigarNavbar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final isLoggedIn = context.watch<AuthProvider>().isAuthenticated;
-    final isWide = !Responsive.isMobile(context);
     final isMobile = Responsive.isMobile(context);
+    final isWide = !isMobile;
 
     return AppBar(
       titleSpacing: isMobile ? 0 : null,
@@ -40,9 +40,9 @@ class KarigarNavbar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: [
         if (isWide) ...[
-          _NavLink(label: 'Home', path: '/'),
-          _NavLink(label: 'Services', path: '/services'),
-          _NavLink(label: 'Find', path: '/find-karigar'),
+          const _NavLink(label: 'Home', path: '/'),
+          const _NavLink(label: 'Services', path: '/services'),
+          const _NavLink(label: 'Find', path: '/find-karigar'),
           const SizedBox(width: 8),
           const WhatsAppButton(extended: false),
         ],

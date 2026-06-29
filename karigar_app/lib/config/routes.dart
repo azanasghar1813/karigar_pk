@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../components/app_scaffold.dart';
 import '../components/karigar_scaffold.dart';
 import '../providers/auth_provider.dart';
+import '../screens/common/splash_screen.dart';
 
 import '../screens/home/home_screen.dart';
 import '../screens/services/services_screen.dart';
@@ -51,14 +52,20 @@ GoRouter createRouter(AuthProvider authProvider) {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     refreshListenable: authProvider,
-    initialLocation: '/',
+    // Start at the splash screen; it navigates to '/' after ~600 ms,
+    // then the redirect below picks the correct final destination.
+    initialLocation: '/splash',
     redirect: (context, state) {
+      final path = state.uri.path;
+
+      // Never redirect away from splash — it drives its own navigation.
+      if (path == '/splash') return null;
+
       // Wait until cached auth is loaded — avoids wrong redirects on cold start.
       if (!authProvider.isInitialized) return null;
 
       final isAuth = authProvider.isAuthenticated;
       final isKarigar = authProvider.user?.userType == 'karigar';
-      final path = state.uri.path;
       final isGoingToKarigarPath = path.startsWith('/karigar');
       final isAuthRoute =
           path == '/login' || path == '/signup' || path == '/register-karigar';
@@ -81,6 +88,14 @@ GoRouter createRouter(AuthProvider authProvider) {
       return null;
     },
     routes: [
+      // ── Splash (initial route — removed from stack after navigating to '/') ─
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/splash',
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+
       // ── Customer Shell ────────────────────────────────────────────────────
       // NO parentNavigatorKey — StatefulShellRoute manages its own key.
       StatefulShellRoute.indexedStack(

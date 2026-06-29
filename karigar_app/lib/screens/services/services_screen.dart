@@ -11,7 +11,7 @@ import '../../widgets/section_header.dart';
 class ServicesScreen extends StatelessWidget {
   const ServicesScreen({super.key});
 
-  static final _services = [
+  static const _services = [
     ('⚡', 'Electrician', 'Wiring, repairs & installations', AppTheme.warningColor),
     ('💧', 'Plumber', 'Pipes, leaks & bathroom work', Color(0xFF38BDF8)),
     ('🪵', 'Carpenter', 'Furniture & structural woodwork', Color(0xFFA78BFA)),

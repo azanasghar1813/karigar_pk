@@ -61,7 +61,12 @@ class _SignupScreenState extends State<SignupScreen> {
   void _handleSignup() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final success = await context.read<AuthProvider>().signup(
+    // Capture context-dependent references before any async gap.
+    final authProvider = context.read<AuthProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
+
+    final success = await authProvider.signup(
       fullName: _fullNameController.text.trim(),
       email: _emailController.text.trim(),
       phone: _phoneController.text.trim(),
@@ -70,37 +75,30 @@ class _SignupScreenState extends State<SignupScreen> {
       password: _passwordController.text,
     );
 
-    if (mounted) {
-      if (success) {
-        // Verify OTP
-        final otpSuccess = await context
-            .read<AuthProvider>()
-            .verifyOTP(_otpController.text.trim());
+    if (!mounted) return;
 
-        if (otpSuccess) {
-          context.go('/');
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                context.read<AuthProvider>().error ??
-                    'OTP verification failed',
-              ),
-              backgroundColor: AppTheme.errorColor,
-            ),
-          );
-        }
+    if (success) {
+      final otpSuccess = await authProvider.verifyOTP(_otpController.text.trim());
+
+      if (!mounted) return;
+
+      if (otpSuccess) {
+        router.go('/');
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
-            content: Text(
-              context.read<AuthProvider>().error ??
-                  'Signup failed',
-            ),
+            content: Text(authProvider.error ?? 'OTP verification failed'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
       }
+    } else {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(authProvider.error ?? 'Signup failed'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
     }
   }
 

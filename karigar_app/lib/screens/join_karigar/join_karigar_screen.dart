@@ -258,7 +258,7 @@ class JoinKarigarScreen extends StatelessWidget {
         Container(
           width: 40,
           height: 40,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             shape: BoxShape.circle,
             color: AppTheme.primaryColor,
           ),

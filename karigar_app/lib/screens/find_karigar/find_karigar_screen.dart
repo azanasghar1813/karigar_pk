@@ -173,6 +173,11 @@ class _FindKarigarScreenState extends State<FindKarigarScreen> {
                 padding: EdgeInsets.all(Responsive.horizontalPadding(context)),
                 child: GridView.builder(
                   physics: const BouncingScrollPhysics(),
+                  // Pre-build items 400 px outside the viewport so fast
+                  // scrolling never shows blank tiles while Flutter catches up.
+                  cacheExtent: 400,
+                  // Cards are stateless — no need for keep-alives.
+                  addAutomaticKeepAlives: false,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: columns,
                     crossAxisSpacing: 14,

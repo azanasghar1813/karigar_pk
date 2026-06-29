@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:karigar/main.dart';
 import 'package:karigar/services/storage_service.dart';
 import 'package:karigar/providers/auth_provider.dart';
