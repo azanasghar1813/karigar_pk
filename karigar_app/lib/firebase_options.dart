@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -40,8 +41,8 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyC51gNAg04-fQwZw8i1cEqI-TAotkoDOyA',
+  static FirebaseOptions get web => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY_WEB'] ?? '',
     appId: '1:44244070222:web:bf4a23fc01c27dc8e2781f',
     messagingSenderId: '44244070222',
     projectId: 'karigarpk',
@@ -50,16 +51,16 @@ class DefaultFirebaseOptions {
     measurementId: 'G-CC42FT9W3Z',
   );
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDN6kwWa9OY30eKllbyDpn6vQ3DM0Dqpv0',
+  static FirebaseOptions get android => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY_ANDROID'] ?? '',
     appId: '1:44244070222:android:a301030c85628a1ce2781f',
     messagingSenderId: '44244070222',
     projectId: 'karigarpk',
     storageBucket: 'karigarpk.firebasestorage.app',
   );
 
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCYZHo2fDGckWNK4Hgo1b9r1Z0Daoa2n_w',
+  static FirebaseOptions get ios => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY_IOS'] ?? '',
     appId: '1:44244070222:ios:729ac998ac9f3d72e2781f',
     messagingSenderId: '44244070222',
     projectId: 'karigarpk',
@@ -67,8 +68,8 @@ class DefaultFirebaseOptions {
     iosBundleId: 'com.example.karigar',
   );
 
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCYZHo2fDGckWNK4Hgo1b9r1Z0Daoa2n_w',
+  static FirebaseOptions get macos => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY_IOS'] ?? '',
     appId: '1:44244070222:ios:729ac998ac9f3d72e2781f',
     messagingSenderId: '44244070222',
     projectId: 'karigarpk',
@@ -76,8 +77,8 @@ class DefaultFirebaseOptions {
     iosBundleId: 'com.example.karigar',
   );
 
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyC51gNAg04-fQwZw8i1cEqI-TAotkoDOyA',
+  static FirebaseOptions get windows => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY_WEB'] ?? '',
     appId: '1:44244070222:web:b5d27b5114b9f006e2781f',
     messagingSenderId: '44244070222',
     projectId: 'karigarpk',

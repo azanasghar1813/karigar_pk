@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC51gNAg04-fQwZw8i1cEqI-TAotkoDOyA",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "karigarpk.firebaseapp.com",
   projectId: "karigarpk",
   storageBucket: "karigarpk.firebasestorage.app",

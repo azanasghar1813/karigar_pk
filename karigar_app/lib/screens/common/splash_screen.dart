@@ -88,17 +88,11 @@ class _SplashScreenState extends State<SplashScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             // ── Logo ──────────────────────────────────────────────────────────
-            FadeTransition(
-              opacity: _logoFade,
-              child: ScaleTransition(
-                scale: _logoScale,
-                child: Image.asset(
-                  'assets/images/app_logo.png',
-                  width: 140,
-                  height: 140,
-                  filterQuality: FilterQuality.high,
-                ),
-              ),
+            Image.asset(
+              'assets/images/app_logo.png',
+              width: 140,
+              height: 140,
+              filterQuality: FilterQuality.high,
             ),
 
             const SizedBox(height: 12),
