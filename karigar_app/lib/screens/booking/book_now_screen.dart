@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
+import '../../config/constants.dart';
 import '../../providers/booking_provider.dart';
 import '../../providers/karigar_provider.dart';
 
@@ -209,16 +210,7 @@ class _BookNowScreenState extends State<BookNowScreen> {
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
                           initialValue: selectedService.isEmpty ? null : selectedService,
-                          items: [
-                            'Electrician',
-                            'Plumber',
-                            'Carpenter',
-                            'AC Repair',
-                            'Painter',
-                            'Locksmith',
-                            'CCTV Installation',
-                            'General Repair',
-                          ]
+                          items: AppConstants.services
                               .map((service) => DropdownMenuItem(
                             value: service,
                             child: Text(service),
@@ -337,13 +329,7 @@ class _BookNowScreenState extends State<BookNowScreen> {
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
                           initialValue: city.isEmpty ? null : city,
-                          items: [
-                            'Lahore',
-                            'Karachi',
-                            'Islamabad',
-                            'Rawalpindi',
-                            'Faisalabad',
-                          ]
+                          items: AppConstants.cities
                               .map((c) => DropdownMenuItem(
                             value: c,
                             child: Text(c),

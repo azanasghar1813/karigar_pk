@@ -6,7 +6,7 @@ const defaultServices = [
   {
     name: 'Electrician',
     icon: '⚡',
-    description: 'Professional electrical wiring, repair, installation and maintenance services in Lahore',
+    description: 'Professional electrical wiring, repair, installation and maintenance services in your city',
   },
   {
     name: 'Plumber',

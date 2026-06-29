@@ -122,7 +122,7 @@ class _ContactScreenState extends State<ContactScreen> {
                     context,
                     Icons.location_on_outlined,
                     'Address',
-                    'Lahore, Pakistan',
+                    'Serving in Your City',
                   ),
                   const SizedBox(height: 32),
 

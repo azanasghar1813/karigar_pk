@@ -304,7 +304,7 @@ class _FindKarigarScreenState extends State<FindKarigarScreen> {
                 child: OutlinedButton(
                   onPressed: () => setState(() {
                     selectedService = 'All';
-                    selectedCity = 'Lahore';
+                    selectedCity = 'Your City';
                     selectedRating = 0;
                     sortBy = 'rating';
                   }),

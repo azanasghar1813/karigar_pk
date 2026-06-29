@@ -26,7 +26,7 @@ export default function ServicesPage() {
       
       <div className="bg-gradient-to-br from-primary to-blue-900 text-white py-12 px-4">
         <div className="container">
-          <h1 className="font-poppins text-4xl font-bold mb-4">All Services Available in Lahore</h1>
+          <h1 className="font-poppins text-4xl font-bold mb-4">All Services Available in Your City</h1>
           <p className="text-gray-300 text-lg">
             Book any home service you need - electrician, plumber, carpenter and more
           </p>

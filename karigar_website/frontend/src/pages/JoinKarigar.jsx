@@ -31,7 +31,7 @@ export default function JoinKarigar() {
                 Turn your skills into <span className="text-secondary">consistent earnings</span>
               </h1>
               <p className="text-blue-100 text-base sm:text-lg mb-6">
-                Join Karigar PK's network of verified professionals. Be your own boss, choose your hours, and get booked by thousands of customers across Lahore.
+                Join Karigar PK's network of verified professionals. Be your own boss, choose your hours, and get booked by thousands of customers across your city.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <a href="#services-grid" className="px-8 py-3 rounded-xl bg-secondary text-white font-bold hover:bg-orange-600 transition-all shadow-lg text-center">

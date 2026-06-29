@@ -36,7 +36,7 @@ export default function Hero() {
           {/* Left Column: Text & Search */}
           <div className="flex-1 text-center lg:text-left animate-slide-in">
             <div className="inline-block bg-emerald-500/20 text-emerald-300 px-4 py-1.5 rounded-full text-sm font-semibold mb-6 border border-emerald-500/30">
-              Now serving Lahore
+              Now serving your city
             </div>
             <h1 className="font-poppins text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
               Find a trusted karigar near you

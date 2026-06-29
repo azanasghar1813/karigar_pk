@@ -26,7 +26,7 @@ export default function Services() {
         <div className="text-center mb-8 sm:mb-12">
           <h2 className="font-poppins text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3">Our Services</h2>
           <p className="text-gray-400 text-sm sm:text-base md:text-lg">
-            Book any home service in Lahore — electrician, plumber, carpenter & more
+            Book any home service in your city — electrician, plumber, carpenter & more
           </p>
         </div>
 

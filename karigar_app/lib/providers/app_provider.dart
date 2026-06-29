@@ -5,7 +5,7 @@ import '../services/storage_service.dart';
 
 class AppProvider extends ChangeNotifier {
   String _selectedService = 'All';
-  String _selectedCity = 'Lahore';
+  String _selectedCity = 'Your City';
   double _selectedRating = 0;
   String _sortBy = 'rating';
   bool _isDarkMode = false;
@@ -57,7 +57,7 @@ class AppProvider extends ChangeNotifier {
 
   void resetFilters() {
     _selectedService = 'All';
-    _selectedCity = 'Lahore';
+    _selectedCity = 'Your City';
     _selectedRating = 0;
     _sortBy = 'rating';
     notifyListeners();

@@ -86,7 +86,7 @@ class ServicesScreen extends StatelessWidget {
   static Future<void> _quickBookService(BuildContext context, String service) async {
     await context.read<KarigarProvider>().fetchKarigars(
           service: service,
-          city: 'Lahore',
+          city: 'Your City',
         );
     if (!context.mounted) return;
     final list = context.read<KarigarProvider>().filteredKarigars;

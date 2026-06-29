@@ -5,13 +5,13 @@ export default function Blog() {
   const blogPosts = [
     {
       id: 1,
-      title: 'How to Find a Trusted Electrician in Lahore',
+      title: 'How to Find a Trusted Electrician in Your City',
       excerpt: 'Learn the key tips to find a reliable electrician for your electrical problems.',
       author: 'Admin',
       date: '2024-01-15',
       category: 'Guide',
       image: '⚡',
-      content: 'Finding a trusted electrician in Lahore can be challenging. Here are some tips...'
+      content: 'Finding a trusted electrician in your city can be challenging. Here are some tips...'
     },
     { 
       id: 2,

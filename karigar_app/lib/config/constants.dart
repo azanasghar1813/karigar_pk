@@ -43,7 +43,7 @@ class AppConstants {
 
   // Cities
   static const List<String> cities = [
-    'Lahore',
+    'Your City',
     'Karachi',
     'Islamabad',
     'Rawalpindi',
