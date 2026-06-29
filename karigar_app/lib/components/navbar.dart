@@ -71,7 +71,7 @@ class KarigarNavbar extends StatelessWidget implements PreferredSizeWidget {
                       style: FilledButton.styleFrom(
                         backgroundColor:
                             AppTheme.primaryColor.withValues(alpha: 0.2),
-                        foregroundColor: AppTheme.textPrimary,
+                        foregroundColor: Theme.of(context).colorScheme.onSurface,
                       ),
                     ))
               : (isMobile

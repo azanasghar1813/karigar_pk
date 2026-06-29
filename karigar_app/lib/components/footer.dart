@@ -32,7 +32,7 @@ class AppFooter extends StatelessWidget {
                 Text(
                   'Karigar PK',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: AppTheme.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                 ),
               ],

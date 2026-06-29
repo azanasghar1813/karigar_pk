@@ -228,7 +228,7 @@ class _AppDrawer extends StatelessWidget {
         title,
         style: TextStyle(
           fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-          color: isSelected ? AppTheme.textPrimary : (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
+          color: isSelected ? Theme.of(context).colorScheme.onSurface : (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
         ),
       ),
       selected: isSelected,

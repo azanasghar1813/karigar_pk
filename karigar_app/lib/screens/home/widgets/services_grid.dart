@@ -64,7 +64,7 @@ class ServicesGrid extends StatelessWidget {
                 name,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                 textAlign: TextAlign.center,
                 maxLines: 2,

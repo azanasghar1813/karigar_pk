@@ -133,7 +133,7 @@ class KarigarCard extends StatelessWidget {
                       karigar.rating.toStringAsFixed(1),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: AppTheme.textPrimary,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                     ),
                     Text(
