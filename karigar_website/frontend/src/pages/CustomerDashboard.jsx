@@ -24,7 +24,7 @@ export default function CustomerDashboard() {
       return;
     }
     
-    if (user.role !== 'user') {
+    if (user.role !== 'customer') {
       navigate(user.role === 'admin' ? '/admin' : '/karigar');
       return;
     }

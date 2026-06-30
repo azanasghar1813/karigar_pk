@@ -50,7 +50,7 @@ export default function Navbar() {
           <Link to="/join-karigar" className="hover:text-secondary transition-colors">Join Karigar</Link>
           <Link to="/about" className="hover:text-secondary transition-colors">About</Link>
           <Link to="/contact" className="hover:text-secondary transition-colors">Contact</Link>
-          {user?.role === 'user' && (
+          {user?.role === 'customer' && (
             <Link to="/customer-dashboard" className="text-secondary font-semibold hover:text-white transition-colors">My Bookings</Link>
           )}
         </div>
@@ -126,7 +126,7 @@ export default function Navbar() {
                     )}
 
                     {/* Customer links */}
-                    {user.role === 'user' && (
+                    {user.role === 'customer' && (
                       <>
                         <Link
                           to="/customer-dashboard"
@@ -222,7 +222,7 @@ export default function Navbar() {
                   My Dashboard
                 </Link>
               )}
-              {user.role === 'user' && (
+              {user.role === 'customer' && (
                 <Link
                   to="/customer-dashboard"
                   className="flex items-center gap-2 py-2 text-secondary font-semibold mt-4"
