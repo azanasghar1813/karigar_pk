@@ -37,9 +37,9 @@ export default function Login() {
       return
     }
 
-    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/
-    if (!gmailRegex.test(formData.email.trim())) {
-      setError('Please enter a valid Gmail address')
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email.trim())) {
+      setError('Please enter a valid email address')
       setIsLoading(false)
       return
     }

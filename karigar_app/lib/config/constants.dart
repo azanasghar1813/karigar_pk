@@ -2,31 +2,41 @@ class AppConstants {
   /// Set to true to run the app with local demo data (no backend required).
   static const bool useMockData = false;
 
-  // API
+  // ================= API =================
+
+  // Base server URL
   static const String baseUrl = 'https://karigar-pk-xuea.onrender.com';
+
+  // API version
   static const String apiVersion = '/api';
-  // Render.com free tier spins down — 10s is enough; 30s just hangs the UI.
+
+  // Complete API URL
+  static const String apiBaseUrl = '$baseUrl$apiVersion';
+
+  // Timeouts
   static const Duration apiTimeout = Duration(seconds: 10);
-  // Warmup timeout: we only need the server to wake up, not respond fully.
   static const Duration warmupTimeout = Duration(seconds: 5);
 
-  // Contact — WhatsApp (country code + number, no + or spaces)
+  // ================= Contact =================
+
   static const String whatsappNumber = '923427066034';
   static const String whatsappDisplayNumber = '+92 342 7066034';
+
   static const String whatsappDefaultMessage =
       'Hi Karigar PK! I need help with a home service.';
 
-  // Support phone for "Request a call"
   static const String supportPhone = '923427066034';
   static const String supportDisplayPhone = '+92 342 7066034';
 
-  // Storage Keys
+  // ================= Storage =================
+
   static const String userTokenKey = 'user_token';
   static const String userDataKey = 'user_data';
   static const String authStateKey = 'auth_state';
   static const String themeKey = 'theme';
 
-  // Services
+  // ================= Services =================
+
   static const List<String> services = [
     'Electrician',
     'Plumber',
@@ -36,31 +46,38 @@ class AppConstants {
     'Locksmith',
     'CCTV Installation',
     'General Repair',
-    'Household Chores'
+    'Household Chores',
   ];
 
   static List<String> get servicesWithAll => ['All', ...services];
 
-  // Cities
+  // ================= Cities =================
+
   static const List<String> cities = [
     'Your City',
     'Karachi',
     'Islamabad',
     'Rawalpindi',
-    'Faisalabad'
+    'Faisalabad',
   ];
 
-  // Rating
+  // ================= Rating =================
+
   static const List<double> ratings = [0, 3, 3.5, 4, 4.5];
 
-  // Validation patterns
+  // ================= Validation =================
+
   static const String emailPattern =
       r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
+
   static const String cnicPattern = r'^\d{5}-\d{7}-\d$';
+
   static const String phonePattern = r'^3\d{2}-\d{7}$';
+
   static const int passwordMinLength = 8;
 
-  // Pagination
+  // ================= Pagination =================
+
   static const int pageSize = 20;
   static const int initialPage = 1;
 }
