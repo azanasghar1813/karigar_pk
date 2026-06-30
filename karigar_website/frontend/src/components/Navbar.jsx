@@ -50,6 +50,9 @@ export default function Navbar() {
           <Link to="/join-karigar" className="hover:text-secondary transition-colors">Join Karigar</Link>
           <Link to="/about" className="hover:text-secondary transition-colors">About</Link>
           <Link to="/contact" className="hover:text-secondary transition-colors">Contact</Link>
+          {user?.role === 'user' && (
+            <Link to="/customer-dashboard" className="text-secondary font-semibold hover:text-white transition-colors">My Bookings</Link>
+          )}
         </div>
 
         {/* Desktop CTA / Account */}
@@ -131,7 +134,7 @@ export default function Navbar() {
                           className="flex items-center gap-3 px-4 py-3 text-sm text-secondary hover:bg-gray-800 font-semibold transition-colors"
                         >
                           <LayoutDashboard size={16} />
-                          My Dashboard
+                          My Bookings
                         </Link>
                         <div className="border-t border-gray-700 my-1" />
                         <Link
@@ -226,7 +229,7 @@ export default function Navbar() {
                   onClick={() => setIsOpen(false)}
                 >
                   <LayoutDashboard size={16} />
-                  My Dashboard
+                  My Bookings
                 </Link>
               )}
               <button onClick={handleLogout} className="block w-full text-left hover:text-secondary py-2 mt-2">Logout</button>
