@@ -38,11 +38,14 @@ class AuthService {
         },
       );
 
-      final responseData = response.data['data'];
-      if (isKarigar && responseData['user'] != null) {
-        responseData['user']['userType'] = 'karigar';
-      }
-      return responseData;
+      final responseData = response.data as Map<String, dynamic>;
+      final userMap = Map<String, dynamic>.from(responseData);
+      userMap['userType'] = userMap['role'] ?? (isKarigar ? 'karigar' : 'customer');
+
+      return {
+        'token': responseData['token'],
+        'user': userMap,
+      };
     } catch (e) {
       throw _handleError(e);
     }
@@ -76,7 +79,7 @@ class AuthService {
 
     try {
       final response = await _dio.post(
-        '/auth/signup',
+        '/auth/register',
         data: {
           'fullName': fullName,
           'email': email,
@@ -84,11 +87,17 @@ class AuthService {
           'cnic': cnic,
           'address': address,
           'password': password,
-          'userType': 'customer',
         },
       );
 
-      return response.data['data'];
+      final responseData = response.data as Map<String, dynamic>;
+      final userMap = Map<String, dynamic>.from(responseData);
+      userMap['userType'] = userMap['role'] ?? 'customer';
+
+      return {
+        'token': responseData['token'],
+        'user': userMap,
+      };
     } catch (e) {
       throw _handleError(e);
     }
@@ -129,11 +138,11 @@ class AuthService {
         'fullName': fullName,
         'email': email,
         'phone': phone,
-        'cnic': cnic,
-        'address': address,
+        'cnicNumber': cnic,
+        'city': address,
         'password': password,
-        'service': service,
-        'yearsExperience': experience.toString(),
+        'services': '["$service"]',
+        'experience': experience.toString(),
         'pricePerHour': pricePerHour.toString(),
         if (bio != null && bio.isNotEmpty) 'bio': bio,
       });
@@ -164,11 +173,14 @@ class AuthService {
         ),
       );
 
-      final responseData = response.data['data'];
-      if (responseData['user'] != null) {
-        responseData['user']['userType'] = 'karigar';
-      }
-      return responseData;
+      final responseData = response.data as Map<String, dynamic>;
+      final userMap = Map<String, dynamic>.from(responseData);
+      userMap['userType'] = 'karigar';
+
+      return {
+        'token': responseData['token'],
+        'user': userMap,
+      };
     } catch (e) {
       throw _handleError(e);
     }

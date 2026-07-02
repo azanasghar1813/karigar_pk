@@ -343,7 +343,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              border: Border(bottom: Border(color: Theme.of(context).dividerColor.withOpacity(0.1))),
+              border: Border(bottom: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.1))),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
