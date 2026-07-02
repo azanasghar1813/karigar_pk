@@ -33,7 +33,8 @@ class KarigarPortalService {
   Future<Map<String, dynamic>> fetchDashboardStats() async {
     try {
       final response = await _dio.get('/karigar-portal/stats');
-      return response.data['data'] as Map<String, dynamic>;
+      final data = response.data is Map && response.data.containsKey('data') ? response.data['data'] : response.data;
+      return data as Map<String, dynamic>;
     } catch (e) {
       throw _handleError(e);
     }
@@ -42,8 +43,8 @@ class KarigarPortalService {
   Future<List<Booking>> fetchMyBookings() async {
     try {
       final response = await _dio.get('/karigar-portal/bookings');
-      final List<dynamic> data = response.data['data'] ?? [];
-      return data.map((json) => Booking.fromJson(json)).toList();
+      final data = response.data is List ? response.data : (response.data['data'] ?? []);
+      return (data as List).map((json) => Booking.fromJson(json)).toList();
     } catch (e) {
       throw _handleError(e);
     }

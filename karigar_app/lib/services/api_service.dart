@@ -62,8 +62,8 @@ class ApiService {
         },
       );
 
-      final List<dynamic> data = response.data['data'] ?? [];
-      return data.map((json) => Karigar.fromJson(json)).toList();
+      final data = response.data is List ? response.data : (response.data['data'] ?? []);
+      return (data as List).map((json) => Karigar.fromJson(json)).toList();
     } catch (e) {
       throw _handleError(e);
     }
@@ -79,7 +79,8 @@ class ApiService {
 
     try {
       final response = await _dio.get('/karigars/$id');
-      return Karigar.fromJson(response.data['data']);
+      final data = response.data is Map ? response.data : response.data['data'];
+      return Karigar.fromJson(data);
     } catch (e) {
       throw _handleError(e);
     }
@@ -97,8 +98,8 @@ class ApiService {
         queryParameters: {'karigerId': karigerId},
       );
 
-      final List<dynamic> data = response.data['data'] ?? [];
-      return data.map((json) => Review.fromJson(json)).toList();
+      final data = response.data is List ? response.data : (response.data['data'] ?? []);
+      return (data as List).map((json) => Review.fromJson(json)).toList();
     } catch (e) {
       throw _handleError(e);
     }
@@ -143,7 +144,8 @@ class ApiService {
         },
       );
 
-      return Booking.fromJson(response.data['data']);
+      final data = response.data is Map && response.data.containsKey('data') ? response.data['data'] : response.data;
+      return Booking.fromJson(data);
     } catch (e) {
       throw _handleError(e);
     }
@@ -157,8 +159,8 @@ class ApiService {
 
     try {
       final response = await _dio.get('/bookings/mybookings');
-      final List<dynamic> data = response.data['data'] ?? [];
-      return data.map((json) => Booking.fromJson(json)).toList();
+      final data = response.data is List ? response.data : (response.data['data'] ?? []);
+      return (data as List).map((json) => Booking.fromJson(json)).toList();
     } catch (e) {
       throw _handleError(e);
     }
@@ -175,7 +177,8 @@ class ApiService {
 
     try {
       final response = await _dio.get('/bookings/$id');
-      return Booking.fromJson(response.data['data']);
+      final data = response.data is Map && response.data.containsKey('data') ? response.data['data'] : response.data;
+      return Booking.fromJson(data);
     } catch (e) {
       throw _handleError(e);
     }

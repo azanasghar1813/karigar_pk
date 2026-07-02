@@ -35,23 +35,21 @@ class Booking {
 
   factory Booking.fromJson(Map<String, dynamic> json) {
     return Booking(
-      id: json['id'] as String,
-      customerId: json['customerId'] as String,
-      karigerId: json['karigerId'] as String,
-      service: json['service'] as String,
-      bookingDate: DateTime.parse(json['bookingDate'] as String),
-      completionDate: json['completionDate'] != null
-          ? DateTime.parse(json['completionDate'] as String)
-          : null,
+      id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
+      customerId: json['customerId']?.toString() ?? (json['customer'] is Map ? json['customer']['_id'] : json['customer'])?.toString() ?? '',
+      karigerId: json['karigerId']?.toString() ?? (json['karigar'] is Map ? json['karigar']['_id'] : json['karigar'])?.toString() ?? '',
+      service: json['service'] as String? ?? json['serviceType'] as String? ?? '',
+      bookingDate: json['bookingDate'] != null ? DateTime.parse(json['bookingDate'] as String) : (json['date'] != null ? DateTime.parse(json['date'] as String) : DateTime.now()),
+      completionDate: json['completionDate'] != null ? DateTime.parse(json['completionDate'] as String) : null,
       status: json['status'] as String? ?? 'pending',
-      description: json['description'] as String? ?? '',
-      address: json['address'] as String,
-      city: json['city'] as String,
-      totalPrice: (json['totalPrice'] as num).toDouble(),
+      description: json['description'] as String? ?? json['notes'] as String? ?? '',
+      address: json['address'] as String? ?? '',
+      city: json['city'] as String? ?? '',
+      totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0.0,
       paymentStatus: json['paymentStatus'] as String? ?? 'pending',
       rating: json['rating'] as int?,
       review: json['review'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : DateTime.now(),
     );
   }
 

@@ -164,4 +164,23 @@ const rateBooking = async (req, res) => {
   }
 };
 
-module.exports = { createBooking, getMyBookings, cancelBooking, rateBooking };
+// @desc    Get booking by ID
+// @route   GET /api/bookings/:id
+// @access  Private
+const getBookingById = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id)
+      .populate('karigar', 'fullName phone profilePhoto services hourlyRate')
+      .populate('customer', 'fullName phone');
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    res.json(booking);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { createBooking, getMyBookings, getBookingById, cancelBooking, rateBooking };

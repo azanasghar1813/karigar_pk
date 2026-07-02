@@ -227,7 +227,7 @@ class AuthService {
         data: user.toJson(),
       );
 
-      return response.data['data'];
+      return response.data is Map && response.data.containsKey('data') ? response.data['data'] : response.data;
     } catch (e) {
       throw _handleError(e);
     }
