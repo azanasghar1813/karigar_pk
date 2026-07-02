@@ -15,7 +15,6 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  int _currentStep = 0;
   final _formKey = GlobalKey<FormState>();
 
   final _fullNameController = TextEditingController();
@@ -25,7 +24,6 @@ class _SignupScreenState extends State<SignupScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _otpController = TextEditingController();
 
   bool _showPassword = false;
   bool _agreeToTerms = false;
@@ -39,11 +37,10 @@ class _SignupScreenState extends State<SignupScreen> {
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _otpController.dispose();
     super.dispose();
   }
 
-  void _handleStep1Submit() {
+  void _handleSignup() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_agreeToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -54,12 +51,6 @@ class _SignupScreenState extends State<SignupScreen> {
       );
       return;
     }
-
-    setState(() => _currentStep = 1);
-  }
-
-  void _handleSignup() async {
-    if (!_formKey.currentState!.validate()) return;
 
     // Capture context-dependent references before any async gap.
     final authProvider = context.read<AuthProvider>();
@@ -78,20 +69,7 @@ class _SignupScreenState extends State<SignupScreen> {
     if (!mounted) return;
 
     if (success) {
-      final otpSuccess = await authProvider.verifyOTP(_otpController.text.trim());
-
-      if (!mounted) return;
-
-      if (otpSuccess) {
-        router.go('/');
-      } else {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(authProvider.error ?? 'OTP verification failed'),
-            backgroundColor: AppTheme.errorColor,
-          ),
-        );
-      }
+      router.go('/');
     } else {
       messenger.showSnackBar(
         SnackBar(
@@ -127,36 +105,14 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                _currentStep == 0
-                    ? 'Create your account with us'
-                    : 'Verify your phone number',
+                'Create your account with us',
                 style: Theme.of(context).textTheme.bodyLarge,
-              ),
-              const SizedBox(height: 30),
-
-              // Progress Indicator
-              Row(
-                children: [
-                  _stepCircle(0),
-                  Expanded(
-                    child: Container(
-                      height: 2,
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      color: _currentStep > 0
-                          ? AppTheme.primaryColor
-                          : Theme.of(context).dividerColor,
-                    ),
-                  ),
-                  _stepCircle(1),
-                ],
               ),
               const SizedBox(height: 30),
 
               Form(
                 key: _formKey,
-                child: _currentStep == 0
-                    ? _buildStep1()
-                    : _buildStep2(),
+                child: _buildForm(),
               ),
             ],
         ),
@@ -164,29 +120,7 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  Widget _stepCircle(int index) {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: _currentStep >= index
-            ? AppTheme.primaryColor
-            : Theme.of(context).dividerColor,
-      ),
-      child: Center(
-        child: Text(
-          '${index + 1}',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStep1() {
+  Widget _buildForm() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -384,17 +318,31 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
         const SizedBox(height: 32),
 
-        // Next Button
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondaryColor,
-            ),
-            onPressed: _handleStep1Submit,
-            child: const Text('Send OTP'),
-          ),
+        // Submit Button
+        Consumer<AuthProvider>(
+          builder: (context, authProvider, _) {
+            return SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.secondaryColor,
+                ),
+                onPressed: authProvider.isLoading ? null : _handleSignup,
+                child: authProvider.isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        ),
+                      )
+                    : const Text('Create Account'),
+              ),
+            );
+          },
         ),
         const SizedBox(height: 16),
 
@@ -425,115 +373,5 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  Widget _buildStep2() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Enter OTP',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'We\'ve sent a 6-digit code to +92 ${_phoneController.text}',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        const SizedBox(height: 20),
-        TextFormField(
-          controller: _otpController,
-          decoration: const InputDecoration(
-            hintText: '000000',
-            prefixIcon: Icon(Icons.code),
-          ),
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 24,
-            letterSpacing: 8,
-            fontWeight: FontWeight.bold,
-          ),
-          maxLength: 6,
-          keyboardType: TextInputType.number,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter OTP';
-            }
-            if (value.length != 6) {
-              return 'OTP must be 6 digits';
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 32),
 
-        // Verify Button
-        Consumer<AuthProvider>(
-          builder: (context, authProvider, _) {
-            return SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.secondaryColor,
-                ),
-                onPressed: authProvider.isLoading ? null : _handleSignup,
-                child: authProvider.isLoading
-                    ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.white,
-                    ),
-                  ),
-                )
-                    : const Text('Verify & Create Account'),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-
-        // Back Button
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: () => setState(() => _currentStep = 0),
-            child: const Text('Edit Details'),
-          ),
-        ),
-
-        const SizedBox(height: 32),
-
-        // Resend Code
-        Center(
-          child: RichText(
-            text: TextSpan(
-              text: 'Didn\'t receive code? ',
-              style: Theme.of(context).textTheme.bodySmall,
-              children: [
-                TextSpan(
-                  text: 'Resend',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                    color: AppTheme.secondaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('OTP resent successfully'),
-                        ),
-                      );
-                    },
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }

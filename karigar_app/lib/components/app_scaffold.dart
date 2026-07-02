@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
@@ -9,13 +10,20 @@ import 'navbar.dart';
 import '../utils/whatsapp_launcher.dart';
 import '../widgets/whatsapp_button.dart';
 
-class AppScaffold extends StatelessWidget {
+class AppScaffold extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
 
   const AppScaffold({
     super.key,
     required this.navigationShell,
   });
+
+  @override
+  State<AppScaffold> createState() => _AppScaffoldState();
+}
+
+class _AppScaffoldState extends State<AppScaffold> {
+  DateTime? _currentBackPressTime;
 
   static const _destinations = [
     (icon: Icons.home_outlined, active: Icons.home_rounded, label: 'Home'),
@@ -37,56 +45,82 @@ class AppScaffold extends StatelessWidget {
     final isMobile = Responsive.isMobile(context);
     final useRail = !isMobile;
 
-    return Scaffold(
-      appBar: const KarigarNavbar(),
-      drawer: useRail ? null : _AppDrawer(currentIndex: navigationShell.currentIndex),
-      floatingActionButton: isMobile
-          ? FloatingActionButton(
-              heroTag: 'whatsapp_fab',
-              onPressed: () => WhatsAppLauncher.openOrSnackBar(context),
-              backgroundColor: whatsAppGreen,
-              child: const WhatsAppIcon(size: 26),
-            )
-          : const WhatsAppFab(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      body: Row(
-        children: [
-          if (useRail) _buildNavigationRail(context),
-          Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 280),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              child: KeyedSubtree(
-                key: ValueKey(navigationShell.currentIndex),
-                child: ShellTabBody(child: navigationShell),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        
+        if (widget.navigationShell.currentIndex != 0) {
+          widget.navigationShell.goBranch(0);
+          return;
+        }
+
+        final now = DateTime.now();
+        if (_currentBackPressTime == null || 
+            now.difference(_currentBackPressTime!) > const Duration(seconds: 2)) {
+          _currentBackPressTime = now;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Press back again to exit'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        } else {
+          // Exiting the app using SystemNavigator
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        appBar: const KarigarNavbar(),
+        drawer: useRail ? null : _AppDrawer(currentIndex: widget.navigationShell.currentIndex),
+        floatingActionButton: isMobile
+            ? FloatingActionButton(
+                heroTag: 'whatsapp_fab',
+                onPressed: () => WhatsAppLauncher.openOrSnackBar(context),
+                backgroundColor: whatsAppGreen,
+                child: const WhatsAppIcon(size: 26),
+              )
+            : const WhatsAppFab(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        body: Row(
+          children: [
+            if (useRail) _buildNavigationRail(context),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 280),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                child: KeyedSubtree(
+                  key: ValueKey(widget.navigationShell.currentIndex),
+                  child: ShellTabBody(child: widget.navigationShell),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
+        bottomNavigationBar: useRail
+            ? null
+            : NavigationBar(
+                selectedIndex: widget.navigationShell.currentIndex,
+                onDestinationSelected: widget.navigationShell.goBranch,
+                destinations: _destinations
+                    .map(
+                      (d) => NavigationDestination(
+                        icon: Icon(d.icon),
+                        selectedIcon: Icon(d.active),
+                        label: d.label,
+                      ),
+                    )
+                    .toList(),
+              ),
       ),
-      bottomNavigationBar: useRail
-          ? null
-          : NavigationBar(
-              selectedIndex: navigationShell.currentIndex,
-              onDestinationSelected: navigationShell.goBranch,
-              destinations: _destinations
-                  .map(
-                    (d) => NavigationDestination(
-                      icon: Icon(d.icon),
-                      selectedIcon: Icon(d.active),
-                      label: d.label,
-                    ),
-                  )
-                  .toList(),
-            ),
     );
   }
 
   Widget _buildNavigationRail(BuildContext context) {
     return NavigationRail(
-      selectedIndex: navigationShell.currentIndex,
-      onDestinationSelected: navigationShell.goBranch,
+      selectedIndex: widget.navigationShell.currentIndex,
+      onDestinationSelected: widget.navigationShell.goBranch,
       extended: Responsive.isDesktop(context),
       minExtendedWidth: 180,
       labelType: Responsive.isDesktop(context)
