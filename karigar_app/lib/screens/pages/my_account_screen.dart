@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/booking_provider.dart';
 import '../../utils/responsive.dart';
 import '../../services/socket_service.dart';
+import '../../utils/notification_util.dart';
 
 class MyAccountScreen extends StatefulWidget {
   const MyAccountScreen({super.key});
@@ -29,8 +30,13 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     SocketService().onBookingStatusChanged = (data) {
       if (mounted) {
         context.read<BookingProvider>().fetchMyBookings();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Your booking status has been updated!')),
+        String status = data['status']?.toString() ?? 'updated';
+        NotificationUtil.showAmazingNotification(
+          context,
+          title: 'Booking Update',
+          message: 'Your booking status has been $status!',
+          icon: Icons.check_circle_outline_rounded,
+          color: AppTheme.successColor,
         );
       }
     };
@@ -38,8 +44,12 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     SocketService().onBookingCancelled = (data) {
       if (mounted) {
         context.read<BookingProvider>().fetchMyBookings();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Your booking was cancelled!')),
+        NotificationUtil.showAmazingNotification(
+          context,
+          title: 'Booking Cancelled',
+          message: 'Your booking was cancelled!',
+          icon: Icons.cancel_outlined,
+          color: AppTheme.errorColor,
         );
       }
     };
@@ -198,7 +208,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           TextButton(
-                            onPressed: () => context.go('/search'),
+                            onPressed: () => context.go('/find-karigar'),
                             child: const Text('+ Book New'),
                           ),
                         ],

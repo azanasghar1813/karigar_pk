@@ -221,6 +221,31 @@ class ApiService {
     }
   }
 
+  Future<void> submitContactForm({
+    required String name,
+    required String phone,
+    required String message,
+  }) async {
+    if (AppConstants.useMockData) {
+      await _mockDelay();
+      return;
+    }
+
+    try {
+      await _dio.post(
+        '/contact',
+        data: {
+          'name': name,
+          'phone': phone,
+          'message': message,
+          'source': 'app_request_call',
+        },
+      );
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   String _handleError(dynamic error) {
     if (error is String) return error;
     if (error is DioException) {

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/theme.dart';
 import '../../../utils/call_launcher.dart';
 import '../../../utils/responsive.dart';
+import 'request_call_dialog.dart';
 
 class HeroSection extends StatelessWidget {
   const HeroSection({super.key});
@@ -64,8 +65,11 @@ class HeroSection extends StatelessWidget {
           runSpacing: 12,
           children: [
             FilledButton.icon(
-              onPressed: () => CallLauncher.requestCall(context),
-              icon: const Icon(Icons.phone_in_talk_rounded),
+              onPressed: () => showDialog(
+                context: context,
+                builder: (context) => const RequestCallDialog(),
+              ),
+              icon: const Icon(Icons.assignment_turned_in_rounded),
               label: const Text('Request a Call'),
               style: FilledButton.styleFrom(
                 backgroundColor: AppTheme.secondaryColor,
@@ -75,6 +79,16 @@ class HeroSection extends StatelessWidget {
                   fontSize: 17,
                   fontWeight: FontWeight.w800,
                 ),
+              ),
+            ),
+            OutlinedButton.icon(
+              onPressed: () => CallLauncher.requestCall(context),
+              icon: const Icon(Icons.phone_in_talk_rounded),
+              label: const Text('Call Us'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               ),
             ),
             OutlinedButton.icon(

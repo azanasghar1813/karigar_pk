@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/karigar_portal_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/socket_service.dart';
+import '../../utils/notification_util.dart';
 
 class KarigarDashboardScreen extends StatefulWidget {
   const KarigarDashboardScreen({super.key});
@@ -18,6 +20,19 @@ class _KarigarDashboardScreenState extends State<KarigarDashboardScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<KarigarPortalProvider>().fetchDashboardStats();
     });
+
+    SocketService().onNewBooking = (data) {
+      if (mounted) {
+        context.read<KarigarPortalProvider>().fetchDashboardStats();
+        NotificationUtil.showAmazingNotification(
+          context,
+          title: 'New Booking Request!',
+          message: 'You have received a new service request.',
+          icon: Icons.notifications_active_rounded,
+          color: AppTheme.secondaryColor,
+        );
+      }
+    };
   }
 
   @override

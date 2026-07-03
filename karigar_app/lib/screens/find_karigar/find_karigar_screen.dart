@@ -60,7 +60,7 @@ class _FindKarigarScreenState extends State<FindKarigarScreen> {
   void _fetchKarigars() {
     context.read<KarigarProvider>().fetchKarigars(
           service: selectedService != 'All' ? selectedService : null,
-          city: selectedCity,
+          city: selectedCity != 'Your City' ? selectedCity : null,
           minRating: selectedRating > 0 ? selectedRating : null,
           sortBy: sortBy,
         );
@@ -69,7 +69,7 @@ class _FindKarigarScreenState extends State<FindKarigarScreen> {
   void _applyFilters() {
     context.read<KarigarProvider>().filterKarigars(
           service: selectedService,
-          city: selectedCity,
+          city: selectedCity != 'Your City' ? selectedCity : null,
           minRating: selectedRating,
           sortBy: sortBy,
         );
