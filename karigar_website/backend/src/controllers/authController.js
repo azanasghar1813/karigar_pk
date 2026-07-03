@@ -177,7 +177,11 @@ const updateFcmToken = async (req, res) => {
     const { fcmToken } = req.body;
     if (!fcmToken) return res.status(400).json({ message: 'No FCM token provided' });
 
-    const user = await User.findById(req.user._id);
+    let user = await User.findById(req.user._id);
+    if (!user) {
+      const Karigar = require('../models/Karigar');
+      user = await Karigar.findById(req.user._id);
+    }
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     user.fcmToken = fcmToken;

@@ -11,10 +11,11 @@ class NotificationService {
     );
 
     final token = await _messaging.getToken();
+    if (token != null) {
+      print("FCM Token: $token");
+    }
 
-    print("FCM Token: $token");
-
-    FirebaseMessaging.instance.onTokenRefresh.listen((token) {
+    FirebaseMessaging.instance.onTokenRefresh.listen((token) async {
       print("New Token: $token");
     });
   }

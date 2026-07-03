@@ -134,6 +134,18 @@ class _FindKarigarScreenState extends State<FindKarigarScreen> {
                 );
               }
 
+              if (provider.error != null) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Text(
+                      'Error: ${provider.error}',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                );
+              }
+
               if (provider.filteredKarigars.isEmpty) {
                 return Center(
                   child: Padding(

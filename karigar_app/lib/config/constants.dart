@@ -5,7 +5,7 @@ class AppConstants {
   // ================= API =================
 
   // Base server URL
-  static const String baseUrl = 'https://karigar-pk-xuea.onrender.com';
+  static const String baseUrl = 'http://localhost:5000';
 
   // API version
   static const String apiVersion = '/api';

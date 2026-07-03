@@ -40,8 +40,18 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print(message.notification?.title);
-    print(message.notification?.body);
+    if (message.notification != null) {
+      final context = rootNavigatorKey.currentContext;
+      if (context != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${message.notification!.title}: ${message.notification!.body}'),
+            backgroundColor: AppTheme.secondaryColor,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
   });
 
   // 2. Hold the native splash screen until SplashScreen calls remove().

@@ -35,6 +35,7 @@ class AuthProvider extends ChangeNotifier {
       if (_token != null) {
         _isAuthenticated = true;
         _user = _storageService.getUserDataSync();
+        _updateFcmToken();
       }
     } catch (_) {
       // Storage failure — stay logged out.
@@ -56,6 +57,7 @@ class AuthProvider extends ChangeNotifier {
       );
       _isAuthenticated = true;
 
+      await _storageService.saveToken(_token!);
       await _storageService.saveUserData(_user!);
 
       _updateFcmToken();
@@ -245,6 +247,14 @@ class AuthProvider extends ChangeNotifier {
         final isKarigar = _user?.userType == 'karigar';
         await _authService.updateFcmToken(fcmToken, _token!, isKarigar: isKarigar);
       }
+      
+      // Also listen for token refreshes while authenticated
+      FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+        if (_token != null) {
+          final isKarigar = _user?.userType == 'karigar';
+          await _authService.updateFcmToken(newToken, _token!, isKarigar: isKarigar);
+        }
+      });
     } catch (e) {
       print('Failed to get or send FCM token: $e');
     }

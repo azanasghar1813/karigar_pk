@@ -63,7 +63,7 @@ class ApiService {
       );
 
       final data = response.data is List ? response.data : (response.data['data'] ?? []);
-      return (data as List).map((json) => Karigar.fromJson(json)).toList();
+      return (data as List).map((json) => Karigar.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
       throw _handleError(e);
     }
@@ -99,7 +99,7 @@ class ApiService {
       );
 
       final data = response.data is List ? response.data : (response.data['data'] ?? []);
-      return (data as List).map((json) => Review.fromJson(json)).toList();
+      return (data as List).map((json) => Review.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
       throw _handleError(e);
     }
@@ -160,7 +160,7 @@ class ApiService {
     try {
       final response = await _dio.get('/bookings/mybookings');
       final data = response.data is List ? response.data : (response.data['data'] ?? []);
-      return (data as List).map((json) => Booking.fromJson(json)).toList();
+      return (data as List).map((json) => Booking.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
       throw _handleError(e);
     }
@@ -243,6 +243,19 @@ class ApiService {
       );
     } catch (e) {
       throw _handleError(e);
+    }
+  }
+
+  Future<void> updateFcmToken(String token) async {
+    if (AppConstants.useMockData) return;
+
+    try {
+      await _dio.post(
+        '/auth/fcm-token',
+        data: {'fcmToken': token},
+      );
+    } catch (e) {
+      print('Failed to update FCM token: $e');
     }
   }
 

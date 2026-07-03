@@ -303,6 +303,34 @@ const updateBookingStatus = async (req, res) => {
     booking.status = status;
     await booking.save();
 
+    // Send FCM Notifications
+    try {
+      const populatedBooking = await Booking.findById(booking._id).populate('customer').populate('karigar');
+      const adminModule = require('../config/firebase');
+      
+      if (populatedBooking.customer && populatedBooking.customer.fcmToken) {
+        await adminModule.messaging().send({
+          token: populatedBooking.customer.fcmToken,
+          notification: {
+            title: 'Booking Status Updated',
+            body: `Your booking for ${populatedBooking.serviceType} is now ${status}.`
+          }
+        });
+      }
+      
+      if (populatedBooking.karigar && populatedBooking.karigar.fcmToken) {
+        await adminModule.messaging().send({
+          token: populatedBooking.karigar.fcmToken,
+          notification: {
+            title: 'Booking Status Updated',
+            body: `Booking status for ${populatedBooking.serviceType} changed to ${status}.`
+          }
+        });
+      }
+    } catch (err) {
+      console.error('FCM send error (updateBookingStatus):', err);
+    }
+
     res.json({ message: 'Booking status updated', booking });
   } catch (error) {
     console.error(error);

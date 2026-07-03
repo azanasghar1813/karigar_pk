@@ -207,8 +207,8 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                             'Booking History',
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                           ),
-                          TextButton(
-                            onPressed: () => context.go('/find-karigar'),
+                          TextButton.icon(
+                            onPressed: () => context.go('/find-karigar', extra: 'Home'),
                             child: const Text('+ Book New'),
                           ),
                         ],

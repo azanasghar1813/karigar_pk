@@ -82,7 +82,7 @@ class HeroSection extends StatelessWidget {
               ),
             ),
             OutlinedButton.icon(
-              onPressed: () => CallLauncher.requestCall(context),
+              onPressed: () => CallLauncher.callSupport(context),
               icon: const Icon(Icons.phone_in_talk_rounded),
               label: const Text('Call Us'),
               style: OutlinedButton.styleFrom(
