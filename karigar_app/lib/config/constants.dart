@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class AppConstants {
   /// Set to true to run the app with local demo data (no backend required).
   static const bool useMockData = false;
@@ -5,13 +7,22 @@ class AppConstants {
   // ================= API =================
 
   // Base server URL
-  static const String baseUrl = 'http://localhost:5000';
+  static String get baseUrl {
+    if (kIsWeb) {
+      return 'http://localhost:5000';
+    }
+    // For Android emulator, use 10.0.2.2. If testing on a physical device, change this to your computer's local network IP (e.g., http://192.168.1.x:5000)
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:5000';
+    }
+    return 'http://localhost:5000';
+  }
 
   // API version
   static const String apiVersion = '/api';
 
   // Complete API URL
-  static const String apiBaseUrl = '$baseUrl$apiVersion';
+  static String get apiBaseUrl => '$baseUrl$apiVersion';
 
   // Timeouts
   static const Duration apiTimeout = Duration(seconds: 10);
