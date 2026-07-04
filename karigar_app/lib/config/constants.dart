@@ -7,16 +7,7 @@ class AppConstants {
   // ================= API =================
 
   // Base server URL
-  static String get baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:5000';
-    }
-    // For Android emulator, use 10.0.2.2. If testing on a physical device, change this to your computer's local network IP (e.g., http://192.168.1.x:5000)
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:5000';
-    }
-    return 'http://localhost:5000';
-  }
+  static const String baseUrl = 'https://karigar-pk-xuea.onrender.com';
 
   // API version
   static const String apiVersion = '/api';
