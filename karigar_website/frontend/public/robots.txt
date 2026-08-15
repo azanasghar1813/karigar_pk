@@ -4,4 +4,4 @@ Disallow: /admin/
 Disallow: /private/
 Disallow: /api/
 
-Sitemap: https://karigar.pk/sitemap.xml
+Sitemap: https://www.karigarpk.live/sitemap.xml
