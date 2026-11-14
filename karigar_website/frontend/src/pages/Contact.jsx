@@ -68,33 +68,34 @@ export default function Contact() {
   }
 
   return (
-    <div>
+    <div className="bg-[#0B1329] min-h-screen text-white">
 
       {/* Header Section */}
-      <div className="bg-gradient-to-br from-primary to-blue-900 text-white py-12 px-4">
-        <div className="container">
-          <h1 className="font-poppins text-4xl font-bold mb-4">Contact Us</h1>
-          <p className="text-gray-300 text-lg">We're here to help! Reach out to our support team anytime</p>
+      <div className="bg-[#131F3D] border-b border-gray-800 text-white py-12 px-4">
+        <div className="container max-w-6xl mx-auto">
+          <span className="text-[#FF6B00] text-xs font-bold uppercase tracking-widest block mb-2">We Are Here For You</span>
+          <h1 className="font-poppins text-3xl sm:text-5xl font-black mb-3">Contact Us</h1>
+          <p className="text-gray-300 text-sm sm:text-base">We're here to help! Reach out to our dedicated support team anytime</p>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="py-16 px-4 bg-field-contact min-h-screen">
-        <div className="container max-w-6xl">
+      <div className="py-12 sm:py-16 px-4 bg-[#0B1329]">
+        <div className="container max-w-6xl mx-auto">
           
           {/* Contact Info Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             
             {/* Phone Card */}
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-secondary transition-colors">
-              <div className="text-secondary text-4xl mb-4 flex justify-center">
-                <Phone size={40} />
+            <div className="bg-[#131F3D] rounded-2xl p-6 border border-gray-800 hover:border-[#FF6B00] transition-colors shadow-lg">
+              <div className="text-[#FF6B00] text-4xl mb-4 flex justify-center">
+                <Phone size={36} />
               </div>
-              <h3 className="font-poppins font-bold text-white mb-2 text-center">Phone</h3>
-              <p className="text-gray-400 mb-3 text-center text-sm">Call us anytime</p>
+              <h3 className="font-poppins font-bold text-white mb-2 text-center">Phone Helpline</h3>
+              <p className="text-gray-400 mb-3 text-center text-xs">Direct call support</p>
               <a 
                 href={`tel:${SITE_PHONE_E164}`}
-                className="text-secondary hover:text-orange-500 font-semibold transition-colors block text-center"
+                className="text-[#FF6B00] hover:text-orange-400 font-bold transition-colors block text-center text-sm"
               >
                 {SITE_PHONE_DISPLAY}
               </a>
@@ -102,50 +103,50 @@ export default function Contact() {
             </div>
 
             {/* Email Card */}
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-secondary transition-colors">
-              <div className="text-secondary text-4xl mb-4 flex justify-center">
-                <Mail size={40} />
+            <div className="bg-[#131F3D] rounded-2xl p-6 border border-gray-800 hover:border-[#FF6B00] transition-colors shadow-lg">
+              <div className="text-[#FF6B00] text-4xl mb-4 flex justify-center">
+                <Mail size={36} />
               </div>
-              <h3 className="font-poppins font-bold text-white mb-2 text-center">Email</h3>
-              <p className="text-gray-400 mb-3 text-center text-sm">Send us an email</p>
+              <h3 className="font-poppins font-bold text-white mb-2 text-center">Email Inquiries</h3>
+              <p className="text-gray-400 mb-3 text-center text-xs">Official correspondence</p>
               <a 
                 href="mailto:karigarpk.live@gmail.com" 
-                className="text-secondary hover:text-orange-500 font-semibold transition-colors block text-center break-all"
+                className="text-[#FF6B00] hover:text-orange-400 font-semibold transition-colors block text-center break-all text-xs"
               >
                 karigarpk.live@gmail.com
               </a>
-              <p className="text-gray-500 text-xs mt-3 text-center">Response within 24 hours</p>
+              <p className="text-gray-500 text-xs mt-3 text-center">Fast response within 24h</p>
             </div>
 
             {/* WhatsApp Card */}
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-secondary transition-colors">
-              <div className="text-green-500 text-4xl mb-4 flex justify-center">
-                <MessageCircle size={40} />
+            <div className="bg-[#131F3D] rounded-2xl p-6 border border-gray-800 hover:border-emerald-500 transition-colors shadow-lg">
+              <div className="text-emerald-400 text-4xl mb-4 flex justify-center">
+                <MessageCircle size={36} />
               </div>
-              <h3 className="font-poppins font-bold text-white mb-2 text-center">WhatsApp</h3>
-              <p className="text-gray-400 mb-3 text-center text-sm">Chat with us live</p>
+              <h3 className="font-poppins font-bold text-white mb-2 text-center">WhatsApp Chat</h3>
+              <p className="text-gray-400 mb-3 text-center text-xs">Chat with us live</p>
               <a 
                 href={`https://wa.me/${SITE_PHONE_WA}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-green-500 hover:text-green-400 font-semibold transition-colors block text-center"
+                className="text-emerald-400 hover:text-emerald-300 font-bold transition-colors block text-center text-sm"
               >
                 {SITE_PHONE_DISPLAY}
               </a>
-              <p className="text-gray-500 text-xs mt-3 text-center">Instant response</p>
+              <p className="text-gray-500 text-xs mt-3 text-center">Fastest response channel</p>
             </div>
 
             {/* Address Card */}
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 hover:border-secondary transition-colors">
-              <div className="text-secondary text-4xl mb-4 flex justify-center">
-                <MapPin size={40} />
+            <div className="bg-[#131F3D] rounded-2xl p-6 border border-gray-800 hover:border-[#FF6B00] transition-colors shadow-lg">
+              <div className="text-[#FF6B00] text-4xl mb-4 flex justify-center">
+                <MapPin size={36} />
               </div>
-              <h3 className="font-poppins font-bold text-white mb-2 text-center">Address</h3>
-              <p className="text-gray-400 mb-3 text-center text-sm">Visit us</p>
-              <address className="text-secondary font-semibold transition-colors block text-center not-italic">
-                Lahore, Pakistan
+              <h3 className="font-poppins font-bold text-white mb-2 text-center">Head Office</h3>
+              <p className="text-gray-400 mb-3 text-center text-xs">Pakistan</p>
+              <address className="text-white font-semibold transition-colors block text-center not-italic text-xs">
+                Lahore, Punjab, Pakistan
               </address>
-              <p className="text-gray-500 text-xs mt-3 text-center">Available for site visits</p>
+              <p className="text-gray-500 text-xs mt-3 text-center">Operations nationwide</p>
             </div>
           </div>
 
@@ -154,9 +155,9 @@ export default function Contact() {
             
             {/* Contact Form */}
             <div className="lg:col-span-2">
-              <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
+              <div className="bg-[#131F3D] rounded-3xl p-6 sm:p-8 border border-gray-800 shadow-xl">
                 <h2 className="font-poppins text-2xl font-bold text-white mb-2">Send us a Message</h2>
-                <p className="text-gray-400 mb-6">Fill out the form below and we'll get back to you as soon as possible</p>
+                <p className="text-gray-400 text-xs sm:text-sm mb-6">Fill out the form below and our team will get back to you promptly.</p>
 
                 {/* Success Message */}
                 {isSubmitted && (

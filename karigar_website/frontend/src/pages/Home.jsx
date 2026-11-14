@@ -1,19 +1,17 @@
 import Hero from '../components/Hero'
-import DualCards from '../components/DualCards'
-import Services from '../components/Services'
-import HowItWorks from '../components/HowItWorks'
-import WhyKarigar from '../components/WhyKarigar'
+import TopRatedSection from '../components/TopRatedSection'
 import Testimonials from '../components/Testimonials'
+import WhyKarigar from '../components/WhyKarigar'
+import HowItWorks from '../components/HowItWorks'
 
 export default function Home() {
   return (
-    <div>
+    <div className="bg-[#0B1329] min-h-screen">
       <Hero />
-      <DualCards />
-      <Services />
-      <HowItWorks />
-      <WhyKarigar />
+      <TopRatedSection />
       <Testimonials />
+      <WhyKarigar />
+      <HowItWorks />
     </div>
   )
 }

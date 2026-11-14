@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Mail, Lock, Phone, Eye, EyeOff, User, FileText, MapPin, HardHat, ArrowRight } from 'lucide-react'
+import { Mail, Lock, Phone, Eye, EyeOff, User, MapPin, CheckCircle2, ArrowRight } from 'lucide-react'
 import { AuthContext } from '../context/AuthContext'
 import { auth, googleProvider } from '../config/firebase'
 import { signInWithPopup } from 'firebase/auth'
@@ -8,14 +8,12 @@ import { signInWithPopup } from 'firebase/auth'
 export default function Signup() {
   const navigate = useNavigate()
   const { register, googleLogin } = useContext(AuthContext)
-  const [activeTab, setActiveTab] = useState('customer')
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     fullName: '',
     cnic: '',
     address: '',
     phone: '',
-    otp: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -55,7 +53,7 @@ export default function Signup() {
     e.preventDefault()
 
     if (!formData.fullName || !formData.email || !formData.phone || !formData.cnic || !formData.address || !formData.password || !formData.confirmPassword) {
-      setError('Please fill all required fields')
+      setError('Please fill in all required fields')
       return
     }
 
@@ -65,12 +63,12 @@ export default function Signup() {
     }
 
     if (!/^3\d{2}-\d{7}$/.test(formData.phone)) {
-      setError('Use phone format: 312-3456789')
+      setError('Phone format must be: 312-3456789')
       return
     }
 
     if (!/^\d{5}-\d{7}-\d$/.test(formData.cnic)) {
-      setError('Use CNIC format: 12345-1234567-1')
+      setError('CNIC format must be: 12345-1234567-1')
       return
     }
 
@@ -128,237 +126,246 @@ export default function Signup() {
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-[#0B1329] flex items-center justify-center py-6 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl w-full bg-[#131F3D] border border-gray-800 rounded-3xl overflow-hidden shadow-2xl grid grid-cols-1 md:grid-cols-12 min-h-[660px]">
+        {/* Left Side: Brand Visual */}
+        <div className="hidden md:flex md:col-span-5 relative flex-col justify-between p-8 lg:p-10 overflow-hidden text-white">
+          <img
+            src="/assets/images/plumber_pipes.jpg"
+            alt="Customer Signup with KarigarPK"
+            className="absolute inset-0 w-full h-full object-cover object-center filter brightness-[0.35]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0B1329] via-[#0B1329]/80 to-transparent"></div>
 
-      <div className="bg-field-auth min-h-screen px-4 py-10 sm:py-16 md:py-20 flex items-center">
-        <div className="w-full max-w-md mx-auto">
-          <div className="bg-gray-800 rounded-2xl p-5 sm:p-8 border border-gray-700 shadow-xl">
-            <h1 className="font-poppins text-3xl font-bold text-white mb-2 text-center">
-              Create Your Profile
-            </h1>
-            <p className="text-gray-400 text-center mb-8">
-              Sign up to create your profile and book services easily
+          {/* Logo */}
+          <div className="relative z-10 flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-xl bg-[#FF6B00] flex items-center justify-center text-white font-black text-xl shadow-lg">
+              🔨
+            </div>
+            <div className="font-poppins font-black text-2xl tracking-tight">
+              Karigar<span className="text-[#FF6B00]">PK</span>
+            </div>
+          </div>
+
+          {/* Value points */}
+          <div className="relative z-10 my-auto py-8">
+            <span className="inline-block px-3 py-1 bg-[#FF6B00]/20 text-[#FF6B00] text-xs font-bold uppercase rounded-full mb-3 tracking-wider">
+              For Homeowners & Businesses
+            </span>
+            <h2 className="font-poppins text-3xl font-extrabold text-white mb-3 leading-snug">
+              Fast, Reliable Services at Your Doorstep
+            </h2>
+            <p className="text-gray-300 text-sm mb-8 leading-relaxed">
+              Create an account to quickly discover top-rated electricians, plumbers, AC technicians, and craftsmen in your area.
             </p>
 
-            {/* Role Toggle Tabs */}
-            <div className="flex bg-gray-900 rounded-lg p-1 mb-8 border border-gray-700">
-              <button
-                onClick={() => setActiveTab('customer')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-semibold transition-colors ${
-                  activeTab === 'customer' 
-                    ? 'bg-secondary text-white shadow' 
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                }`}
-              >
-                <User size={16} /> Customer
-              </button>
-              <button
-                onClick={() => setActiveTab('karigar')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-semibold transition-colors ${
-                  activeTab === 'karigar' 
-                    ? 'bg-primary text-white shadow' 
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                }`}
-              >
-                <HardHat size={16} /> Karigar
-              </button>
+            <div className="space-y-3.5">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 size={18} className="text-[#FF6B00] flex-shrink-0" />
+                <span className="text-sm font-medium text-gray-200">Book in 3 Simple Steps</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle2 size={18} className="text-[#FF6B00] flex-shrink-0" />
+                <span className="text-sm font-medium text-gray-200">Pay Cash on Completion</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle2 size={18} className="text-[#FF6B00] flex-shrink-0" />
+                <span className="text-sm font-medium text-gray-200">100% CNIC Verified Staff</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative z-10 pt-4 border-t border-gray-700/60 flex items-center justify-between text-xs text-gray-400">
+            <span>Customer Protection</span>
+            <span>Are you a pro? <Link to="/register-karigar" className="text-[#FF6B00] hover:underline">Apply here</Link></span>
+          </div>
+        </div>
+
+        {/* Right Side: Form */}
+        <div className="col-span-1 md:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-center bg-[#0e172e]">
+          <div className="max-w-md w-full mx-auto">
+            <div className="mb-6">
+              <div className="md:hidden flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-[#FF6B00] flex items-center justify-center text-white text-base">
+                  🔨
+                </div>
+                <div className="font-poppins font-black text-xl text-white">
+                  Karigar<span className="text-[#FF6B00]">PK</span>
+                </div>
+              </div>
+              <h1 className="font-poppins text-2xl sm:text-3xl font-bold text-white mb-1.5">
+                Create Your Account
+              </h1>
+              <p className="text-gray-400 text-xs sm:text-sm">
+                Sign up to book verified local services across Pakistan
+              </p>
             </div>
 
-            {activeTab === 'karigar' ? (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto bg-primary/20 text-primary rounded-full flex items-center justify-center mb-4">
-                  <HardHat size={32} />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">Join our Workforce</h3>
-                <p className="text-gray-400 mb-6 text-sm">
-                  Karigar accounts require verification of skills. Please proceed to our dedicated Karigar portal to apply.
-                </p>
-                <Link to="/join-karigar" className="btn-primary w-full flex justify-center items-center gap-2">
-                  Apply as Karigar <ArrowRight size={18} />
-                </Link>
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/40 text-red-300 px-4 py-2.5 rounded-xl mb-5 text-xs sm:text-sm">
+                {error}
               </div>
-            ) : (
-              <>
-                {error && (
-                  <div className="bg-red-900/30 border border-red-700 text-red-300 px-4 py-3 rounded-lg mb-6">
-                    {error}
-                  </div>
-                )}
+            )}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3.5">
               <div>
-                <label className="text-white font-semibold text-sm block mb-2">Full Name</label>
+                <label className="text-xs font-semibold text-gray-300 block mb-1">Full Name *</label>
                 <div className="relative">
-                  <User size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   <input
                     type="text"
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleChange}
-                    placeholder="Your full name"
-                    className="form-input !pl-10"
+                    placeholder="e.g. Asad Ullah"
+                    className="w-full bg-[#131F3D] border border-gray-700 rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B00]"
                     required
                   />
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="signup-email" className="text-white font-semibold text-sm block mb-2">Email Address</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-gray-300 block mb-1">Email Address *</label>
                   <div className="relative">
-                    <Mail size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     <input
-                      id="signup-email"
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="you@example.com"
-                      className="form-input !pl-10"
-                      autoComplete="email"
+                      placeholder="you@email.com"
+                      className="w-full bg-[#131F3D] border border-gray-700 rounded-xl pl-10 pr-3 py-2 text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B00]"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-white font-semibold text-sm block mb-2">CNIC Number</label>
-                  <div className="relative">
-                    <FileText size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                    <input
-                      type="text"
-                      name="cnic"
-                      value={formData.cnic}
-                      onChange={handleChange}
-                      placeholder="12345-1234567-1"
-                      className="form-input !pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-white font-semibold text-sm block mb-2">Address</label>
-                  <div className="relative">
-                    <MapPin size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                    <input
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      placeholder="Your full address"
-                      className="form-input !pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="signup-phone" className="text-white font-semibold text-sm block mb-2">Phone Number</label>
-                  <div className="relative flex">
-                    <span className="inline-flex items-center rounded-l-lg border border-r-0 border-gray-600 bg-gray-900 px-3 text-sm text-gray-300">
-                      🇵🇰 +92
+                  <label className="text-xs font-semibold text-gray-300 block mb-1">Phone Number *</label>
+                  <div className="flex">
+                    <span className="inline-flex items-center rounded-l-xl border border-r-0 border-gray-700 bg-gray-900 px-2.5 text-xs text-gray-300">
+                      🇵🇰
                     </span>
                     <input
-                      id="signup-phone"
                       type="tel"
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
                       placeholder="312-3456789"
-                      className="form-input rounded-l-none"
+                      className="w-full bg-[#131F3D] border border-gray-700 rounded-r-xl px-3 py-2 text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B00]"
                       required
                     />
                   </div>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-gray-300 block mb-1">CNIC Number *</label>
+                  <input
+                    type="text"
+                    name="cnic"
+                    value={formData.cnic}
+                    onChange={handleChange}
+                    placeholder="12345-1234567-1"
+                    className="w-full bg-[#131F3D] border border-gray-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B00]"
+                    required
+                  />
+                </div>
 
                 <div>
-                  <label htmlFor="signup-password" className="text-white font-semibold text-sm block mb-2">Password</label>
+                  <label className="text-xs font-semibold text-gray-300 block mb-1">Address / Sector *</label>
                   <div className="relative">
-                    <Lock size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     <input
-                      id="signup-password"
+                      type="text"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      placeholder="e.g. DHA Phase 5, Lahore"
+                      className="w-full bg-[#131F3D] border border-gray-700 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B00]"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-gray-300 block mb-1">Password *</label>
+                  <div className="relative">
+                    <input
                       type={showPassword ? 'text' : 'password'}
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
-                      placeholder="Create a password"
-                      className="form-input !pl-10 !pr-10"
-                      autoComplete="new-password"
+                      placeholder="Min 6 chars"
+                      className="w-full bg-[#131F3D] border border-gray-700 rounded-xl pl-3 pr-8 py-2 text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B00]"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
                     >
-                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="signup-confirm-password" className="text-white font-semibold text-sm block mb-2">Confirm Password</label>
-                  <div className="relative">
-                    <Lock size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                    <input
-                      id="signup-confirm-password"
-                      type="password"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      placeholder="Confirm password"
-                      className="form-input !pl-10"
-                      autoComplete="new-password"
-                      required
-                    />
-                  </div>
-                  {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                    <p className="text-red-400 text-xs mt-1">Passwords do not match</p>
-                  )}
+                  <label className="text-xs font-semibold text-gray-300 block mb-1">Confirm Password *</label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Repeat password"
+                    className="w-full bg-[#131F3D] border border-gray-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B00]"
+                    required
+                  />
                 </div>
+              </div>
 
-                <label className="flex items-center gap-2 text-gray-300 text-sm">
-                  <input type="checkbox" required className="w-4 h-4 rounded" />
-                  I agree to Terms & Conditions
-                </label>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-[#FF6B00] hover:bg-orange-600 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition-all shadow-md hover:shadow-orange-500/25 flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
+              >
+                {isLoading ? <span>Creating Account...</span> : <span>Create Customer Account</span>}
+              </button>
+            </form>
 
-                <button type="submit" disabled={isLoading} className="btn-secondary w-full mt-6 flex justify-center items-center">
-                  {isLoading ? 'Creating Account...' : 'Create Account'}
-                </button>
+            {/* Social Divider */}
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-800"></div>
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-3 bg-[#0e172e] text-gray-400">or sign up with</span>
+              </div>
+            </div>
 
-                <div className="relative my-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-700"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-gray-800 text-gray-400">or</span>
-                  </div>
-                </div>
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={isLoading}
+              className="w-full bg-[#131F3D] hover:bg-gray-800 border border-gray-700 text-white text-xs sm:text-sm py-2.5 px-4 rounded-xl font-medium transition-all flex items-center justify-center gap-2.5"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              <span>Continue with Google</span>
+            </button>
 
-                <button 
-                  type="button" 
-                  onClick={handleGoogleLogin}
-                  disabled={isLoading}
-                  className="w-full bg-gray-900 hover:bg-gray-700 border border-gray-700 text-white py-3 rounded-lg font-semibold transition-colors mb-3 flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                  </svg>
-                  {isLoading ? 'Creating Account...' : 'Continue with Google'}
-                </button>
-              </form>
-            </>
-            )}
-
-            {/* Login Link */}
-            <p className="text-center text-gray-400 mt-6">
+            <p className="text-center text-xs text-gray-400 mt-5">
               Already have an account?{' '}
-              <Link to="/login" className="text-secondary hover:text-orange-500 font-semibold transition-colors">
-                Login here
+              <Link to="/login" className="text-[#FF6B00] hover:underline font-semibold">
+                Login
               </Link>
             </p>
           </div>
