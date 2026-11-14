@@ -166,11 +166,13 @@ export default function CustomerDashboard() {
                     <div className="mt-4 flex flex-wrap gap-x-8 gap-y-3 text-sm text-gray-600">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 font-bold">
-                          {booking.karigar?.name?.charAt(0)?.toUpperCase() || 'K'}
+                          {(booking.karigar?.fullName || booking.karigar?.name)?.charAt(0)?.toUpperCase() || 'K'}
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">{booking.karigar?.name || 'Unassigned'}</p>
-                          {booking.karigar?.profession && <p className="text-xs text-gray-500">{booking.karigar.profession}</p>}
+                          <p className="font-semibold text-gray-900">{booking.karigar?.fullName || booking.karigar?.name || 'Assigned Karigar'}</p>
+                          {(booking.karigar?.services?.join(', ') || booking.karigar?.profession) && (
+                            <p className="text-xs text-gray-500">{booking.karigar?.services?.join(', ') || booking.karigar?.profession}</p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -224,7 +226,7 @@ export default function CustomerDashboard() {
             </button>
             
             <h3 className="text-2xl font-bold text-gray-900 mb-1">Rate your experience</h3>
-            <p className="text-sm text-gray-500 mb-6">How was the service provided by {selectedBooking.karigar?.name || 'the karigar'}?</p>
+            <p className="text-sm text-gray-500 mb-6">How was the service provided by {selectedBooking.karigar?.fullName || selectedBooking.karigar?.name || 'the karigar'}?</p>
             
             <form onSubmit={submitReview}>
               <div className="flex justify-center gap-2 mb-6">

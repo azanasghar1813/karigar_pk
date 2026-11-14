@@ -5,7 +5,7 @@ export default function HowItWorks() {
     {
       number: 1,
       title: 'Search',
-      description: 'Choose your service and enter your location in your city',
+      description: 'Choose your service and select your area in your city',
       icon: Search
     },
     {

@@ -5,6 +5,7 @@ const {
   getStats,
   getActiveUsers,
   getKarigars,
+  getKarigarById,
   approveKarigar,
   rejectKarigar,
   toggleKarigarRestriction,
@@ -35,8 +36,9 @@ router.use(protect, adminOnly);
 router.get('/stats', getStats);
 router.get('/active-users', getActiveUsers);
 
-// Karigar approvals
+// Karigar approvals & verification
 router.get('/karigars', getKarigars);
+router.get('/karigars/:id', getKarigarById);
 router.put('/karigars/:id/approve', approveKarigar);
 router.put('/karigars/:id/reject', rejectKarigar);
 router.put('/karigars/:id/restrict', toggleKarigarRestriction);

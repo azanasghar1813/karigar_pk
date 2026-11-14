@@ -8,7 +8,7 @@ import { signInWithPopup } from 'firebase/auth'
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login, googleLogin } = useContext(AuthContext)
+  const { login, loginKarigar, googleLogin } = useContext(AuthContext)
   const [showPassword, setShowPassword] = useState(false)
   const [activeTab, setActiveTab] = useState(location.state?.tab || 'customer') // 'customer' or 'karigar'
   
@@ -45,7 +45,8 @@ export default function Login() {
     }
 
     try {
-      const data = await login(formData.email, formData.password)
+      const loginMethod = activeTab === 'karigar' ? loginKarigar : login
+      const data = await loginMethod(formData.email.trim(), formData.password)
       
       if (data.role === 'admin') {
         navigate('/admin')
@@ -129,7 +130,7 @@ export default function Login() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="login-email" className="text-white font-semibold text-sm block mb-2">Gmail Address</label>
+                <label htmlFor="login-email" className="text-white font-semibold text-sm block mb-2">Email Address</label>
                 <div className="relative">
                   <Mail size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   <input
@@ -138,7 +139,7 @@ export default function Login() {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="you@gmail.com"
+                    placeholder="you@example.com"
                     className="form-input !pl-10"
                     autoComplete="email"
                   />

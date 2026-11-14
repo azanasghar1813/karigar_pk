@@ -6,18 +6,18 @@ const Karigar = require('../models/Karigar');
 // @access  Public
 const getKarigarReviews = async (req, res) => {
   try {
-    const { karigerId } = req.query;
+    const targetId = req.query.karigarId || req.query.karigerId || req.query.karigar;
     
-    if (!karigerId) {
-      return res.status(400).json({ message: 'karigerId query parameter is required' });
+    if (!targetId) {
+      return res.status(400).json({ message: 'karigarId query parameter is required' });
     }
 
-    const karigar = await Karigar.findById(karigerId);
+    const karigar = await Karigar.findById(targetId);
     if (!karigar) {
       return res.status(404).json({ message: 'Karigar not found' });
     }
 
-    const reviews = await Review.find({ karigar: karigerId, hidden: false })
+    const reviews = await Review.find({ karigar: targetId, hidden: { $ne: true } })
       .populate('customer', 'fullName profilePhoto')
       .sort({ createdAt: -1 });
 

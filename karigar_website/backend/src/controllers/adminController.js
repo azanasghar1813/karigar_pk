@@ -88,6 +88,22 @@ const getKarigars = async (req, res) => {
   }
 };
 
+// @desc    Get single karigar full record (Admin only - for CNIC verification)
+// @route   GET /api/admin/karigars/:id
+// @access  Admin
+const getKarigarById = async (req, res) => {
+  try {
+    const karigar = await Karigar.findById(req.params.id)
+      .select('-password')
+      .populate('approvedBy', 'fullName email');
+    if (!karigar) return res.status(404).json({ message: 'Karigar not found' });
+    res.json(karigar);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error fetching karigar details' });
+  }
+};
+
 // @desc    Approve karigar
 // @route   PUT /api/admin/karigars/:id/approve
 // @access  Admin
@@ -515,7 +531,7 @@ const getReviews = async (req, res) => {
   try {
     const reviews = await Review.find()
       .populate('customer', 'fullName email')
-      .populate('karigarId', 'fullName')
+      .populate('karigar', 'fullName phone')
       .sort({ createdAt: -1 });
     res.json(reviews);
   } catch (error) {
@@ -532,7 +548,7 @@ const toggleFeatureReview = async (req, res) => {
     const review = await Review.findById(req.params.id);
     if (!review) return res.status(404).json({ message: 'Review not found' });
 
-    review.isFeatured = !review.isFeatured;
+    review.featured = !review.featured;
     await review.save();
 
     res.json({ message: 'Review featured status toggled', review });
@@ -583,6 +599,7 @@ module.exports = {
   getStats,
   getActiveUsers,
   getKarigars,
+  getKarigarById,
   approveKarigar,
   rejectKarigar,
   toggleKarigarRestriction,

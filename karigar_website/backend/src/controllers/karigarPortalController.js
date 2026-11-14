@@ -30,7 +30,7 @@ const getDashboardStats = async (req, res) => {
     const completedCount = await Booking.countDocuments({ karigar: karigarId, status: 'completed' });
     const estimatedEarnings = completedCount * req.karigar.hourlyRate; // Rough estimate
 
-    const reviewsCount = await Review.countDocuments({ karigarId: karigarId });
+    const reviewsCount = await Review.countDocuments({ karigar: karigarId });
 
     res.json({
       newRequests: newRequestsCount,
@@ -183,7 +183,7 @@ const updateProfile = async (req, res) => {
 // @access  Private/Karigar
 const getMyReviews = async (req, res) => {
   try {
-    const reviews = await Review.find({ karigarId: req.karigar._id })
+    const reviews = await Review.find({ karigar: req.karigar._id, hidden: { $ne: true } })
       .populate('customer', 'fullName')
       .sort({ createdAt: -1 });
     res.json(reviews);

@@ -69,6 +69,9 @@ const loginKarigar = async (req, res) => {
   }
 };
 
+// Public fields whitelist to prevent leaking sensitive documents/PII (CNIC, email, phone)
+const PUBLIC_FIELDS = '_id fullName profilePhoto services city bio experience hourlyRate rating reviewsCount availability isOnline verificationStatus createdAt';
+
 // @desc    Get all approved karigars (public search)
 // @route   GET /api/karigars
 // @access  Public
@@ -78,9 +81,9 @@ const getKarigars = async (req, res) => {
     // Only approved karigars are publicly searchable
     let query = { verificationStatus: 'approved' };
     if (service && service !== 'All') query.services = new RegExp(service, 'i');
-    if (city) query.city = new RegExp(city, 'i');
+    if (city && city !== 'All Cities' && city !== 'Your City') query.city = new RegExp(city, 'i');
 
-    const karigars = await Karigar.find(query).select('-password');
+    const karigars = await Karigar.find(query).select(PUBLIC_FIELDS).lean();
     res.json(karigars);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -89,7 +92,7 @@ const getKarigars = async (req, res) => {
 
 const getKarigarById = async (req, res) => {
   try {
-    const karigar = await Karigar.findById(req.params.id).select('-password');
+    const karigar = await Karigar.findById(req.params.id).select(PUBLIC_FIELDS).lean();
     if (karigar) {
       res.json(karigar);
     } else {

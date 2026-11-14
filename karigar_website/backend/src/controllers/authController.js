@@ -2,6 +2,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const admin = require('../config/firebase');
+const sendEmail = require('../utils/sendEmail');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -82,7 +83,15 @@ const loginUser = async (req, res) => {
 // @access  Private
 const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    let user = await User.findById(req.user._id).select('-password');
+    if (!user) {
+      const Karigar = require('../models/Karigar');
+      user = await Karigar.findById(req.user._id).select('-password');
+      if (user) {
+        user = user.toObject();
+        user.role = 'karigar';
+      }
+    }
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);
   } catch (error) {
@@ -116,16 +125,40 @@ const forgotPassword = async (req, res) => {
 
     await user.save();
 
-    // Create reset url
-    // In production, this should point to your frontend domain
-    const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
+    // Create reset url dynamically based on environment
+    const frontendBase = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'production' ? 'https://www.karigarpk.live' : 'http://localhost:5173');
+    const resetUrl = `${frontendBase}/reset-password/${resetToken}`;
 
-    console.log('\n\n========================================');
-    console.log('PASSWORD RESET LINK GENERATED');
-    console.log(`URL: ${resetUrl}`);
-    console.log('========================================\n\n');
+    const messageHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="color: #2563eb; margin: 0; font-size: 24px;">Karigar PK</h2>
+          <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Password Reset Request</p>
+        </div>
+        <p style="color: #334155; font-size: 15px;">Hello <strong>${user.fullName || 'User'}</strong>,</p>
+        <p style="color: #334155; font-size: 15px; line-height: 1.5;">You requested to reset your password for your Karigar PK account. Click the button below to reset your password. This link is valid for <strong>10 minutes</strong>.</p>
+        <div style="text-align: center; margin: 32px 0;">
+          <a href="${resetUrl}" style="background-color: #f97316; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">Reset Password</a>
+        </div>
+        <p style="color: #64748b; font-size: 13px;">Or copy and paste this link in your browser:<br/><a href="${resetUrl}" style="color: #2563eb; word-break: break-all;">${resetUrl}</a></p>
+        <p style="color: #64748b; font-size: 13px; margin-top: 20px;">If you did not request a password reset, you can safely ignore this email.</p>
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+        <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 0;">Karigar PK &bull; Pakistan's Trusted Home Services Platform</p>
+      </div>
+    `;
 
-    res.status(200).json({ message: 'Password reset link generated. Check console for URL.' });
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: 'Reset your Karigar PK Password',
+        text: `Hello ${user.fullName},\n\nYou requested a password reset. Please use the following link to reset your password (valid for 10 minutes):\n\n${resetUrl}\n\nIf you did not request this, please ignore this email.`,
+        html: messageHtml
+      });
+      res.status(200).json({ message: 'Password reset link sent to your email.' });
+    } catch (emailError) {
+      console.error('Email sending error:', emailError);
+      res.status(500).json({ message: 'Failed to send reset email. Please try again later.' });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

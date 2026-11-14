@@ -4,7 +4,7 @@ export default function Testimonials() {
   const testimonials = [
     {
       name: 'Fatima Khan',
-      city: 'Your City',
+      city: 'Lahore',
       service: 'Electrician',
       rating: 5,
       text: 'Amazing service! The electrician was professional and fixed my wiring issue in just 2 hours. Highly recommended!'
@@ -25,7 +25,7 @@ export default function Testimonials() {
     },
     {
       name: 'Hassan Malik',
-      city: 'Your City',
+      city: 'Rawalpindi',
       service: 'AC Repair',
       rating: 5,
       text: 'Saved my day! My AC was broken and they fixed it the same day. Customer service was excellent.'

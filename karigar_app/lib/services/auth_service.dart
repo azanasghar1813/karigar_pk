@@ -186,6 +186,24 @@ class AuthService {
     }
   }
 
+  Future<String> forgotPassword(String email) async {
+    if (AppConstants.useMockData) {
+      await Future<void>.delayed(const Duration(milliseconds: 400));
+      return 'Password reset link sent to your email.';
+    }
+
+    try {
+      final response = await _dio.post(
+        '/auth/forgot-password',
+        data: {'email': email},
+      );
+      final msg = response.data is Map ? response.data['message'] : 'Password reset link sent to your email.';
+      return msg.toString();
+    } catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   Future<void> verifyOTP(String otp) async {
     if (AppConstants.useMockData) {
       await Future<void>.delayed(const Duration(milliseconds: 300));
