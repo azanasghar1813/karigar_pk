@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import api from '../config/api'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Upload, Eye, EyeOff } from 'lucide-react'
+import { CITIES, SERVICES } from '../config/site'
 
 export default function RegisterKarigar() {
   const navigate = useNavigate()
@@ -13,7 +14,7 @@ export default function RegisterKarigar() {
     fullName: '',
     phone: '',
     otp: '',
-    city: 'Your City',
+    city: 'Lahore',
     services: preselectedService ? [preselectedService] : [],
     cnicNumber: '',
     cnicFrontFile: null,
@@ -32,15 +33,19 @@ export default function RegisterKarigar() {
   })
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [dbServices, setDbServices] = useState([])
+  const [dbServices, setDbServices] = useState(SERVICES.map(name => ({ _id: name, name })))
 
   useEffect(() => {
     api.get('/services')
-      .then(res => setDbServices(res.data))
-      .catch(err => console.error('Failed to fetch services:', err))
+      .then(res => {
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          setDbServices(res.data)
+        }
+      })
+      .catch(err => console.warn('Using fallback bundled services:', err))
   }, [])
 
-  const cities = ['Your City', 'Islamabad', 'Karachi', 'Chowk Azam', 'Layyah']
+  const cities = CITIES
 
   const formatCnic = (value) => {
     const digits = value.replace(/\D/g, '').slice(0, 13)

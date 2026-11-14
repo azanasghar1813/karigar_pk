@@ -11,21 +11,35 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = await User.findById(decoded.id).select('-password');
-      if (req.user) {
-        if (req.user.isRestricted) {
-          return res.status(403).json({ message: 'Your account has been restricted. Please contact support.' });
+
+      // If not found in User, check Karigar collection
+      if (!req.user) {
+        const Karigar = require('../models/Karigar');
+        const karigar = await Karigar.findById(decoded.id).select('-password');
+        if (karigar) {
+          req.user = karigar;
+          req.user.role = 'karigar';
         }
-        trackActivity(req, res, () => {}); // Fire and forget
       }
-      next();
+
+      if (!req.user) {
+        return res.status(401).json({ message: 'Not authorized, user not found' });
+      }
+
+      if (req.user.isRestricted) {
+        return res.status(403).json({ message: 'Your account has been restricted. Please contact support.' });
+      }
+
+      trackActivity(req, res, () => {}); // Fire and forget
+      return next();
     } catch (error) {
-      console.error(error);
-      res.status(401).json({ message: 'Not authorized, token failed' });
+      console.error('Auth protect error:', error.message);
+      return res.status(401).json({ message: 'Not authorized, token failed' });
     }
   }
 
   if (!token) {
-    res.status(401).json({ message: 'Not authorized, no token' });
+    return res.status(401).json({ message: 'Not authorized, no token' });
   }
 };
 
@@ -56,15 +70,15 @@ const protectKarigar = async (req, res, next) => {
         return res.status(403).json({ message: 'Your account has been restricted. Please contact support.' });
       }
       trackActivity(req, res, () => {}); // Fire and forget
-      next();
+      return next();
     } catch (error) {
-      console.error(error);
-      res.status(401).json({ message: 'Not authorized, token failed' });
+      console.error('ProtectKarigar error:', error.message);
+      return res.status(401).json({ message: 'Not authorized, token failed' });
     }
   }
 
   if (!token) {
-    res.status(401).json({ message: 'Not authorized, no token' });
+    return res.status(401).json({ message: 'Not authorized, no token' });
   }
 };
 

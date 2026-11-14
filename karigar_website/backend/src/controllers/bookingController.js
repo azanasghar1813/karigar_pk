@@ -65,7 +65,9 @@ const createBooking = async (req, res) => {
 // @access  Private
 const getMyBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find({ customer: req.user._id }).populate('karigar', 'name profession phone');
+    const bookings = await Booking.find({ customer: req.user._id })
+      .populate('karigar', 'fullName services phone profilePhoto hourlyRate city')
+      .sort({ createdAt: -1 });
     res.json(bookings);
   } catch (error) {
     res.status(500).json({ message: error.message });

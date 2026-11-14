@@ -30,27 +30,53 @@ connectDB();
 const app = express();
 const path = require('path');
 
+const jwt = require('jsonwebtoken');
+
 // Create HTTP server and integrate Socket.io
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: '*', // Adjust this for production
+    origin: '*',
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE']
   }
 });
 
+// Socket.io JWT authentication middleware (Security Hardening)
+io.use((socket, next) => {
+  const authHeader = socket.handshake.headers?.authorization;
+  const token = socket.handshake.auth?.token || (authHeader && authHeader.startsWith('Bearer') ? authHeader.split(' ')[1] : null);
+  
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      socket.userId = decoded.id;
+    } catch (err) {
+      console.warn('Socket token verification failed:', err.message);
+    }
+  }
+  next();
+});
+
 // Socket.io connection logic
 io.on('connection', (socket) => {
-  console.log('A client connected:', socket.id);
+  // Automatically join their verified user room
+  if (socket.userId) {
+    socket.join(socket.userId.toString());
+  }
   
   // Clients join a room named by their user/karigar ID to receive private events
   socket.on('join', (userId) => {
+    if (!userId) return;
+    // Security check: If authenticated, prevent joining other users' rooms
+    if (socket.userId && socket.userId.toString() !== userId.toString()) {
+      console.warn(`Blocked unauthorized socket room join: ${socket.userId} attempted ${userId}`);
+      return;
+    }
     socket.join(userId.toString());
-    console.log(`User/Karigar ${userId} joined room`);
   });
 
   socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
+    // client disconnected
   });
 });
 
@@ -67,6 +93,8 @@ app.use(helmet());
 // Cross-Origin Resource Sharing
 const allowedOrigins = [
   'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5174',
   'https://karigarpk.live',
   'https://www.karigarpk.live',
 ];
@@ -75,8 +103,7 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) === -1) {
-      // If Vercel generates dynamic preview URLs, you might want to regex match them here
-      // For now, allow all for flexibility, or strict for production. We'll use a dynamic check:
+      // Allow preview deployments from Vercel
       if (origin.endsWith('vercel.app')) return callback(null, true);
       
       const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
@@ -89,16 +116,31 @@ app.use(cors({
 // Compress payloads
 app.use(compression());
 
-// Global Rate Limiting: 100 requests per 15 minutes per IP
+// Global Rate Limiting: 1000 requests per 15 minutes per IP for general browsing
 const globalLimiter = rateLimit({
-  max: 100,
+  max: 1000,
   windowMs: 15 * 60 * 1000,
   message: 'Too many requests from this IP, please try again in 15 minutes!'
 });
 app.use('/api', globalLimiter);
 
+// Specific strict rate limiter for authentication routes (brute-force defense)
+const authLimiter = rateLimit({
+  max: 20,
+  windowMs: 15 * 60 * 1000,
+  message: { message: 'Too many login attempts. Please try again in 15 minutes.' }
+});
+app.use('/api/auth/login', authLimiter);
+app.use('/api/karigars/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' })); // Limit body size to 10kb to prevent payload attacks
+
+// Health check endpoints (for server warmup & uptime monitoring)
+app.get(['/health', '/api/health'], (req, res) => {
+  res.status(200).json({ status: 'ok', uptime: process.uptime(), timestamp: new Date() });
+});
 
 // No local static uploads serving anymore, migrated to Cloudinary
 

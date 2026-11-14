@@ -175,6 +175,24 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<String?> forgotPassword(String email) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final msg = await _authService.forgotPassword(email);
+      _isLoading = false;
+      notifyListeners();
+      return msg;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
   Future<bool> verifyOTP(String otp) async {
     _isLoading = true;
     _error = null;

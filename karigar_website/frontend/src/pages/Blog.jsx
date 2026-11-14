@@ -5,13 +5,13 @@ export default function Blog() {
   const blogPosts = [
     {
       id: 1,
-      title: 'How to Find a Trusted Electrician in Your City',
+      title: 'How to Find a Trusted Electrician in Pakistan',
       excerpt: 'Learn the key tips to find a reliable electrician for your electrical problems.',
-      author: 'Admin',
-      date: '2024-01-15',
+      author: 'Karigar PK',
+      date: '2026-02-15',
       category: 'Guide',
       image: '⚡',
-      content: 'Finding a trusted electrician in your city can be challenging. Here are some tips...'
+      content: 'Finding a trusted electrician in Lahore, Karachi, or Islamabad can be challenging. Here are some tips...'
     },
     { 
       id: 2,
