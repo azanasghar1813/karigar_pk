@@ -6,7 +6,7 @@ import HowItWorks from '../components/HowItWorks'
 
 export default function Home() {
   return (
-    <div className="bg-[#0B1329] min-h-screen">
+    <div className="bg-white min-h-screen">
       <Hero />
       <TopRatedSection />
       <Testimonials />

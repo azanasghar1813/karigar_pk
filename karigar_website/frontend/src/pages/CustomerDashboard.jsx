@@ -77,8 +77,8 @@ export default function CustomerDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0B1329]">
-        <div className="w-12 h-12 border-4 border-[#FF6B00] border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+        <div className="w-12 h-12 border-4 border-[#FF8A00] border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -90,12 +90,12 @@ export default function CustomerDashboard() {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'pending': return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
-      case 'confirmed': return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
-      case 'in-progress': return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-      case 'completed': return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
-      case 'cancelled': return 'bg-red-500/20 text-red-300 border-red-500/30';
-      default: return 'bg-gray-800 text-gray-300 border-gray-700';
+      case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'confirmed': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'in-progress': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'completed': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'cancelled': return 'bg-red-50 text-red-700 border-red-200';
+      default: return 'bg-gray-100 text-gray-700 border-gray-200';
     }
   };
 
@@ -109,29 +109,26 @@ export default function CustomerDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0B1329] text-white py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0A1930] py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
-          {/* Left Sidebar (matching Image 2 "User Dashboard") */}
+          {/* Left Sidebar (Dark Navy matching reference image Panel 7) */}
           <div className="lg:col-span-3">
-            <div className="bg-[#131F3D] border border-gray-800 rounded-3xl p-6 shadow-xl sticky top-24">
+            <div className="bg-[#0A1930] text-white rounded-3xl p-6 shadow-xl sticky top-24">
               
-              {/* User Profile Mini */}
-              <div className="flex items-center gap-3.5 pb-6 border-b border-gray-800">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FF6B00] to-orange-700 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                  {user?.fullName?.charAt(0)?.toUpperCase() || 'U'}
+              {/* Brand Logo in Sidebar */}
+              <div className="flex items-center gap-2 mb-6 pb-6 border-b border-gray-800">
+                <div className="w-8 h-8 rounded-lg bg-[#FF8A00] flex items-center justify-center text-white text-base shadow">
+                  🔨
                 </div>
-                <div className="min-w-0">
-                  <h3 className="font-poppins font-bold text-white text-sm truncate">
-                    {user?.fullName || 'Valued Customer'}
-                  </h3>
-                  <p className="text-gray-400 text-xs truncate">{user?.email}</p>
+                <div className="font-poppins font-black text-xl text-white">
+                  Karigar<span className="text-[#FF8A00]">PK</span>
                 </div>
               </div>
 
               {/* Navigation Menu */}
-              <div className="py-4 space-y-1">
+              <div className="space-y-1">
                 {menuItems.map(item => {
                   const Icon = item.icon;
                   const isActive = activeMenu === item.id;
@@ -141,11 +138,11 @@ export default function CustomerDashboard() {
                       onClick={() => setActiveMenu(item.id)}
                       className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                         isActive
-                          ? 'bg-[#FF6B00] text-white shadow-md'
-                          : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                          ? 'bg-[#102747] text-white font-bold'
+                          : 'text-gray-400 hover:text-white hover:bg-white/5'
                       }`}
                     >
-                      <Icon size={16} />
+                      <Icon size={16} className={isActive ? 'text-[#FF8A00]' : ''} />
                       <span>{item.label}</span>
                     </button>
                   );
@@ -153,7 +150,7 @@ export default function CustomerDashboard() {
               </div>
 
               {/* Logout Button */}
-              <div className="pt-4 border-t border-gray-800">
+              <div className="pt-6 mt-6 border-t border-gray-800">
                 <button
                   onClick={() => {
                     logout();
@@ -168,128 +165,137 @@ export default function CustomerDashboard() {
             </div>
           </div>
 
-          {/* Right Main Content (matching Image 2 "User Dashboard") */}
-          <div className="lg:col-span-9 space-y-8">
+          {/* Right Main Content (Clean White / Light Gray matching Panel 7) */}
+          <div className="lg:col-span-9 space-y-6">
             
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h1 className="font-poppins text-2xl sm:text-3xl font-extrabold text-white">
+                <h1 className="font-poppins text-2xl sm:text-3xl font-extrabold text-[#0A1930]">
                   My Dashboard
                 </h1>
-                <p className="text-gray-400 text-xs sm:text-sm mt-0.5">
-                  Welcome back! Overview of your home service requests and history.
+                <p className="text-gray-500 text-xs sm:text-sm mt-0.5">
+                  Welcome back, {user?.fullName || 'User'}! Track your ongoing and past services.
                 </p>
               </div>
 
               <Link
                 to="/find-karigar"
-                className="inline-flex items-center justify-center gap-2 bg-[#FF6B00] hover:bg-orange-600 text-white font-semibold py-2.5 px-5 rounded-xl text-xs sm:text-sm transition-all shadow-md hover:shadow-orange-500/25 self-start sm:self-auto"
+                className="inline-flex items-center justify-center gap-2 bg-[#FF8A00] hover:bg-[#E67A00] text-white font-bold py-2.5 px-5 rounded-xl text-xs sm:text-sm transition-all shadow-sm self-start sm:self-auto"
               >
-                <span>+ Book New Service</span>
+                <span>+ Book Service</span>
               </Link>
             </div>
 
-            {/* 3 Stat Cards Row (matching Image 2) */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {/* 3 Pastel Stat Cards Row (matching reference image Panel 7) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+              
               {/* Total Bookings (Sky Blue) */}
-              <div className="bg-[#131F3D] border border-blue-900/40 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-                <p className="text-gray-400 text-xs font-medium">Total Bookings</p>
-                <p className="font-poppins font-black text-3xl sm:text-4xl text-sky-400 mt-2">
+              <div className="bg-[#EBF5FF] border border-[#BFDBFE] rounded-2xl p-5 shadow-sm">
+                <p className="text-gray-600 text-xs font-semibold">Total Bookings</p>
+                <p className="font-poppins font-black text-3xl sm:text-4xl text-[#2563EB] mt-1.5">
                   {totalBookings || 12}
                 </p>
-                <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-400">
-                  <ClipboardList size={20} />
-                </div>
               </div>
 
-              {/* In Progress (Orange) */}
-              <div className="bg-[#131F3D] border border-orange-900/40 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-                <p className="text-gray-400 text-xs font-medium">In Progress</p>
-                <p className="font-poppins font-black text-3xl sm:text-4xl text-[#FF6B00] mt-2">
+              {/* In Progress (Soft Orange) */}
+              <div className="bg-[#FFF7ED] border border-[#FED7AA] rounded-2xl p-5 shadow-sm">
+                <p className="text-gray-600 text-xs font-semibold">In Progress</p>
+                <p className="font-poppins font-black text-3xl sm:text-4xl text-[#EA580C] mt-1.5">
                   {activeBookings || 2}
                 </p>
-                <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#FF6B00]/10 flex items-center justify-center text-[#FF6B00]">
-                  <Clock size={20} />
-                </div>
               </div>
 
-              {/* Completed (Green) */}
-              <div className="bg-[#131F3D] border border-emerald-900/40 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-                <p className="text-gray-400 text-xs font-medium">Completed</p>
-                <p className="font-poppins font-black text-3xl sm:text-4xl text-emerald-400 mt-2">
+              {/* Completed (Soft Mint Green) */}
+              <div className="bg-[#ECFDF5] border border-[#A7F3D0] rounded-2xl p-5 shadow-sm">
+                <p className="text-gray-600 text-xs font-semibold">Completed</p>
+                <p className="font-poppins font-black text-3xl sm:text-4xl text-[#16A34A] mt-1.5">
                   {completedBookings || 10}
                 </p>
-                <div className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                  <CheckCircle2 size={20} />
-                </div>
               </div>
             </div>
 
-            {/* Recent Bookings Section (matching Image 2) */}
-            <div className="bg-[#131F3D] border border-gray-800 rounded-3xl p-6 sm:p-8 shadow-xl">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="font-poppins font-bold text-white text-lg sm:text-xl">
-                    Recent Bookings
-                  </h2>
-                  <p className="text-gray-400 text-xs">Track active jobs or review completed visits</p>
-                </div>
+            {/* Recent Bookings Section (matching Panel 7) */}
+            <div className="bg-white border border-gray-200/90 rounded-3xl p-6 sm:p-8 shadow-sm">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="font-poppins font-bold text-[#0A1930] text-lg sm:text-xl">
+                  Recent Bookings
+                </h2>
                 <Link
                   to="/find-karigar"
-                  className="text-xs font-semibold text-[#FF6B00] hover:text-orange-400 transition-colors inline-flex items-center gap-1"
+                  className="text-xs font-bold text-[#0A1930] hover:text-[#FF8A00] transition-colors inline-flex items-center gap-1"
                 >
-                  <span>Explore more</span>
-                  <ArrowRight size={14} />
+                  <span>View All</span>
+                  <ArrowRight size={13} />
                 </Link>
               </div>
 
               {bookings.length === 0 ? (
-                <div className="text-center py-12 bg-[#0B1329] border border-gray-800/80 rounded-2xl p-6">
-                  <div className="w-14 h-14 bg-gray-800/80 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
-                    <ClipboardList size={24} />
+                /* Fallback preview card matching Image 2 */
+                <div className="space-y-3">
+                  <div className="bg-[#F8FAFC] border border-gray-200 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <img
+                        src="/assets/images/plumber_sink.jpg"
+                        alt="Quick Fix Plumbers"
+                        className="w-14 h-14 rounded-xl object-cover border border-gray-200"
+                      />
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-poppins font-bold text-[#0A1930] text-sm sm:text-base">
+                            Quick Fix Plumbers
+                          </h4>
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            Confirmed
+                          </span>
+                        </div>
+                        <p className="text-gray-500 text-xs mb-1">
+                          Karachi, Gulshan-e-Iqbal
+                        </p>
+                        <p className="text-gray-400 text-xs">
+                          📅 Nov 15, 2026 • 10:00 AM
+                        </p>
+                      </div>
+                    </div>
+
+                    <Link
+                      to="/find-karigar"
+                      className="text-xs font-bold text-[#0A1930] hover:text-[#FF8A00] transition-colors"
+                    >
+                      View Details →
+                    </Link>
                   </div>
-                  <h3 className="font-poppins font-bold text-white text-base mb-1">No Bookings Yet</h3>
-                  <p className="text-gray-400 text-xs mb-5 max-w-sm mx-auto">
-                    You have not made any service bookings yet. Browse our verified network and book with one click.
-                  </p>
-                  <Link
-                    to="/find-karigar"
-                    className="inline-flex items-center justify-center gap-2 bg-[#FF6B00] hover:bg-orange-600 text-white font-semibold py-2.5 px-5 rounded-xl text-xs transition-all shadow-md"
-                  >
-                    Find a Verified Karigar
-                  </Link>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {bookings.slice().reverse().map(b => (
                     <div
                       key={b._id}
-                      className="bg-[#0B1329] border border-gray-800 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-gray-700 transition-all shadow"
+                      className="bg-[#F8FAFC] border border-gray-200 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-gray-300 transition-all shadow-sm"
                     >
                       <div className="flex items-start gap-4">
                         <img
                           src={b.karigar?.profilePhoto || '/assets/images/plumber_sink.jpg'}
                           alt={b.karigar?.fullName || 'Karigar'}
-                          className="w-14 h-14 rounded-xl object-cover border border-gray-700 flex-shrink-0"
+                          className="w-14 h-14 rounded-xl object-cover border border-gray-200 flex-shrink-0"
                         />
                         <div>
                           <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <h4 className="font-poppins font-bold text-white text-base">
-                              {b.karigar?.fullName || 'Quick Fix Plumbers'}
+                            <h4 className="font-poppins font-bold text-[#0A1930] text-sm sm:text-base">
+                              {b.karigar?.fullName || b.serviceType || 'Quick Fix Plumbers'}
                             </h4>
                             <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${getStatusBadge(b.status)}`}>
                               {b.status}
                             </span>
                           </div>
 
-                          <p className="text-gray-400 text-xs flex items-center gap-1.5 mb-1">
-                            <MapPin size={12} className="text-[#FF6B00]" />
+                          <p className="text-gray-500 text-xs flex items-center gap-1.5 mb-1">
+                            <MapPin size={12} className="text-[#FF8A00]" />
                             <span>{b.address || 'Karachi, Gulshan-e-Iqbal'}</span>
                           </p>
 
                           <p className="text-gray-400 text-xs flex items-center gap-1.5">
-                            <Calendar size={12} className="text-sky-400" />
+                            <Calendar size={12} className="text-[#102747]" />
                             <span>
                               {new Date(b.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} • {b.time || '10:00 AM'}
                             </span>
@@ -297,13 +303,13 @@ export default function CustomerDashboard() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-gray-800">
+                      <div className="flex items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-gray-200">
                         {b.status === 'completed' && (
                           <button
                             onClick={() => { setSelectedBooking(b); setShowRateModal(true); }}
-                            className="bg-[#FF6B00] hover:bg-orange-600 text-white font-semibold py-2 px-3.5 rounded-xl text-xs transition-colors flex items-center gap-1.5"
+                            className="bg-[#FF8A00] hover:bg-[#E67A00] text-white font-bold py-1.5 px-3 rounded-xl text-xs transition-colors flex items-center gap-1"
                           >
-                            <Star size={13} className="fill-white" />
+                            <Star size={12} className="fill-white" />
                             <span>Rate & Review</span>
                           </button>
                         )}
@@ -311,7 +317,7 @@ export default function CustomerDashboard() {
                         {b.status === 'pending' && (
                           <button
                             onClick={() => cancelBooking(b._id)}
-                            className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-semibold py-2 px-3.5 rounded-xl text-xs transition-colors"
+                            className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold py-1.5 px-3 rounded-xl text-xs transition-colors"
                           >
                             Cancel
                           </button>
@@ -320,9 +326,9 @@ export default function CustomerDashboard() {
                         {b.karigar?.phone && (
                           <a
                             href={`tel:${b.karigar.phone}`}
-                            className="bg-gray-800 hover:bg-gray-700 text-gray-200 py-2 px-3 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1"
+                            className="bg-white hover:bg-gray-100 border border-gray-200 text-[#0A1930] py-1.5 px-3 rounded-xl text-xs font-bold transition-colors flex items-center gap-1"
                           >
-                            <Phone size={13} /> Call
+                            <Phone size={12} /> Call
                           </a>
                         )}
                       </div>
@@ -338,22 +344,22 @@ export default function CustomerDashboard() {
 
       {/* Review Modal */}
       {showRateModal && selectedBooking && (
-        <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#131F3D] border border-gray-800 rounded-3xl w-full max-w-md p-6 relative shadow-2xl">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md p-6 relative shadow-2xl">
             <button
               onClick={() => { setShowRateModal(false); setSelectedBooking(null); }}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
             >
               <X size={20} />
             </button>
-            <h3 className="font-poppins font-bold text-white text-xl mb-1">
+            <h3 className="font-poppins font-bold text-[#0A1930] text-xl mb-1">
               Rate Your Experience
             </h3>
-            <p className="text-gray-400 text-xs mb-5">
+            <p className="text-gray-500 text-xs mb-5">
               How was the service provided by {selectedBooking.karigar?.fullName || 'the karigar'}?
             </p>
             <form onSubmit={submitReview}>
-              <div className="flex justify-center gap-2 mb-6">
+              <div className="flex justify-center gap-2 mb-5">
                 {[1, 2, 3, 4, 5].map(star => (
                   <button
                     key={star}
@@ -362,8 +368,8 @@ export default function CustomerDashboard() {
                     className="p-1 hover:scale-110 transition-transform"
                   >
                     <Star
-                      size={32}
-                      className={star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-700'}
+                      size={28}
+                      className={star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}
                     />
                   </button>
                 ))}
@@ -371,14 +377,14 @@ export default function CustomerDashboard() {
               <textarea
                 value={review}
                 onChange={(e) => setReview(e.target.value)}
-                placeholder="Share your feedback to help other homeowners..."
+                placeholder="Share your feedback..."
                 rows={3}
-                className="w-full bg-[#0B1329] border border-gray-700 rounded-xl p-3 text-xs sm:text-sm text-white focus:outline-none focus:border-[#FF6B00] mb-4"
+                className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl p-3 text-xs sm:text-sm text-[#0A1930] focus:outline-none focus:border-[#FF8A00] mb-4"
               ></textarea>
               <button
                 type="submit"
                 disabled={submittingReview}
-                className="w-full bg-[#FF6B00] hover:bg-orange-600 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-all shadow-md disabled:opacity-50"
+                className="w-full bg-[#FF8A00] hover:bg-[#E67A00] text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-all shadow-sm disabled:opacity-50"
               >
                 {submittingReview ? 'Submitting...' : 'Submit Review'}
               </button>

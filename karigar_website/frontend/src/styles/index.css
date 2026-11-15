@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 * {
   margin: 0;
@@ -16,15 +16,15 @@ html {
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #0B1329;
-  color: #F1F5F9;
+  background-color: #F8FAFC;
+  color: #0A1930;
   overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
-  color: #FFFFFF;
+  color: #0A1930;
 }
 
 .container {
@@ -32,160 +32,44 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn {
-  @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300 cursor-pointer inline-flex items-center justify-center gap-2;
+  @apply px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 cursor-pointer inline-flex items-center justify-center gap-2;
 }
 
 .btn-primary {
-  @apply bg-primary hover:bg-primary-light text-white shadow-lg border border-primary-light/40;
+  @apply bg-[#102747] hover:bg-[#0A1930] text-white shadow-md hover:shadow-lg transition-all;
 }
 
 .btn-secondary {
-  @apply bg-secondary hover:bg-secondary-dark text-white font-bold shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transform hover:-translate-y-0.5;
+  @apply bg-[#FF8A00] hover:bg-[#E67A00] text-white font-bold shadow-md shadow-orange-500/20 hover:shadow-orange-500/35 transition-all;
 }
 
 .btn-outline {
-  @apply border-2 border-white/20 text-white hover:bg-white/10 hover:border-white/40;
+  @apply border border-gray-200 text-[#0A1930] hover:bg-gray-50 transition-colors;
 }
 
-.text-gradient {
-  background: linear-gradient(135deg, #FFFFFF 0%, #FF8533 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.text-orange-gradient {
-  background: linear-gradient(135deg, #FF6B00 0%, #FFA149 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.premium-card {
-  @apply bg-darkCard border border-darkBorder/60 rounded-2xl shadow-card-dark transition-all duration-300 hover:border-darkBorder;
-}
-
-.service-card {
-  @apply bg-darkCard hover:bg-darkCard/80 border border-darkBorder/50 rounded-2xl p-4 sm:p-5 text-center transition-all duration-300 cursor-pointer transform hover:-translate-y-1 hover:border-secondary/50 shadow-card-dark;
-}
-
-.worker-card {
-  @apply bg-darkCard rounded-2xl p-4 sm:p-5 text-left hover:shadow-2xl transition-all duration-300 border border-darkBorder/60 hover:border-darkBorder;
+.card-white {
+  @apply bg-white border border-gray-200/80 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300;
 }
 
 .form-input {
-  @apply w-full px-4 py-3 text-sm sm:text-base rounded-xl border border-darkBorder bg-[#0F1E3D] text-white placeholder-gray-400 focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all;
+  @apply w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-[#0A1930] placeholder-gray-400 focus:outline-none focus:border-[#FF8A00] focus:ring-2 focus:ring-[#FF8A00]/20 transition-all;
 }
 
-.form-input::placeholder {
-  @apply text-gray-400;
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.badge {
-  @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold;
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
 }
 
-.badge-success {
-  @apply bg-emerald-950/80 text-emerald-400 border border-emerald-800/80;
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
 }
 
-.badge-primary {
-  @apply bg-blue-950/80 text-blue-300 border border-blue-800/80;
-}
-
-.star {
-  @apply inline-block text-yellow-400;
-}
-
-/* Animations */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.animate-slide-in {
-  animation: slideIn 0.6s ease-out;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.6s ease-out;
-}
-
-/* Field-relevant background images */
-.bg-field-general {
-  background-image:
-    linear-gradient(rgba(2, 6, 23, 0.84), rgba(2, 6, 23, 0.9)),
-    url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1920&q=80');
-  background-size: cover;
-  background-position: center;
-}
-
-.bg-field-auth {
-  background-image:
-    linear-gradient(rgba(2, 6, 23, 0.86), rgba(2, 6, 23, 0.92)),
-    url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1920&q=80');
-  background-size: cover;
-  background-position: center;
-}
-
-.bg-field-booking {
-  background-image:
-    linear-gradient(rgba(2, 6, 23, 0.86), rgba(2, 6, 23, 0.92)),
-    url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1920&q=80');
-  background-size: cover;
-  background-position: center;
-}
-
-.bg-field-workers {
-  background-image:
-    linear-gradient(rgba(2, 6, 23, 0.86), rgba(2, 6, 23, 0.92)),
-    url('https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=1920&q=80');
-  background-size: cover;
-  background-position: center;
-}
-
-.bg-field-contact {
-  background-image:
-    linear-gradient(rgba(2, 6, 23, 0.86), rgba(2, 6, 23, 0.92)),
-    url('https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1920&q=80');
-  background-size: cover;
-  background-position: center;
-}
-
-.bg-field-hero {
-  background-image:
-    linear-gradient(rgba(26, 60, 110, 0.86), rgba(30, 64, 175, 0.82)),
-    url('https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1920&q=80');
-  background-size: cover;
-  background-position: center;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .container {
-    @apply px-2;
-  }
-
-  h1 {
-    @apply text-2xl;
-  }
-
-  h2 {
-    @apply text-xl;
-  }
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
 }

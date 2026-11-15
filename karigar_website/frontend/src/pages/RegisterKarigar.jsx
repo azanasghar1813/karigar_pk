@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import api from '../config/api'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { Upload, Eye, EyeOff, CheckCircle2, HardHat, Building2, User, ArrowRight, ArrowLeft } from 'lucide-react'
+import { Upload, Eye, EyeOff, CheckCircle2, Building2, User, ArrowRight, ArrowLeft, Phone, Mail, MapPin, Briefcase } from 'lucide-react'
 import { CITIES, SERVICES } from '../config/site'
 
 export default function RegisterKarigar() {
@@ -16,14 +16,14 @@ export default function RegisterKarigar() {
     fullName: '',
     phone: '',
     email: '',
-    city: 'Lahore',
-    services: preselectedService ? [preselectedService] : [],
+    city: 'Karachi',
+    services: preselectedService ? [preselectedService] : ['Electrician'],
     cnicNumber: '',
     cnicFrontFile: null,
     cnicBackFile: null,
     profilePhoto: null,
     bio: '',
-    experience: '',
+    experience: '3',
     password: '',
     confirmPassword: ''
   })
@@ -43,7 +43,7 @@ export default function RegisterKarigar() {
           setDbServices(res.data)
         }
       })
-      .catch(err => console.warn('Using fallback bundled services:', err))
+      .catch(err => console.warn('Using fallback services:', err))
   }, [])
 
   const cities = CITIES
@@ -76,15 +76,6 @@ export default function RegisterKarigar() {
     setError('')
   }
 
-  const handleServiceToggle = (service) => {
-    setFormData({
-      ...formData,
-      services: formData.services.includes(service)
-        ? formData.services.filter(s => s !== service)
-        : [...formData.services, service]
-    })
-  }
-
   const handleFileChange = (e) => {
     const { name, files } = e.target
     if (files[0]) {
@@ -105,7 +96,7 @@ export default function RegisterKarigar() {
 
     if (step === 1) {
       if (!formData.fullName || !formData.phone || !formData.email || formData.services.length === 0) {
-        setError('Please fill in all required fields and select at least one service category.')
+        setError('Please fill in all required fields.')
         return
       }
       if (!/^3\d{2}-\d{7}$/.test(formData.phone)) {
@@ -143,7 +134,7 @@ export default function RegisterKarigar() {
         data.append('services', JSON.stringify(formData.services))
         data.append('cnicNumber', formData.cnicNumber)
         data.append('bio', formData.bio || `${accountType === 'business' ? 'Registered Workshop / Agency' : 'Professional Individual Service Provider'} operating in ${formData.city}`)
-        data.append('experience', formData.experience || '2')
+        data.append('experience', formData.experience || '3')
         data.append('password', formData.password)
         
         if (formData.cnicFrontFile) data.append('cnicFrontFile', formData.cnicFrontFile)
@@ -165,351 +156,304 @@ export default function RegisterKarigar() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B1329] flex items-center justify-center py-6 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl w-full bg-[#131F3D] border border-gray-800 rounded-3xl overflow-hidden shadow-2xl grid grid-cols-1 md:grid-cols-12 min-h-[680px]">
+    <div className="min-h-screen bg-[#F4F7FC] flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl w-full bg-white border border-gray-200/90 rounded-3xl overflow-hidden shadow-2xl grid grid-cols-1 md:grid-cols-12 min-h-[640px]">
         
-        {/* Left Side: Professional Onboarding Hero (matching Image 2) */}
-        <div className="hidden md:flex md:col-span-5 relative flex-col justify-between p-8 lg:p-10 overflow-hidden text-white">
+        {/* Left Side: Professional Onboarding Hero (matching reference image) */}
+        <div className="hidden md:flex md:col-span-5 relative flex-col justify-between p-8 lg:p-10 overflow-hidden text-white bg-[#0A1930]">
           <img
             src="/assets/images/karigar_drill_portrait.jpg"
             alt="Grow Your Business with KarigarPK"
             className="absolute inset-0 w-full h-full object-cover object-top filter brightness-[0.35]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B1329] via-[#0B1329]/80 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A1930] via-[#0A1930]/85 to-[#0A1930]/40"></div>
 
           {/* Logo */}
           <div className="relative z-10 flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-[#FF6B00] flex items-center justify-center text-white font-black text-xl shadow-lg">
+            <div className="w-9 h-9 rounded-xl bg-[#FF8A00] flex items-center justify-center text-white font-black text-lg shadow-md">
               🔨
             </div>
-            <div className="font-poppins font-black text-2xl tracking-tight">
-              Karigar<span className="text-[#FF6B00]">PK</span>
+            <div className="font-poppins font-black text-xl tracking-tight text-white">
+              Karigar<span className="text-[#FF8A00]">PK</span>
             </div>
           </div>
 
-          {/* Center Pitch */}
-          <div className="relative z-10 my-auto py-8">
-            <span className="inline-block px-3 py-1 bg-[#FF6B00]/20 text-[#FF6B00] text-xs font-bold uppercase rounded-full mb-3 tracking-wider">
-              For Skilled Pros & Workshops
-            </span>
-            <h2 className="font-poppins text-3xl font-extrabold text-white mb-3 leading-snug">
+          {/* Center Pitch (exact text from reference image) */}
+          <div className="relative z-10 my-auto py-6">
+            <h2 className="font-poppins text-2xl lg:text-3xl font-extrabold text-white mb-2 leading-snug">
               Grow Your Business with KarigarPK
             </h2>
-            <p className="text-gray-300 text-sm mb-8 leading-relaxed">
-              Get more customers, increase your bookings, and build a trusted professional reputation across Pakistan.
+            <p className="text-gray-300 text-xs sm:text-sm mb-6 leading-relaxed">
+              Get more customers, increase your bookings and grow your business.
             </p>
 
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               <div className="flex items-center gap-3">
-                <CheckCircle2 size={18} className="text-[#FF6B00] flex-shrink-0" />
-                <span className="text-sm font-medium text-gray-200">Free Registration & Zero Listing Cost</span>
+                <div className="w-5 h-5 rounded-full bg-[#FF8A00]/20 flex items-center justify-center text-[#FF8A00]">
+                  <CheckCircle2 size={15} />
+                </div>
+                <span className="text-xs sm:text-sm font-medium text-gray-200">Free Registration</span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle2 size={18} className="text-[#FF6B00] flex-shrink-0" />
-                <span className="text-sm font-medium text-gray-200">Reach Thousands of Clients Directly</span>
+                <div className="w-5 h-5 rounded-full bg-[#FF8A00]/20 flex items-center justify-center text-[#FF8A00]">
+                  <CheckCircle2 size={15} />
+                </div>
+                <span className="text-xs sm:text-sm font-medium text-gray-200">Reach More Clients</span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle2 size={18} className="text-[#FF6B00] flex-shrink-0" />
-                <span className="text-sm font-medium text-gray-200">Manage Your Schedule & Service Rates</span>
+                <div className="w-5 h-5 rounded-full bg-[#FF8A00]/20 flex items-center justify-center text-[#FF8A00]">
+                  <CheckCircle2 size={15} />
+                </div>
+                <span className="text-xs sm:text-sm font-medium text-gray-200">Manage Your Services</span>
               </div>
             </div>
           </div>
 
           {/* Footer Info */}
           <div className="relative z-10 pt-4 border-t border-gray-700/60 flex items-center justify-between text-xs text-gray-400">
-            <span>Verified Pro Badge</span>
-            <span>Fast Approvals</span>
+            <span>Verified Pro Network</span>
+            <span>🇵🇰 All Major Cities</span>
           </div>
         </div>
 
-        {/* Right Side: Registration Form */}
-        <div className="col-span-1 md:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-center bg-[#0e172e]">
+        {/* Right Side: Clean White Registration Form (matching reference image) */}
+        <div className="col-span-1 md:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-center bg-white">
           <div className="max-w-md w-full mx-auto">
             
-            {/* Header */}
-            <div className="mb-6">
-              <div className="md:hidden flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-[#FF6B00] flex items-center justify-center text-white text-base">
-                  🔨
-                </div>
-                <div className="font-poppins font-black text-xl text-white">
-                  Karigar<span className="text-[#FF6B00]">PK</span>
-                </div>
+            {/* KarigarPK Logo Centered */}
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-[#FF8A00] flex items-center justify-center text-white text-base shadow">
+                🔨
               </div>
-              <h1 className="font-poppins text-2xl sm:text-3xl font-bold text-white mb-1">
+              <div className="font-poppins font-black text-xl text-[#0A1930]">
+                Karigar<span className="text-[#FF8A00]">PK</span>
+              </div>
+            </div>
+
+            {/* Header */}
+            <div className="text-center mb-5">
+              <h1 className="font-poppins text-2xl font-bold text-[#0A1930] mb-0.5">
                 Join as a Professional
               </h1>
-              <p className="text-gray-400 text-xs sm:text-sm">
-                Register your business or individual service account
+              <p className="text-gray-500 text-xs">
+                Register your business account
               </p>
             </div>
 
-            {/* Account Type Tabs (matching Image 2) */}
-            <div className="flex bg-[#0B1329] p-1 rounded-xl mb-6 border border-gray-800">
+            {/* Account Type Tabs: Individual vs Business (from reference image) */}
+            <div className="flex bg-[#F1F5F9] p-1 rounded-xl mb-5 border border-gray-200">
               <button
                 type="button"
                 onClick={() => setAccountType('individual')}
-                className={`flex-1 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
+                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
                   accountType === 'individual'
-                    ? 'bg-[#FF6B00] text-white shadow-md'
-                    : 'text-gray-400 hover:text-white'
+                    ? 'bg-white text-[#0A1930] shadow-sm'
+                    : 'text-gray-500 hover:text-[#0A1930]'
                 }`}
               >
-                <User size={15} /> Individual
+                <User size={14} /> Individual
               </button>
               <button
                 type="button"
                 onClick={() => setAccountType('business')}
-                className={`flex-1 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
+                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
                   accountType === 'business'
-                    ? 'bg-[#FF6B00] text-white shadow-md'
-                    : 'text-gray-400 hover:text-white'
+                    ? 'bg-white text-[#0A1930] shadow-sm'
+                    : 'text-gray-500 hover:text-[#0A1930]'
                 }`}
               >
-                <Building2 size={15} /> Business / Shop
+                <Building2 size={14} /> Business
               </button>
             </div>
 
-            {/* Step Progress Tracker */}
-            <div className="flex items-center gap-2 mb-6">
-              <div className={`h-1.5 flex-1 rounded-full ${step >= 1 ? 'bg-[#FF6B00]' : 'bg-gray-800'}`}></div>
-              <div className={`h-1.5 flex-1 rounded-full ${step >= 2 ? 'bg-[#FF6B00]' : 'bg-gray-800'}`}></div>
-            </div>
-
             {error && (
-              <div className="bg-red-500/10 border border-red-500/40 text-red-300 px-4 py-2.5 rounded-xl mb-5 text-xs sm:text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-600 px-3.5 py-2 rounded-xl mb-4 text-xs">
                 {error}
               </div>
             )}
 
             {step === 1 ? (
-              <form onSubmit={handleNextStep} className="space-y-4">
+              <form onSubmit={handleNextStep} className="space-y-3.5">
                 <div>
-                  <label className="text-xs font-semibold text-gray-300 block mb-1">
-                    {accountType === 'business' ? 'Business / Workshop Name *' : 'Full Name *'}
-                  </label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    placeholder={accountType === 'business' ? 'e.g. Al Mustafa Electrical Services' : 'e.g. Muhammad Tariq'}
-                    className="w-full bg-[#131F3D] border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B00] transition-colors"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-gray-300 block mb-1">
-                    Phone Number (WhatsApp) *
-                  </label>
-                  <div className="flex">
-                    <span className="inline-flex items-center rounded-l-xl border border-r-0 border-gray-700 bg-gray-900 px-3 text-xs text-gray-300">
-                      🇵🇰 +92
-                    </span>
+                  <div className="relative">
+                    <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
+                      type="text"
+                      name="fullName"
+                      value={formData.fullName}
                       onChange={handleChange}
-                      placeholder="312-3456789"
-                      className="w-full bg-[#131F3D] border border-gray-700 rounded-r-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B00] transition-colors"
+                      placeholder={accountType === 'business' ? 'Business / Shop Name' : 'Full Name'}
+                      className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-xs sm:text-sm text-[#0A1930] placeholder-gray-400 focus:outline-none focus:border-[#FF8A00] focus:bg-white transition-all"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-gray-300 block mb-1">
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="pro@example.com"
-                    className="w-full bg-[#131F3D] border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B00] transition-colors"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-gray-300 block mb-1">
-                    City / Primary Service Area *
-                  </label>
-                  <select
-                    name="city"
-                    value={formData.city}
-                    onChange={handleChange}
-                    className="w-full bg-[#131F3D] border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF6B00] transition-colors"
-                    required
-                  >
-                    {cities.map((c) => (
-                      <option key={c} value={c} className="bg-[#0B1329] text-white">{c}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-gray-300 block mb-2">
-                    Select Service Categories *
-                  </label>
-                  <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-2 bg-[#0B1329] border border-gray-800 rounded-xl">
-                    {dbServices.map((service) => {
-                      const isSelected = formData.services.includes(service.name)
-                      return (
-                        <button
-                          key={service._id}
-                          type="button"
-                          onClick={() => handleServiceToggle(service.name)}
-                          className={`text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center justify-between ${
-                            isSelected
-                              ? 'bg-[#FF6B00] text-white shadow-sm'
-                              : 'bg-[#131F3D] text-gray-300 hover:text-white hover:bg-gray-800'
-                          }`}
-                        >
-                          <span className="truncate">{service.name}</span>
-                          {isSelected && <span className="text-xs">✓</span>}
-                        </button>
-                      )
-                    })}
+                  <div className="relative">
+                    <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="Phone Number (e.g. 312-3456789)"
+                      className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-xs sm:text-sm text-[#0A1930] placeholder-gray-400 focus:outline-none focus:border-[#FF8A00] focus:bg-white transition-all"
+                      required
+                    />
                   </div>
                 </div>
 
+                <div>
+                  <div className="relative">
+                    <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="Email Address"
+                      className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-xs sm:text-sm text-[#0A1930] placeholder-gray-400 focus:outline-none focus:border-[#FF8A00] focus:bg-white transition-all"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Service Category Dropdown */}
+                <div>
+                  <div className="relative">
+                    <Briefcase size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <select
+                      value={formData.services[0] || 'Electrician'}
+                      onChange={(e) => setFormData({ ...formData, services: [e.target.value] })}
+                      className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl pl-9 pr-8 py-2.5 text-xs sm:text-sm text-[#0A1930] focus:outline-none focus:border-[#FF8A00] focus:bg-white appearance-none cursor-pointer"
+                    >
+                      {dbServices.map(s => (
+                        <option key={s._id} value={s.name}>{s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* City / Area Dropdown */}
+                <div>
+                  <div className="relative">
+                    <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <select
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                      className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl pl-9 pr-8 py-2.5 text-xs sm:text-sm text-[#0A1930] focus:outline-none focus:border-[#FF8A00] focus:bg-white appearance-none cursor-pointer"
+                    >
+                      {cities.map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Orange Register Now Button (matching reference image) */}
                 <button
                   type="submit"
-                  className="w-full bg-[#FF6B00] hover:bg-orange-600 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition-all shadow-md hover:shadow-orange-500/25 flex items-center justify-center gap-2 mt-4"
+                  className="w-full bg-[#FF8A00] hover:bg-[#E67A00] text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-all shadow-md hover:shadow-orange-500/30 flex items-center justify-center gap-2 mt-2"
                 >
-                  <span>Continue to Verification</span>
-                  <ArrowRight size={16} />
+                  <span>Register Now</span>
                 </button>
               </form>
             ) : (
-              <form onSubmit={handleNextStep} className="space-y-4">
+              /* Step 2: CNIC Verification & Password */
+              <form onSubmit={handleNextStep} className="space-y-3.5">
                 <div>
-                  <label className="text-xs font-semibold text-gray-300 block mb-1">
-                    NADRA CNIC Number *
-                  </label>
+                  <label className="text-xs font-semibold text-gray-700 block mb-1">NADRA CNIC Number *</label>
                   <input
                     type="text"
                     name="cnicNumber"
                     value={formData.cnicNumber}
                     onChange={handleChange}
                     placeholder="12345-1234567-1"
-                    className="w-full bg-[#131F3D] border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B00] transition-colors"
+                    className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-[#0A1930] focus:outline-none focus:border-[#FF8A00]"
                     required
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <label className={`border border-dashed ${formData.cnicFrontFile ? 'border-[#FF6B00] bg-[#FF6B00]/5' : 'border-gray-700 bg-[#131F3D]'} rounded-xl p-3 cursor-pointer text-center hover:border-[#FF6B00] transition-colors block`}>
+                  <label className={`border border-dashed ${formData.cnicFrontFile ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300 bg-[#F8FAFC]'} rounded-xl p-2.5 cursor-pointer text-center block`}>
                     <input type="file" name="cnicFrontFile" onChange={handleFileChange} accept="image/*" className="hidden" />
-                    {previews.cnicFrontFile ? (
-                      <div>
-                        <img src={previews.cnicFrontFile} alt="Front" className="mx-auto h-12 object-contain rounded mb-1" />
-                        <span className="text-[11px] text-[#FF6B00] font-semibold">Front Loaded ✓</span>
-                      </div>
-                    ) : (
-                      <div>
-                        <Upload size={18} className="mx-auto text-gray-400 mb-1" />
-                        <span className="text-[11px] text-gray-300 font-medium block">CNIC Front *</span>
-                      </div>
-                    )}
+                    <Upload size={16} className="mx-auto text-gray-400 mb-1" />
+                    <span className="text-[11px] text-gray-600 font-medium block">
+                      {previews.cnicFrontFile ? 'Front Loaded ✓' : 'CNIC Front *'}
+                    </span>
                   </label>
 
-                  <label className={`border border-dashed ${formData.cnicBackFile ? 'border-[#FF6B00] bg-[#FF6B00]/5' : 'border-gray-700 bg-[#131F3D]'} rounded-xl p-3 cursor-pointer text-center hover:border-[#FF6B00] transition-colors block`}>
+                  <label className={`border border-dashed ${formData.cnicBackFile ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300 bg-[#F8FAFC]'} rounded-xl p-2.5 cursor-pointer text-center block`}>
                     <input type="file" name="cnicBackFile" onChange={handleFileChange} accept="image/*" className="hidden" />
-                    {previews.cnicBackFile ? (
-                      <div>
-                        <img src={previews.cnicBackFile} alt="Back" className="mx-auto h-12 object-contain rounded mb-1" />
-                        <span className="text-[11px] text-[#FF6B00] font-semibold">Back Loaded ✓</span>
-                      </div>
-                    ) : (
-                      <div>
-                        <Upload size={18} className="mx-auto text-gray-400 mb-1" />
-                        <span className="text-[11px] text-gray-300 font-medium block">CNIC Back *</span>
-                      </div>
-                    )}
+                    <Upload size={16} className="mx-auto text-gray-400 mb-1" />
+                    <span className="text-[11px] text-gray-600 font-medium block">
+                      {previews.cnicBackFile ? 'Back Loaded ✓' : 'CNIC Back *'}
+                    </span>
                   </label>
                 </div>
 
                 <div>
-                  <label className={`border border-dashed ${formData.profilePhoto ? 'border-[#FF6B00] bg-[#FF6B00]/5' : 'border-gray-700 bg-[#131F3D]'} rounded-xl p-3 cursor-pointer text-center hover:border-[#FF6B00] transition-colors block`}>
+                  <label className={`border border-dashed ${formData.profilePhoto ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300 bg-[#F8FAFC]'} rounded-xl p-2.5 cursor-pointer text-center block`}>
                     <input type="file" name="profilePhoto" onChange={handleFileChange} accept="image/*" className="hidden" />
-                    {previews.profilePhoto ? (
-                      <div className="flex items-center justify-center gap-3">
-                        <img src={previews.profilePhoto} alt="Profile" className="w-10 h-10 object-cover rounded-full border border-[#FF6B00]" />
-                        <span className="text-xs text-[#FF6B00] font-semibold">Photo Selected ✓</span>
-                      </div>
-                    ) : (
-                      <div>
-                        <Upload size={18} className="mx-auto text-gray-400 mb-1" />
-                        <span className="text-xs text-gray-300 font-medium block">Upload Professional Profile Photo *</span>
-                      </div>
-                    )}
+                    <Upload size={16} className="mx-auto text-gray-400 mb-1" />
+                    <span className="text-xs text-gray-600 font-medium block">
+                      {previews.profilePhoto ? 'Profile Photo Selected ✓' : 'Upload Profile Photo / Workshop Logo *'}
+                    </span>
                   </label>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-gray-300 block mb-1">
-                      Set Password *
-                    </label>
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      placeholder="Min 6 chars"
-                      className="w-full bg-[#131F3D] border border-gray-700 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B00] transition-colors"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-gray-300 block mb-1">
-                      Confirm Password *
-                    </label>
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      placeholder="Repeat password"
-                      className="w-full bg-[#131F3D] border border-gray-700 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B00] transition-colors"
-                      required
-                    />
-                  </div>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Password (min 6)"
+                    className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-3 py-2 text-xs text-[#0A1930] focus:outline-none focus:border-[#FF8A00]"
+                    required
+                  />
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Confirm Password"
+                    className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-3 py-2 text-xs text-[#0A1930] focus:outline-none focus:border-[#FF8A00]"
+                    required
+                  />
                 </div>
 
-                <div className="flex gap-3 pt-2">
+                <div className="flex gap-2.5 pt-1">
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold py-2.5 px-4 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2.5 px-3 rounded-xl text-xs"
                   >
-                    <ArrowLeft size={14} /> Back
+                    Back
                   </button>
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="flex-2 w-full bg-[#FF6B00] hover:bg-orange-600 text-white font-semibold py-2.5 px-4 rounded-xl text-xs transition-all shadow-md hover:shadow-orange-500/25 flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full bg-[#FF8A00] hover:bg-[#E67A00] text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all shadow-md disabled:opacity-50"
                   >
-                    {isLoading ? <span>Registering...</span> : <span>Complete Registration</span>}
+                    {isLoading ? 'Registering...' : 'Complete Registration'}
                   </button>
                 </div>
               </form>
             )}
 
             {/* Bottom Login Link */}
-            <p className="text-center text-xs text-gray-400 mt-6">
+            <p className="text-center text-xs text-gray-500 mt-5">
               Already have an account?{' '}
-              <Link to="/login" className="text-[#FF6B00] hover:underline font-semibold">
+              <Link to="/login" className="text-[#0A1930] hover:text-[#FF8A00] font-bold">
                 Login
               </Link>
             </p>
           </div>
         </div>
+
       </div>
     </div>
   )

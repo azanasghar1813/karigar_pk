@@ -63,7 +63,6 @@ export default function ServicesPage() {
     api.get('/services')
       .then(res => {
         if (Array.isArray(res.data) && res.data.length > 0) {
-          // Merge images and starting rates
           const merged = res.data.map((s, idx) => ({
             ...s,
             image: bundledServices[idx % bundledServices.length].image,
@@ -83,57 +82,56 @@ export default function ServicesPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#0B1329] text-white py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0A1930] py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
-          <span className="text-[#FF6B00] text-xs font-bold uppercase tracking-widest block mb-2">
-            Professional Solutions
+          <span className="text-[#FF8A00] text-xs font-bold uppercase tracking-widest block mb-1.5">
+            Verified Services
           </span>
-          <h1 className="font-poppins text-3xl sm:text-5xl font-black text-white mb-4">
+          <h1 className="font-poppins text-3xl sm:text-5xl font-black text-[#0A1930] mb-3">
             Services Available Across Pakistan
           </h1>
-          <p className="text-gray-400 text-sm sm:text-base leading-relaxed">
+          <p className="text-gray-500 text-sm sm:text-base leading-relaxed">
             Verified, background-checked electricians, plumbers, HVAC technicians, and carpenters ready to serve your residence or commercial office.
           </p>
         </div>
 
-        {/* Services Grid */}
+        {/* Services Grid (Clean White cards with borders & soft shadow) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {services.map((service) => (
             <div
               key={service._id}
-              className="bg-[#131F3D] border border-gray-800 rounded-3xl overflow-hidden hover:border-gray-700 transition-all shadow-xl hover:shadow-2xl flex flex-col justify-between group"
+              className="bg-white border border-gray-200/90 rounded-3xl overflow-hidden hover:border-[#FF8A00]/50 transition-all shadow-sm hover:shadow-xl flex flex-col justify-between group"
             >
               <div>
                 {/* Service Visual */}
-                <div className="h-48 relative overflow-hidden bg-slate-900">
+                <div className="h-48 relative overflow-hidden bg-slate-100">
                   <img
                     src={service.image || '/assets/images/electrician_work.jpg'}
                     alt={service.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#131F3D] via-[#131F3D]/30 to-transparent"></div>
                   
                   {/* Category Emoji Badge */}
-                  <div className="absolute bottom-3 left-4 w-12 h-12 rounded-2xl bg-[#0B1329]/90 backdrop-blur-md border border-gray-700/80 flex items-center justify-center text-2xl shadow-lg">
+                  <div className="absolute bottom-3 left-4 w-11 h-11 rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200 flex items-center justify-center text-xl shadow-md">
                     {service.icon || '🔧'}
                   </div>
                 </div>
 
                 {/* Details */}
                 <div className="p-6">
-                  <h3 className="font-poppins font-bold text-white text-xl mb-2 group-hover:text-[#FF6B00] transition-colors">
+                  <h3 className="font-poppins font-bold text-[#0A1930] text-xl mb-1.5 group-hover:text-[#FF8A00] transition-colors">
                     {service.name}
                   </h3>
-                  <p className="text-gray-300 text-xs sm:text-sm leading-relaxed mb-4">
+                  <p className="text-gray-500 text-xs sm:text-sm leading-relaxed mb-4">
                     {service.description}
                   </p>
 
-                  <div className="flex items-center justify-between border-t border-gray-800/80 pt-4 text-xs">
-                    <span className="text-gray-400">Starting from</span>
-                    <span className="font-bold text-[#FF6B00] text-sm">PKR {service.startingPrice || 500}</span>
+                  <div className="flex items-center justify-between border-t border-gray-100 pt-3 text-xs">
+                    <span className="text-gray-500">Starting from</span>
+                    <span className="font-bold text-[#0A1930] text-sm">PKR {service.startingPrice || 500}</span>
                   </div>
                 </div>
               </div>
@@ -142,31 +140,31 @@ export default function ServicesPage() {
               <div className="p-6 pt-0">
                 <Link
                   to={`/find-karigar?service=${encodeURIComponent(service.name)}`}
-                  className="w-full inline-flex items-center justify-center gap-2 bg-[#FF6B00] hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-xl text-xs sm:text-sm transition-all shadow-md hover:shadow-orange-500/25"
+                  className="w-full inline-flex items-center justify-center gap-2 bg-[#FF8A00] hover:bg-[#E67A00] text-white font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm transition-all shadow-sm hover:shadow-orange-500/25"
                 >
                   <span>Find {service.name}</span>
-                  <ArrowRight size={16} />
+                  <ArrowRight size={15} />
                 </Link>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Pro Banner */}
-        <div className="mt-16 bg-gradient-to-r from-[#131F3D] to-[#1F2E54] border border-gray-800 rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden shadow-2xl">
+        {/* Pro Banner (Dark Navy matching reference design) */}
+        <div className="mt-16 bg-[#0A1930] rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden shadow-xl text-white">
           <div className="relative z-10 max-w-2xl mx-auto">
-            <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-white mb-3">
+            <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-white mb-2">
               Are you a skilled technician or workshop owner?
             </h2>
-            <p className="text-gray-300 text-sm mb-6">
+            <p className="text-gray-300 text-xs sm:text-sm mb-6">
               Join thousands of verified pros on KarigarPK and start receiving customer bookings directly with 0% listing commission.
             </p>
             <Link
               to="/register-karigar"
-              className="inline-flex items-center justify-center gap-2 bg-[#FF6B00] hover:bg-orange-600 text-white font-bold py-3.5 px-8 rounded-xl text-sm transition-all shadow-lg hover:shadow-orange-500/25"
+              className="inline-flex items-center justify-center gap-2 bg-[#FF8A00] hover:bg-[#E67A00] text-white font-bold py-3 px-8 rounded-xl text-xs sm:text-sm transition-all shadow-md hover:scale-105"
             >
               <span>Join as a Professional</span>
-              <ArrowRight size={16} />
+              <ArrowRight size={15} />
             </Link>
           </div>
         </div>

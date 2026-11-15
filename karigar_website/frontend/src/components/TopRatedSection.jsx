@@ -159,14 +159,14 @@ export default function TopRatedSection() {
   }
 
   return (
-    <section className="py-14 sm:py-16 bg-[#0B1329] border-b border-[#1F2E54]/40">
-      <div className="container mx-auto">
+    <section className="py-12 sm:py-16 bg-[#F8FAFC]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         
-        {/* Section Header with City Filters (From Reference Image 1) */}
+        {/* Section Header with City Filters (matching reference image) */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-2">
-            <span className="text-secondary text-2xl">⭐</span>
-            <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-white">
+            <span className="text-[#FF8A00] text-xl">⭐</span>
+            <h2 className="font-poppins text-2xl sm:text-3xl font-extrabold text-[#0A1930]">
               Top-rated near you
             </h2>
           </div>
@@ -180,44 +180,43 @@ export default function TopRatedSection() {
                 onClick={() => setActiveCity(city)}
                 className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   activeCity === city
-                    ? 'bg-secondary text-white shadow-md shadow-orange-500/20'
-                    : 'bg-[#131F3D] text-gray-300 hover:text-white border border-[#1F2E54]'
+                    ? 'bg-[#0A1930] text-white shadow-sm'
+                    : 'bg-white text-gray-700 hover:text-[#0A1930] border border-gray-200'
                 }`}
               >
-                📍 {city}
+                {activeCity === city ? '📍 ' : ''}{city}
               </button>
             ))}
 
             <Link
               to={`/find-karigar?city=${activeCity}`}
-              className="text-xs sm:text-sm font-bold text-secondary hover:text-orange-400 ml-2 inline-flex items-center gap-1 whitespace-nowrap"
+              className="text-xs sm:text-sm font-bold text-[#0A1930] hover:text-[#FF8A00] ml-2 inline-flex items-center gap-1 whitespace-nowrap transition-colors"
             >
               View all <ArrowRight size={14} />
             </Link>
           </div>
         </div>
 
-        {/* 4 Cards Grid (3 Professionals + 1 Interactive Map Preview Card) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
+        {/* 4 Cards Grid (3 Professionals + 1 Map Preview Card) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-12">
           
-          {/* 3 Karigar Cards */}
+          {/* 3 Karigar Cards (Clean White with borders & soft shadow) */}
           {currentCards.map((worker) => (
             <div
               key={worker.id}
-              className="bg-[#131F3D] border border-[#1F2E54] rounded-2xl overflow-hidden hover:border-secondary/60 transition-all duration-300 shadow-card-dark flex flex-col justify-between group"
+              className="bg-white border border-gray-200/90 rounded-2xl overflow-hidden hover:border-[#FF8A00]/50 transition-all duration-300 shadow-sm hover:shadow-xl flex flex-col justify-between group"
             >
               {/* Worker Image with Badges */}
-              <div className="relative h-44 sm:h-48 overflow-hidden bg-slate-800">
+              <div className="relative h-44 sm:h-48 overflow-hidden bg-slate-100">
                 <img
                   src={worker.image}
                   alt={worker.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#131F3D] via-transparent to-transparent opacity-80" />
                 
                 {/* Verified Badge */}
-                <div className="absolute top-3 left-3 bg-[#0B1329]/90 border border-emerald-500/50 text-emerald-300 px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1 backdrop-blur-sm">
-                  <ShieldCheck size={13} className="text-emerald-400" />
+                <div className="absolute top-3 left-3 bg-[#0A1930] text-white px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1 shadow-sm">
+                  <ShieldCheck size={13} className="text-[#FF8A00]" />
                   <span>Verified</span>
                 </div>
 
@@ -225,7 +224,7 @@ export default function TopRatedSection() {
                 <button
                   type="button"
                   onClick={() => toggleFav(worker.id)}
-                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[#0B1329]/80 border border-white/10 flex items-center justify-center text-gray-300 hover:text-red-400 transition-colors cursor-pointer"
+                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 border border-gray-200 flex items-center justify-center text-gray-600 hover:text-red-500 transition-colors cursor-pointer shadow-sm"
                   aria-label="Save to favorites"
                 >
                   <Heart
@@ -238,31 +237,31 @@ export default function TopRatedSection() {
               {/* Card Body */}
               <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-poppins font-bold text-white text-base sm:text-lg mb-1 group-hover:text-secondary transition-colors">
+                  <h3 className="font-poppins font-bold text-[#0A1930] text-base sm:text-lg mb-1 group-hover:text-[#FF8A00] transition-colors">
                     {worker.name}
                   </h3>
 
                   <div className="flex items-center gap-1.5 text-xs mb-2">
                     <Star size={14} className="fill-yellow-400 text-yellow-400" />
-                    <span className="font-bold text-white">{worker.rating}</span>
-                    <span className="text-gray-400">({worker.reviews} reviews)</span>
+                    <span className="font-bold text-[#0A1930]">{worker.rating}</span>
+                    <span className="text-gray-500">({worker.reviews} reviews)</span>
                   </div>
 
-                  <p className="text-gray-400 text-xs flex items-center gap-1 mb-4 truncate">
-                    <MapPin size={12} className="text-secondary flex-shrink-0" />
+                  <p className="text-gray-500 text-xs flex items-center gap-1 mb-4 truncate">
+                    <MapPin size={12} className="text-[#FF8A00] flex-shrink-0" />
                     <span>{worker.location}</span>
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-[#1F2E54]/80 flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] text-gray-400 uppercase tracking-wider block font-medium">Starting from</span>
-                    <span className="font-poppins font-extrabold text-white text-sm sm:text-base text-secondary">{worker.startingPrice}</span>
+                <div>
+                  <div className="pt-3 border-t border-gray-100 flex items-center justify-between mb-3">
+                    <span className="text-xs text-gray-500">Starting from</span>
+                    <span className="font-poppins font-bold text-[#0A1930] text-sm sm:text-base">{worker.startingPrice}</span>
                   </div>
-                  
+
                   <Link
                     to={`/find-karigar?service=${encodeURIComponent(worker.service)}&city=${activeCity}`}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-white hover:text-secondary transition-colors group-hover:translate-x-0.5 duration-200"
+                    className="w-full inline-flex items-center justify-center gap-1 bg-white hover:bg-gray-50 border border-gray-200 text-[#0A1930] hover:text-[#FF8A00] text-xs font-bold py-2.5 rounded-xl transition-all shadow-sm"
                   >
                     <span>View profile</span>
                     <ArrowRight size={13} />
@@ -272,125 +271,118 @@ export default function TopRatedSection() {
             </div>
           ))}
 
-          {/* Card 4: Interactive City Map Card (Directly from Reference Image 1) */}
-          <div className="bg-[#131F3D] border border-[#1F2E54] rounded-2xl overflow-hidden hover:border-secondary/60 transition-all duration-300 shadow-card-dark flex flex-col justify-between relative group">
+          {/* Card 4: Interactive City Map Card (Directly from Reference Image) */}
+          <div className="bg-white border border-gray-200/90 rounded-2xl overflow-hidden hover:border-[#FF8A00]/50 transition-all duration-300 shadow-sm hover:shadow-xl flex flex-col justify-between relative group">
             
-            {/* Styled Map Background with location pins */}
-            <div className="relative h-full min-h-[220px] bg-[#0E1A33] overflow-hidden flex items-center justify-center p-6 text-center">
+            <div className="relative h-full min-h-[300px] bg-[#E8ECEF] overflow-hidden flex items-center justify-center p-6 text-center">
               
-              {/* Map SVG Pattern Simulation */}
-              <div className="absolute inset-0 opacity-25 bg-[radial-gradient(#3B82F6_1px,transparent_1px)] [background-size:16px_16px]" />
-              
-              {/* Map Coastlines and Street lines simulation */}
-              <svg className="absolute inset-0 w-full h-full text-blue-500/20" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0,50 Q120,80 200,40 T400,90" fill="none" stroke="currentColor" strokeWidth="2"/>
-                <path d="M50,0 Q80,120 40,200 T90,400" fill="none" stroke="currentColor" strokeWidth="2"/>
-                <path d="M0,150 Q180,120 280,220" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4"/>
-              </svg>
+              {/* Map Graphic View */}
+              <img
+                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=600&q=80"
+                alt="Karachi Map Overview"
+                className="absolute inset-0 w-full h-full object-cover filter contrast-125"
+              />
+              <div className="absolute inset-0 bg-[#0A1930]/10" />
 
-              {/* Pin 1 */}
+              {/* Pins on Map */}
               <div className="absolute top-1/4 left-1/4 animate-bounce">
-                <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center shadow-lg shadow-orange-500/50">
+                <div className="w-6 h-6 rounded-full bg-[#FF8A00] flex items-center justify-center shadow-lg">
                   <MapPin size={14} className="text-white fill-white" />
                 </div>
               </div>
 
-              {/* Pin 2 */}
               <div className="absolute bottom-1/3 right-1/4 animate-pulse">
-                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/50">
+                <div className="w-5 h-5 rounded-full bg-[#FF8A00] flex items-center justify-center shadow-lg">
                   <MapPin size={12} className="text-white fill-white" />
                 </div>
               </div>
 
-              {/* Pin 3 */}
-              <div className="absolute top-1/3 right-1/3">
-                <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
-                  <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                </div>
-              </div>
-
-              {/* Center Map Overlay Card (From Reference Image 1) */}
-              <div className="relative z-10 bg-[#0B1329]/95 border border-[#1F2E54] rounded-2xl p-5 shadow-2xl backdrop-blur-md max-w-[240px]">
-                <h4 className="font-poppins font-bold text-white text-base mb-1">
+              {/* Center Map Overlay Card */}
+              <div className="relative z-10 bg-white border border-gray-200 rounded-2xl p-4 shadow-xl max-w-[200px]">
+                <h4 className="font-poppins font-bold text-[#0A1930] text-sm mb-0.5">
                   {activeCity}
                 </h4>
-                <p className="text-gray-300 text-xs mb-3 leading-relaxed">
-                  Explore verified local businesses and karigars near you
+                <p className="text-gray-500 text-[11px] mb-2 leading-tight">
+                  Explore local businesses near you →
                 </p>
                 <button
                   type="button"
-                  onClick={() => navigate(`/find-karigar?city=${activeCity}`)}
-                  className="w-full bg-secondary hover:bg-secondary-dark text-white text-xs font-bold py-2 px-3 rounded-xl shadow transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  onClick={() => navigate(`/find-karigar?city=${activeCity}&view=map`)}
+                  className="w-full bg-[#FF8A00] hover:bg-[#E67A00] text-white text-[11px] font-bold py-1.5 px-2.5 rounded-lg shadow transition-colors flex items-center justify-center gap-1 cursor-pointer"
                 >
-                  <span>Explore on Map</span>
-                  <ArrowRight size={13} />
+                  <span>Explore Map</span>
+                  <ArrowRight size={12} />
                 </button>
               </div>
 
-              {/* Expand Button */}
+              {/* Google Brand Tag & Expand */}
+              <span className="absolute bottom-3 left-3 text-[11px] font-bold text-gray-500 bg-white/80 px-1.5 py-0.5 rounded shadow-sm">
+                Google
+              </span>
+
               <button
                 type="button"
-                onClick={() => navigate(`/find-karigar?city=${activeCity}`)}
-                className="absolute bottom-3 right-3 p-2 rounded-xl bg-[#0B1329] border border-white/20 text-gray-300 hover:text-white hover:bg-white/10 transition-colors shadow"
+                onClick={() => navigate(`/find-karigar?city=${activeCity}&view=map`)}
+                className="absolute bottom-3 right-3 p-1.5 rounded-lg bg-white border border-gray-200 text-gray-700 hover:text-[#0A1930] shadow"
                 title="Expand map view"
               >
-                <Expand size={16} />
+                <Expand size={15} />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Trust Badges Strip (Directly from Reference Image 1) */}
-        <div className="bg-[#131F3D]/60 border border-[#1F2E54] rounded-2xl p-4 sm:p-6 mb-8 shadow-sm">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center sm:text-left">
+        {/* Trust Badges Strip (Clean White surface with icons from Reference Image) */}
+        <div className="bg-white border border-gray-200/80 rounded-2xl p-4 sm:p-6 mb-8 shadow-sm">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0">
-                <ShieldCheck size={22} />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#102747] flex-shrink-0">
+                <ShieldCheck size={22} className="text-[#102747]" />
               </div>
               <div>
-                <h4 className="font-poppins font-bold text-white text-xs sm:text-sm">100% Verified</h4>
-                <p className="text-gray-400 text-[11px] sm:text-xs">CNIC & background checked</p>
+                <h4 className="font-poppins font-bold text-[#0A1930] text-xs sm:text-sm">100% Verified</h4>
+                <p className="text-gray-500 text-[11px] sm:text-xs">Professionals</p>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-secondary/10 border border-secondary/30 flex items-center justify-center text-secondary flex-shrink-0">
-                <Zap size={22} />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-[#FF8A00] flex-shrink-0">
+                <Zap size={22} className="text-[#FF8A00]" />
               </div>
               <div>
-                <h4 className="font-poppins font-bold text-white text-xs sm:text-sm">Instant Booking</h4>
-                <p className="text-gray-400 text-[11px] sm:text-xs">Quick response under 30m</p>
+                <h4 className="font-poppins font-bold text-[#0A1930] text-xs sm:text-sm">Instant Booking</h4>
+                <p className="text-gray-500 text-[11px] sm:text-xs">& Support</p>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 flex-shrink-0">
-                <Headphones size={22} />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#102747] flex-shrink-0">
+                <Headphones size={22} className="text-[#102747]" />
               </div>
               <div>
-                <h4 className="font-poppins font-bold text-white text-xs sm:text-sm">24/7 Support</h4>
-                <p className="text-gray-400 text-[11px] sm:text-xs">Help whenever you need</p>
+                <h4 className="font-poppins font-bold text-[#0A1930] text-xs sm:text-sm">24/7 Customer</h4>
+                <p className="text-gray-500 text-[11px] sm:text-xs">Support</p>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 flex-shrink-0">
-                <Shield size={22} />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 flex-shrink-0">
+                <Shield size={22} className="text-emerald-600" />
               </div>
               <div>
-                <h4 className="font-poppins font-bold text-white text-xs sm:text-sm">Safe & Secure</h4>
-                <p className="text-gray-400 text-[11px] sm:text-xs">Cash on delivery payments</p>
+                <h4 className="font-poppins font-bold text-[#0A1930] text-xs sm:text-sm">Secure Payments</h4>
+                <p className="text-gray-500 text-[11px] sm:text-xs">& Safe Transactions</p>
               </div>
             </div>
 
           </div>
         </div>
 
-        {/* "Be a Professional on KarigarPK" CTA Banner Ribbon (From Reference Image 1) */}
-        <div className="bg-gradient-to-r from-[#0F1E3D] via-[#152347] to-[#1A2E5E] border border-[#1F2E54] rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+        {/* Crown Promotional Banner (Dark Navy container matching Reference Image) */}
+        <div className="bg-[#0A1930] border border-gray-800 rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4 text-center sm:text-left">
-            <div className="w-12 h-12 rounded-xl bg-secondary/20 border border-secondary/40 text-secondary flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-[#FF8A00]/15 flex items-center justify-center text-[#FF8A00] flex-shrink-0">
               <Crown size={26} />
             </div>
             <div>
@@ -398,14 +390,14 @@ export default function TopRatedSection() {
                 Be a Professional on KarigarPK
               </h3>
               <p className="text-gray-300 text-xs sm:text-sm">
-                Grow your business, increase your bookings & get more direct customers.
+                Grow your business, get more customers.
               </p>
             </div>
           </div>
 
           <Link
             to="/register-karigar"
-            className="btn-secondary !px-6 !py-3 rounded-xl font-bold text-sm whitespace-nowrap shadow-lg flex items-center gap-2 hover:scale-105 transition-all"
+            className="bg-[#FF8A00] hover:bg-[#E67A00] text-white px-6 py-3 rounded-xl font-bold text-sm whitespace-nowrap shadow-md flex items-center gap-2 hover:scale-105 transition-all"
           >
             <span>Join Now</span>
             <ArrowRight size={16} />
