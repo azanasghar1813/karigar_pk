@@ -26,7 +26,8 @@ const {
   deleteService,
   getReviews,
   toggleFeatureReview,
-  deleteReview
+  deleteReview,
+  getAdminListings
 } = require('../controllers/adminController');
 
 // All routes require authentication + admin role
@@ -70,5 +71,8 @@ router.put('/leads/:id/notes', updateLeadNotes);
 router.get('/reviews', getReviews);
 router.put('/reviews/:id/feature', toggleFeatureReview);
 router.delete('/reviews/:id', deleteReview);
+
+// Directory listings
+router.get('/listings', getAdminListings);
 
 module.exports = router;

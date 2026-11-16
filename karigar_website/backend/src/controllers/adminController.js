@@ -4,6 +4,7 @@ const Contact = require('../models/Contact');
 const Service = require('../models/Service');
 const Review = require('../models/Review');
 const User = require('../models/User');
+const Listing = require('../models/Listing');
 
 // ─────────────────────────────────────────────
 // DASHBOARD STATS
@@ -595,6 +596,61 @@ const updateKarigarRate = async (req, res) => {
   }
 };
 
+// @desc    Get directory listings for admin with counts by claimStatus
+// @route   GET /api/admin/listings
+// @access  Admin
+const getAdminListings = async (req, res) => {
+  try {
+    const { claimStatus, city, q } = req.query;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 25));
+    const skip = (page - 1) * limit;
+
+    const [unclaimed, pending, verified, rejected, total] = await Promise.all([
+      Listing.countDocuments({ claimStatus: 'unclaimed' }),
+      Listing.countDocuments({ claimStatus: 'pending' }),
+      Listing.countDocuments({ claimStatus: 'verified' }),
+      Listing.countDocuments({ claimStatus: 'rejected' }),
+      Listing.countDocuments()
+    ]);
+
+    const query = {};
+    if (claimStatus) query.claimStatus = claimStatus;
+    if (city && city !== 'All') query.city = new RegExp(`^${city}$`, 'i');
+    if (q && q.trim()) {
+      const regex = new RegExp(q.trim(), 'i');
+      query.$or = [{ name: regex }, { phone: regex }, { service: regex }, { area: regex }];
+    }
+
+    const [filteredTotal, listings] = await Promise.all([
+      Listing.countDocuments(query),
+      Listing.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean()
+    ]);
+
+    res.json({
+      counts: {
+        unclaimed,
+        pending,
+        verified,
+        rejected,
+        total
+      },
+      listings,
+      total: filteredTotal,
+      page,
+      totalPages: Math.ceil(filteredTotal / limit),
+      limit
+    });
+  } catch (error) {
+    console.error('Error in getAdminListings:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getStats,
   getActiveUsers,
@@ -620,5 +676,6 @@ module.exports = {
   deleteService,
   getReviews,
   toggleFeatureReview,
-  deleteReview
+  deleteReview,
+  getAdminListings
 };

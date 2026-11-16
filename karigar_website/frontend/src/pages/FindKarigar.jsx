@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { Search, MapPin, ShieldCheck, ArrowRight, Star, Heart, SlidersHorizontal, Map, Grid, CheckCircle2, ChevronDown, RotateCcw } from 'lucide-react'
+import { Search, MapPin, ShieldCheck, ArrowRight, Star, Heart, SlidersHorizontal, Map, Grid, CheckCircle2, ChevronDown, RotateCcw, AlertCircle, Building2 } from 'lucide-react'
 import api from '../config/api'
 import { CITIES, SERVICES_CONFIG, CITY_AREAS } from '../config/site'
 import { useCity } from '../context/CityContext'
 import RatingBadge from '../components/RatingBadge'
-import UserAvatar from '../components/UserAvatar'
 import MapView from '../components/MapView'
+import BusinessCard from '../components/BusinessCard'
 
 export default function FindKarigar() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -15,14 +15,17 @@ export default function FindKarigar() {
   const initialService = searchParams.get('service') || 'All'
   const initialCity = searchParams.get('city') || selectedCity || 'All Cities'
   const initialView = searchParams.get('view') || 'split'
+  const initialSource = searchParams.get('source') || 'all' // 'all', 'directory', 'karigars'
 
   const [karigars, setKarigars] = useState([])
+  const [listings, setListings] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [viewMode, setViewMode] = useState(initialView) // 'split', 'grid', 'map'
-  const [selectedKarigarId, setSelectedKarigarId] = useState(null)
+  const [selectedItemId, setSelectedItemId] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [favorites, setFavorites] = useState({})
   const [verifiedOnly, setVerifiedOnly] = useState(false)
+  const [sourceType, setSourceType] = useState(initialSource) // 'all', 'directory', 'karigars'
 
   const [filterCity, setFilterCity] = useState(initialCity === 'All' ? 'All Cities' : initialCity)
   const [filterArea, setFilterArea] = useState('All Areas')
@@ -51,34 +54,53 @@ export default function FindKarigar() {
     }
   }, [availableAreas, filterArea])
 
-  // Fetch Karigars from backend API
+  // Fetch Karigars and Directory Listings in parallel
   useEffect(() => {
     let isMounted = true
     setIsLoading(true)
 
-    api.get('/karigars')
-      .then((res) => {
-        if (!isMounted) return
-        const data = Array.isArray(res.data) ? res.data : []
-        setKarigars(data)
-        if (data.length > 0) {
-          setSelectedKarigarId(data[0]._id)
+    const params = {}
+    if (filterCity && filterCity !== 'All Cities') params.city = filterCity
+    if (filterArea && filterArea !== 'All Areas') params.area = filterArea
+    if (filterCategory && filterCategory !== 'All' && filterCategory !== 'All Categories') params.service = filterCategory
+    if (searchQuery.trim()) params.q = searchQuery.trim()
+    if (verifiedOnly) params.verifiedOnly = 'true'
+    params.limit = 100
+
+    Promise.allSettled([
+      api.get('/karigars'),
+      api.get('/listings', { params })
+    ]).then(([karigarsRes, listingsRes]) => {
+      if (!isMounted) return
+
+      let fetchedKarigars = []
+      if (karigarsRes.status === 'fulfilled' && Array.isArray(karigarsRes.value?.data)) {
+        fetchedKarigars = karigarsRes.value.data.map(k => ({ ...k, type: 'karigar' }))
+      }
+      setKarigars(fetchedKarigars)
+
+      let fetchedListings = []
+      if (listingsRes.status === 'fulfilled' && listingsRes.value?.data) {
+        const raw = listingsRes.value.data.listings || listingsRes.value.data
+        if (Array.isArray(raw)) {
+          fetchedListings = raw.map(l => ({ ...l, type: 'listing' }))
         }
-        setIsLoading(false)
-      })
-      .catch((err) => {
-        if (!isMounted) return
-        console.warn('API Error fetching karigars:', err)
-        setKarigars([])
-        setIsLoading(false)
-      })
+      }
+      setListings(fetchedListings)
+
+      setIsLoading(false)
+    }).catch(err => {
+      if (!isMounted) return
+      console.warn('Error fetching directory data:', err)
+      setIsLoading(false)
+    })
 
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [filterCity, filterArea, filterCategory, searchQuery, verifiedOnly])
 
-  // Filter and Sort Karigars
+  // Filter Karigars locally based on UI controls
   const filteredKarigars = useMemo(() => {
     return karigars.filter((k) => {
       // Verified only filter
@@ -124,17 +146,54 @@ export default function FindKarigar() {
       }
 
       return true
-    }).sort((a, b) => {
+    })
+  }, [karigars, verifiedOnly, filterCity, filterArea, filterCategory, searchQuery])
+
+  // Filter listings based on verifiedOnly toggle
+  const filteredListings = useMemo(() => {
+    if (verifiedOnly) {
+      return listings.filter(l => l.claimStatus === 'verified')
+    }
+    return listings
+  }, [listings, verifiedOnly])
+
+  // Combined Results based on Source Toggle
+  const combinedResults = useMemo(() => {
+    let results = []
+
+    if (sourceType === 'karigars') {
+      results = [...filteredKarigars]
+    } else if (sourceType === 'directory') {
+      results = [...filteredListings]
+    } else {
+      // 'all': registered verified karigars first, then directory listings
+      results = [...filteredKarigars, ...filteredListings]
+    }
+
+    return results.sort((a, b) => {
       if (sortBy === 'price_asc') {
-        return (a.hourlyRate || 0) - (b.hourlyRate || 0)
+        const priceA = a.hourlyRate || 500
+        const priceB = b.hourlyRate || 500
+        return priceA - priceB
       }
       if (sortBy === 'reviews') {
-        return (b.reviewsCount || 0) - (a.reviewsCount || 0)
+        const revA = a.reviewsCount || 0
+        const revB = b.reviewsCount || 0
+        return revB - revA
       }
       // default: rating descending
-      return (b.rating || 0) - (a.rating || 0)
+      const ratingA = a.rating !== null && a.rating !== undefined ? Number(a.rating) : 0
+      const ratingB = b.rating !== null && b.rating !== undefined ? Number(b.rating) : 0
+      return ratingB - ratingA
     })
-  }, [karigars, verifiedOnly, filterCity, filterArea, filterCategory, searchQuery, sortBy])
+  }, [sourceType, filteredKarigars, filteredListings, sortBy])
+
+  // Set default selected item
+  useEffect(() => {
+    if (combinedResults.length > 0 && !selectedItemId) {
+      setSelectedItemId(combinedResults[0]._id)
+    }
+  }, [combinedResults, selectedItemId])
 
   const toggleFavorite = (id, e) => {
     e.preventDefault()
@@ -148,39 +207,47 @@ export default function FindKarigar() {
     setFilterArea('All Areas')
     setFilterCategory('All')
     setVerifiedOnly(false)
+    setSourceType('all')
     setSortBy('rating')
   }
 
-  // Selected karigar for map popup
-  const activeKarigar = useMemo(() => {
-    return filteredKarigars.find((k) => k._id === selectedKarigarId) || filteredKarigars[0] || null
-  }, [filteredKarigars, selectedKarigarId])
+  // Active item for map popup
+  const activeItem = useMemo(() => {
+    return combinedResults.find((item) => item._id === selectedItemId) || combinedResults[0] || null
+  }, [combinedResults, selectedItemId])
 
   // Map markers
   const mapCity = filterCity !== 'All Cities' ? filterCity : 'Karachi'
   const mapMarkers = useMemo(() => {
-    return filteredKarigars.map((k, idx) => ({
-      id: k._id,
-      name: k.fullName || 'Verified Karigar',
-      service: Array.isArray(k.services) ? k.services.join(', ') : k.services || 'Professional Service',
-      price: k.hourlyRate || 500,
-      lat: k.lat || (mapCity === 'Lahore' ? 31.5204 + (idx * 0.012 - 0.008) : 24.8607 + (idx * 0.012 - 0.008)),
-      lng: k.lng || (mapCity === 'Lahore' ? 74.3587 + (idx * 0.012 - 0.008) : 67.0011 + (idx * 0.012 - 0.008))
-    }))
-  }, [filteredKarigars, mapCity])
+    return combinedResults.slice(0, 50).map((item, idx) => {
+      const isKarigar = item.type === 'karigar'
+      const title = isKarigar ? (item.fullName || 'Verified Karigar') : (item.name || 'Local Business')
+      const srv = isKarigar
+        ? (Array.isArray(item.services) ? item.services.join(', ') : item.services)
+        : item.service
+      const price = isKarigar ? (item.hourlyRate || 500) : null
 
-  const formatLocation = (k) => {
-    const rawCity = k.city || ''
-    if (!rawCity || rawCity.length < 3 || /dnsmss|sjsk|test|asdf/i.test(rawCity)) {
-      return `${mapCity}, Pakistan`
-    }
-    return rawCity
-  }
+      const baseLat = mapCity === 'Lahore' ? 31.5204 : (mapCity === 'Islamabad' ? 33.6844 : 24.8607)
+      const baseLng = mapCity === 'Lahore' ? 74.3587 : (mapCity === 'Islamabad' ? 73.0479 : 67.0011)
+
+      const lat = item.coordinates?.lat || item.lat || (baseLat + (idx * 0.008 - 0.004))
+      const lng = item.coordinates?.lng || item.lng || (baseLng + (idx * 0.008 - 0.004))
+
+      return {
+        id: item._id,
+        name: title,
+        service: srv,
+        price,
+        lat,
+        lng
+      }
+    })
+  }, [combinedResults, mapCity])
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A]">
       
-      {/* Sticky Filter Bar (matching Reference 2 "Explore on Map") */}
+      {/* Sticky Filter Bar */}
       <div className="bg-white border-b border-[#E4EAF2] sticky top-[74px] z-30 shadow-sm">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 py-3">
           
@@ -194,14 +261,51 @@ export default function FindKarigar() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search services or businesses (e.g. Electrician, DHA)..."
+                placeholder="Search services or businesses (e.g. Electrician, DHA, Nadeem AC)..."
                 className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F7F9FC] text-[#0E1E3A] placeholder-[#5A6B84] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all"
               />
             </div>
 
-            {/* Dropdown Filters Row */}
+            {/* Source Toggle + Dropdown Filters */}
             <div className="flex items-center gap-2 flex-wrap">
               
+              {/* SOURCE TOGGLE: All, Directory, Verified Karigars */}
+              <div className="flex items-center bg-[#F7F9FC] border border-[#E4EAF2] rounded-xl p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setSourceType('all')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    sourceType === 'all'
+                      ? 'bg-[#0A1F44] text-white shadow-xs'
+                      : 'text-[#5A6B84] hover:text-[#0A1F44]'
+                  }`}
+                >
+                  All ({filteredKarigars.length + filteredListings.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSourceType('directory')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    sourceType === 'directory'
+                      ? 'bg-[#0A1F44] text-white shadow-xs'
+                      : 'text-[#5A6B84] hover:text-[#0A1F44]'
+                  }`}
+                >
+                  Directory ({filteredListings.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSourceType('karigars')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    sourceType === 'karigars'
+                      ? 'bg-[#0A1F44] text-white shadow-xs'
+                      : 'text-[#5A6B84] hover:text-[#0A1F44]'
+                  }`}
+                >
+                  Karigars ({filteredKarigars.length})
+                </button>
+              </div>
+
               {/* Category Select */}
               <div className="relative min-w-[130px]">
                 <select
@@ -232,7 +336,7 @@ export default function FindKarigar() {
                 <ChevronDown size={13} className="text-[#5A6B84] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
 
-              {/* Area Select (Populated dynamically from chosen city) */}
+              {/* Area Select */}
               <div className="relative min-w-[120px]">
                 <select
                   value={filterArea}
@@ -272,7 +376,7 @@ export default function FindKarigar() {
                 }`}
               >
                 <ShieldCheck size={13} className={verifiedOnly ? 'text-[#22C55E]' : ''} />
-                <span>Verified Only</span>
+                <span>Verified</span>
               </button>
 
               {/* Mobile View Switcher */}
@@ -293,18 +397,19 @@ export default function FindKarigar() {
         </div>
       </div>
 
-      {/* Main Content Area: Left Results List + Right Sticky Real Map */}
+      {/* Main Content Area */}
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 py-6">
         
         {/* Results Count Line */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-xs sm:text-sm font-semibold text-[#5A6B84]">
-            <span className="font-extrabold text-[#0A1F44]">{filteredKarigars.length}</span> professionals in{' '}
-            <span className="text-[#0A1F44] font-bold">{filterCity}</span>
+            <span className="font-extrabold text-[#0A1F44]">{combinedResults.length}</span>{' '}
+            {sourceType === 'directory' ? 'directory listings' : sourceType === 'karigars' ? 'registered professionals' : 'total results'}{' '}
+            in <span className="text-[#0A1F44] font-bold">{filterCity}</span>
             {filterCategory !== 'All' && <span> • Category: <span className="text-[#FF7A00] font-bold">{filterCategory}</span></span>}
           </p>
 
-          {(searchQuery || filterCategory !== 'All' || filterCity !== 'All Cities' || filterArea !== 'All Areas' || verifiedOnly) && (
+          {(searchQuery || filterCategory !== 'All' || filterCity !== 'All Cities' || filterArea !== 'All Areas' || verifiedOnly || sourceType !== 'all') && (
             <button
               onClick={clearFilters}
               className="inline-flex items-center gap-1 text-xs font-semibold text-[#FF7A00] hover:text-[#F06400] transition-colors"
@@ -333,99 +438,19 @@ export default function FindKarigar() {
                   </div>
                 </div>
               ))
-            ) : filteredKarigars.length > 0 ? (
+            ) : combinedResults.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {filteredKarigars.map((k) => {
-                  const isSelected = selectedKarigarId === k._id
-                  const isFav = !!favorites[k._id]
-                  const isVerified = k.verificationStatus === 'approved'
-                  const serviceLabel = Array.isArray(k.services) && k.services.length > 0 ? k.services[0] : (k.services || 'Professional')
-                  const photo = k.profilePhoto || '/assets/images/electrician_work.jpg'
-
-                  return (
-                    <div
-                      key={k._id}
-                      onClick={() => setSelectedKarigarId(k._id)}
-                      className={`bg-white rounded-2xl border transition-all duration-150 flex flex-col justify-between overflow-hidden cursor-pointer ${
-                        isSelected
-                          ? 'border-[#FF7A00] shadow-[0_8px_30px_rgba(255,122,0,0.15)] ring-2 ring-[#FF7A00]/20'
-                          : 'border-[#E4EAF2] hover:border-gray-300 shadow-[0_4px_16px_rgba(10,31,68,0.05)] hover:shadow-md'
-                      }`}
-                    >
-                      <div>
-                        {/* Photo Container */}
-                        <div className="relative h-40 w-full bg-slate-100 overflow-hidden">
-                          <img
-                            src={photo}
-                            alt={k.fullName || 'Karigar'}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
-                              e.target.onerror = null
-                              e.target.src = '/assets/images/electrician_work.jpg'
-                            }}
-                          />
-
-                          {/* Verified Badge */}
-                          {isVerified && (
-                            <div className="absolute top-2.5 left-2.5 bg-[#0A1F44]/90 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
-                              <ShieldCheck size={12} className="text-[#22C55E]" />
-                              <span>Verified</span>
-                            </div>
-                          )}
-
-                          {/* Favorite Button */}
-                          <button
-                            type="button"
-                            onClick={(e) => toggleFavorite(k._id, e)}
-                            className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-gray-500 hover:text-red-500 shadow-sm"
-                            aria-label="Favorite"
-                          >
-                            <Heart size={13} className={isFav ? 'fill-red-500 text-red-500' : ''} />
-                          </button>
-                        </div>
-
-                        {/* Card Info */}
-                        <div className="p-3.5">
-                          <h3 className="font-poppins font-bold text-sm text-[#0A1F44] truncate">
-                            {k.fullName || 'Verified Karigar'}
-                          </h3>
-                          <p className="text-xs text-[#5A6B84] font-medium mt-0.5 mb-1.5">
-                            {serviceLabel}
-                          </p>
-
-                          {/* Rating Badge */}
-                          <div className="mb-2">
-                            <RatingBadge rating={k.rating} reviewsCount={k.reviewsCount} size="sm" />
-                          </div>
-
-                          {/* Location */}
-                          <div className="flex items-center gap-1 text-xs text-[#5A6B84] truncate">
-                            <MapPin size={12} className="text-[#FF7A00] flex-shrink-0" />
-                            <span className="truncate">{formatLocation(k)}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Card Bottom */}
-                      <div className="p-3.5 pt-0">
-                        <div className="border-t border-[#E4EAF2] pt-2.5 mb-2.5 flex items-center justify-between">
-                          <span className="text-[11px] text-[#5A6B84]">Starting from</span>
-                          <span className="text-xs font-black text-[#0A1F44]">
-                            PKR {k.hourlyRate || 500}
-                          </span>
-                        </div>
-
-                        <Link
-                          to={`/worker/${k._id}`}
-                          className="w-full inline-flex items-center justify-center gap-1 py-1.5 px-3 rounded-xl border border-[#0A1F44]/20 hover:border-[#FF7A00] hover:bg-[#FF7A00] text-[#0A1F44] hover:text-white font-bold text-xs transition-colors"
-                        >
-                          <span>View profile</span>
-                          <ArrowRight size={12} />
-                        </Link>
-                      </div>
-                    </div>
-                  )
-                })}
+                {combinedResults.map((item) => (
+                  <BusinessCard
+                    key={`${item.type}-${item._id}`}
+                    item={item}
+                    type={item.type}
+                    isSelected={selectedItemId === item._id}
+                    isFavorite={!!favorites[item._id]}
+                    onToggleFavorite={toggleFavorite}
+                    onSelect={(id) => setSelectedItemId(id)}
+                  />
+                ))}
               </div>
             ) : (
               // Empty State
@@ -434,10 +459,10 @@ export default function FindKarigar() {
                   <Search size={28} />
                 </div>
                 <h3 className="font-poppins font-bold text-lg text-[#0A1F44] mb-2">
-                  No professionals found matching your filters
+                  No businesses or professionals found matching your filters
                 </h3>
                 <p className="text-xs sm:text-sm text-[#5A6B84] max-w-md mx-auto mb-6">
-                  Try broadening your search, changing the selected city or area, or clearing your active filters to see all available service providers.
+                  Try broadening your search, switching source to "All", or changing your city/area filters.
                 </p>
                 <button
                   type="button"
@@ -457,20 +482,24 @@ export default function FindKarigar() {
               <MapView
                 city={mapCity}
                 markers={mapMarkers}
-                selectedMarkerId={selectedKarigarId}
+                selectedMarkerId={selectedItemId}
                 onMarkerClick={(m) => {
-                  setSelectedKarigarId(m.id)
+                  setSelectedItemId(m.id)
                 }}
                 className="w-full h-full rounded-2xl"
               />
 
-              {/* Floating Active Karigar Preview Card on Map (matching Reference 2 "Explore on Map") */}
-              {activeKarigar && (
+              {/* Floating Active Preview Card on Map */}
+              {activeItem && (
                 <div className="absolute top-6 left-6 right-6 z-10 animate-in fade-in slide-in-from-top-2 duration-150">
                   <div className="bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-xl border border-gray-100 flex items-center gap-3">
                     <img
-                      src={activeKarigar.profilePhoto || '/assets/images/electrician_work.jpg'}
-                      alt={activeKarigar.fullName}
+                      src={
+                        activeItem.type === 'karigar'
+                          ? (activeItem.profilePhoto || '/assets/images/electrician_work.jpg')
+                          : (activeItem.photos?.[0] || '/assets/images/electrician_work.jpg')
+                      }
+                      alt={activeItem.fullName || activeItem.name}
                       className="w-14 h-14 rounded-xl object-cover flex-shrink-0 border border-gray-200"
                       onError={(e) => {
                         e.target.onerror = null
@@ -480,21 +509,30 @@ export default function FindKarigar() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <h4 className="font-poppins font-bold text-xs sm:text-sm text-[#0A1F44] truncate">
-                          {activeKarigar.fullName || 'Karigar'}
+                          {activeItem.fullName || activeItem.name || 'Business'}
                         </h4>
-                        {activeKarigar.verificationStatus === 'approved' && (
+                        {activeItem.type === 'karigar' && activeItem.verificationStatus === 'approved' && (
                           <ShieldCheck size={13} className="text-[#22C55E] flex-shrink-0" />
                         )}
+                        {activeItem.type === 'listing' && (
+                          <span className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.2 rounded font-bold">
+                            Unclaimed
+                          </span>
+                        )}
                       </div>
-                      <div className="my-0.5">
-                        <RatingBadge rating={activeKarigar.rating} reviewsCount={activeKarigar.reviewsCount} size="sm" />
-                      </div>
+                      <p className="text-[11px] text-[#5A6B84] truncate">
+                        {activeItem.type === 'karigar'
+                          ? (Array.isArray(activeItem.services) ? activeItem.services.join(', ') : activeItem.services)
+                          : activeItem.service}
+                      </p>
                       <p className="text-[11px] font-bold text-[#FF7A00]">
-                        Starting PKR {activeKarigar.hourlyRate || 500}
+                        {activeItem.type === 'karigar'
+                          ? `Starting PKR ${activeItem.hourlyRate || 500}`
+                          : (activeItem.phone || 'Directory Record')}
                       </p>
                     </div>
                     <Link
-                      to={`/worker/${activeKarigar._id}`}
+                      to={activeItem.type === 'karigar' ? `/worker/${activeItem._id}` : `/listing/${activeItem._id}`}
                       className="bg-[#0A1F44] hover:bg-[#FF7A00] text-white font-bold px-3 py-2 rounded-xl text-xs transition-colors flex-shrink-0"
                     >
                       View Profile →

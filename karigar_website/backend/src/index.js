@@ -24,6 +24,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
 const karigarPortalRoutes = require('./routes/karigarPortalRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const listingRoutes = require('./routes/listingRoutes');
 // Connect to MongoDB
 connectDB();
 
@@ -153,6 +154,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/karigar-portal', karigarPortalRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/listings', listingRoutes);
 // Base route
 app.get('/', (req, res) => {
   res.send('Karigar API is running securely...');
