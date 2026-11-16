@@ -1,17 +1,13 @@
 import Hero from '../components/Hero'
 import TopRatedSection from '../components/TopRatedSection'
 import Testimonials from '../components/Testimonials'
-import WhyKarigar from '../components/WhyKarigar'
-import HowItWorks from '../components/HowItWorks'
 
 export default function Home() {
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-[#F5F7FB] min-h-screen">
       <Hero />
       <TopRatedSection />
       <Testimonials />
-      <WhyKarigar />
-      <HowItWorks />
     </div>
   )
 }

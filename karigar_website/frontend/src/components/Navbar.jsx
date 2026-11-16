@@ -1,31 +1,26 @@
 import { useState, useContext, useRef, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Menu, X, LogOut, User, ChevronDown, LayoutDashboard, CalendarCheck, MapPin, Search, ArrowRight, ShieldCheck, Wrench, HardHat } from 'lucide-react'
+import { Menu, X, LogOut, User, ChevronDown, LayoutDashboard, CalendarCheck, MapPin, Search, ArrowRight } from 'lucide-react'
 import { AuthContext } from '../context/AuthContext'
-import { CITIES } from '../config/site'
+import { useCity } from '../context/CityContext'
+import BrandLogo from './BrandLogo'
+import { SERVICES_CONFIG } from '../config/site'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [exploreOpen, setExploreOpen] = useState(false)
-  const [servicesOpen, setServicesOpen] = useState(false)
-  const [cityModalOpen, setCityModalOpen] = useState(false)
-  const [selectedCity, setSelectedCity] = useState(localStorage.getItem('karigarSelectedCity') || 'Lahore, Pakistan')
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false)
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false)
 
   const dropdownRef = useRef(null)
   const cityRef = useRef(null)
   const navigate = useNavigate()
   const location = useLocation()
   const { user, logout } = useContext(AuthContext)
-
-  const toggleMenu = () => setIsOpen(!isOpen)
+  const { selectedCity, setSelectedCity, cities } = useCity()
 
   const handleCitySelect = (cityName) => {
-    const formatted = `${cityName}, Pakistan`
-    setSelectedCity(formatted)
-    localStorage.setItem('karigarSelectedCity', formatted)
-    setCityModalOpen(false)
-    // Update search query param if on find-karigar
+    setSelectedCity(cityName)
+    setCityDropdownOpen(false)
     if (location.pathname === '/find-karigar') {
       navigate(`/find-karigar?city=${encodeURIComponent(cityName)}`)
     }
@@ -33,7 +28,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     logout()
-    setDropdownOpen(false)
+    setUserDropdownOpen(false)
     navigate('/')
   }
 
@@ -41,10 +36,10 @@ export default function Navbar() {
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setDropdownOpen(false)
+        setUserDropdownOpen(false)
       }
       if (cityRef.current && !cityRef.current.contains(e.target)) {
-        setCityModalOpen(false)
+        setCityDropdownOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -52,29 +47,21 @@ export default function Navbar() {
   }, [])
 
   return (
-    <nav className="bg-[#0B1329] border-b border-[#1F2E54]/70 text-white sticky top-0 z-50 backdrop-blur-md bg-opacity-95">
-      <div className="container flex justify-between items-center py-3.5">
+    <nav className="bg-[#0A1F44] border-b border-white/10 text-white sticky top-0 z-50 shadow-md">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[66px] flex items-center justify-between">
         
-        {/* Brand Logo (House icon with hammer) */}
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF782D] to-[#E05D00] flex items-center justify-center text-white shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-transform">
-            <svg className="w-6 h-6 fill-current text-white" viewBox="0 0 24 24">
-              <path d="M12 3L2 12h3v8h6v-5h2v5h6v-8h3L12 3z"/>
-              <path d="M14.5 10.5l1.5-1.5 2 2-1.5 1.5z" fill="#0B1329" opacity="0.9"/>
-            </svg>
-          </div>
-          <span className="font-poppins text-xl font-bold tracking-tight text-white">
-            Karigar<span className="text-secondary font-extrabold">PK</span>
-          </span>
-        </Link>
+        {/* Brand Logo Left using /logo.png */}
+        <div className="flex-shrink-0">
+          <BrandLogo variant="dark" size="md" />
+        </div>
 
-        {/* Desktop Navigation Links (Matching Design) */}
-        <div className="hidden lg:flex items-center gap-1 xl:gap-2 text-sm font-medium">
+        {/* Desktop Navigation Links (Centered) */}
+        <div className="hidden lg:flex items-center gap-1 xl:gap-2 text-[14px] font-medium">
           <Link 
             to="/" 
-            className={`px-3.5 py-1.5 rounded-lg transition-colors ${
+            className={`px-4 py-1.5 rounded-full transition-all duration-150 ${
               location.pathname === '/' 
-                ? 'bg-white/10 text-white font-semibold' 
+                ? 'bg-white/15 text-white font-bold shadow-sm' 
                 : 'text-gray-300 hover:text-white hover:bg-white/5'
             }`}
           >
@@ -84,13 +71,13 @@ export default function Navbar() {
           {/* Explore Dropdown */}
           <div className="relative group">
             <button 
-              onClick={() => setExploreOpen(!exploreOpen)}
-              className="flex items-center gap-1 px-3 py-1.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+              type="button"
+              className="flex items-center gap-1 px-3.5 py-1.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-full transition-colors cursor-pointer"
             >
-              Explore
+              <span>Explore</span>
               <ChevronDown size={14} className="text-gray-400 group-hover:text-white group-hover:rotate-180 transition-transform" />
             </button>
-            <div className="absolute left-0 top-full mt-2 w-52 bg-[#0F1E3D] border border-[#1F2E54] rounded-xl shadow-2xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+            <div className="absolute left-0 top-full mt-2 w-52 bg-[#061530] border border-white/10 rounded-2xl shadow-2xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
               <Link to="/find-karigar" className="block px-4 py-2.5 text-sm text-gray-200 hover:bg-white/10 hover:text-white">
                 All Verified Karigars
               </Link>
@@ -106,167 +93,169 @@ export default function Navbar() {
           {/* Services Dropdown */}
           <div className="relative group">
             <button 
-              className="flex items-center gap-1 px-3 py-1.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+              type="button"
+              className="flex items-center gap-1 px-3.5 py-1.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-full transition-colors cursor-pointer"
             >
-              Services
+              <span>Services</span>
               <ChevronDown size={14} className="text-gray-400 group-hover:text-white group-hover:rotate-180 transition-transform" />
             </button>
-            <div className="absolute left-0 top-full mt-2 w-56 bg-[#0F1E3D] border border-[#1F2E54] rounded-xl shadow-2xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-              <Link to="/find-karigar?service=Electrician" className="block px-4 py-2 text-sm text-gray-200 hover:bg-white/10">⚡ Electricians</Link>
-              <Link to="/find-karigar?service=Plumber" className="block px-4 py-2 text-sm text-gray-200 hover:bg-white/10">🔧 Plumbers</Link>
-              <Link to="/find-karigar?service=AC%20Repair" className="block px-4 py-2 text-sm text-gray-200 hover:bg-white/10">❄️ AC & Cooling</Link>
-              <Link to="/find-karigar?service=Carpenter" className="block px-4 py-2 text-sm text-gray-200 hover:bg-white/10">🪚 Carpenters</Link>
-              <Link to="/find-karigar?service=Painter" className="block px-4 py-2 text-sm text-gray-200 hover:bg-white/10">🎨 Painters</Link>
-              <div className="border-t border-[#1F2E54] my-1"></div>
-              <Link to="/services" className="block px-4 py-2 text-xs font-bold text-secondary hover:underline">
-                View All 10+ Services →
+            <div className="absolute left-0 top-full mt-2 w-56 bg-[#061530] border border-white/10 rounded-2xl shadow-2xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              {SERVICES_CONFIG.slice(0, 7).map((s) => (
+                <Link
+                  key={s.id}
+                  to={`/find-karigar?service=${encodeURIComponent(s.searchKey)}`}
+                  className="block px-4 py-2 text-sm text-gray-200 hover:bg-white/10 hover:text-white"
+                >
+                  {s.name}
+                </Link>
+              ))}
+              <div className="border-t border-white/10 my-1" />
+              <Link to="/services" className="block px-4 py-2 text-sm text-[#FF7A00] font-semibold hover:bg-white/10">
+                View All Services →
               </Link>
             </div>
           </div>
 
-          <Link to="/about" className="px-3 py-1.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+          <Link 
+            to="/how-it-works" 
+            className={`px-3.5 py-1.5 rounded-full transition-all ${
+              location.pathname === '/how-it-works' 
+                ? 'bg-white/15 text-white font-bold' 
+                : 'text-gray-300 hover:text-white hover:bg-white/5'
+            }`}
+          >
             How it Works
           </Link>
-          <Link to="/register-karigar" className="px-3 py-1.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+
+          <Link 
+            to="/join-karigar" 
+            className={`px-3.5 py-1.5 rounded-full transition-all ${
+              location.pathname === '/join-karigar' 
+                ? 'bg-white/15 text-white font-bold' 
+                : 'text-gray-300 hover:text-white hover:bg-white/5'
+            }`}
+          >
             For Professionals
           </Link>
         </div>
 
-        {/* Right Section: City Selector + Search + Auth CTA */}
-        <div className="hidden md:flex items-center gap-3">
+        {/* Right Side Actions: Location Pill + Search + Log in / Account + Join as a Pro */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
           
-          {/* City Selector Pill (From Reference Image) */}
+          {/* Location Selector Pill */}
           <div className="relative" ref={cityRef}>
             <button
-              type="button"
-              onClick={() => setCityModalOpen(!cityModalOpen)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#131F3D] border border-[#1F2E54] text-xs font-semibold text-gray-200 hover:text-white hover:border-gray-500 transition-colors shadow-sm"
+              onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
+              className="flex items-center gap-1.5 bg-white/10 hover:bg-white/15 text-white text-xs sm:text-sm font-medium px-3.5 py-2 rounded-full border border-white/10 transition-all cursor-pointer shadow-sm"
             >
-              <MapPin size={13} className="text-secondary" />
-              <span>{selectedCity}</span>
-              <ChevronDown size={13} className="text-gray-400" />
+              <MapPin size={14} className="text-[#FF7A00]" />
+              <span className="max-w-[130px] truncate">{selectedCity}, Pakistan</span>
+              <ChevronDown size={12} className={`text-gray-400 transition-transform ${cityDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
-            {cityModalOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-[#0F1E3D] border border-[#1F2E54] rounded-xl shadow-2xl py-2 z-50 animate-fade-in">
-                <p className="px-4 py-1 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Select City</p>
-                {CITIES.map((c) => (
+            {cityDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-[#061530] border border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                  Select Launch City
+                </div>
+                {cities.map((city) => (
                   <button
-                    key={c}
-                    type="button"
-                    onClick={() => handleCitySelect(c)}
-                    className="w-full text-left px-4 py-2 text-xs text-gray-200 hover:bg-secondary/20 hover:text-white transition-colors"
+                    key={city}
+                    onClick={() => handleCitySelect(city)}
+                    className={`w-full text-left px-3.5 py-2 text-xs sm:text-sm transition-colors flex items-center justify-between cursor-pointer ${
+                      selectedCity === city
+                        ? 'bg-[#FF7A00] text-white font-bold'
+                        : 'text-gray-200 hover:bg-white/10'
+                    }`}
                   >
-                    {c}, Pakistan
+                    <span>{city}</span>
+                    {selectedCity === city && <span className="text-xs">✓</span>}
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Search Icon Quick Link */}
-          <Link 
-            to="/find-karigar" 
-            className="p-2 text-gray-300 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
-            title="Search services"
+          {/* Search Icon */}
+          <Link
+            to="/find-karigar"
+            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/15 flex items-center justify-center text-gray-300 hover:text-white transition-colors"
+            title="Search Karigars"
+            aria-label="Search Karigars"
           >
-            <Search size={18} />
+            <Search size={16} />
           </Link>
 
-          {!user ? (
-            <>
-              {/* Log in Button */}
-              <Link 
-                to="/login" 
-                className="px-4 py-2 text-sm font-semibold text-gray-200 hover:text-white transition-colors"
-              >
-                Log in
-              </Link>
-
-              {/* Join as a Pro CTA Button (Exact from Reference) */}
-              <Link 
-                to="/register-karigar" 
-                className="btn-secondary !px-4 !py-2 text-sm rounded-xl font-bold flex items-center gap-1.5"
-              >
-                <span>Join as a Pro</span>
-                <ArrowRight size={15} />
-              </Link>
-            </>
-          ) : (
-            /* Logged in User Menu */
+          {/* Log in / User menu */}
+          {user ? (
             <div className="relative" ref={dropdownRef}>
               <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-[#1F2E54] bg-[#131F3D] hover:border-secondary transition-all"
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                className="flex items-center gap-2 bg-white/10 hover:bg-white/15 py-1.5 px-3 rounded-full border border-white/10 transition-colors cursor-pointer"
               >
-                <div className="w-7 h-7 rounded-lg bg-secondary/20 border border-secondary/40 text-secondary font-bold text-xs flex items-center justify-center">
-                  {user.fullName?.charAt(0)?.toUpperCase() || 'U'}
+                <div className="w-6 h-6 rounded-full bg-[#FF7A00] text-white flex items-center justify-center text-xs font-black">
+                  {user.name ? user.name[0].toUpperCase() : 'U'}
                 </div>
-                <span className="text-xs font-semibold max-w-[100px] truncate text-white">
-                  {user.fullName?.split(' ')[0] || 'My Account'}
-                </span>
-                <ChevronDown size={14} className={`text-gray-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                <span className="hidden sm:inline-block text-xs font-semibold max-w-[90px] truncate">{user.name || 'Account'}</span>
+                <ChevronDown size={12} className="text-gray-400" />
               </button>
 
-              {dropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 w-56 bg-[#0F1E3D] border border-[#1F2E54] rounded-xl shadow-2xl py-2 z-50">
-                  <div className="px-4 py-2.5 border-b border-[#1F2E54]">
+              {userDropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-52 bg-[#061530] border border-white/10 rounded-2xl shadow-2xl py-2 z-50">
+                  <div className="px-4 py-2 border-b border-white/10">
                     <p className="text-xs text-gray-400">Signed in as</p>
-                    <p className="text-sm font-bold text-white truncate">{user.fullName}</p>
-                    <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-secondary/20 text-secondary">
-                      {user.role}
+                    <p className="text-sm font-bold text-white truncate">{user.name}</p>
+                    <span className="inline-block text-[10px] font-bold bg-[#FF7A00]/20 text-[#FF7A00] px-2 py-0.5 rounded-full mt-1">
+                      {user.role === 'karigar' ? 'Professional' : user.role === 'admin' ? 'Administrator' : 'Customer'}
                     </span>
                   </div>
 
-                  {user.role === 'admin' && (
-                    <Link to="/admin" className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-gray-200 hover:bg-white/10 hover:text-white" onClick={() => setDropdownOpen(false)}>
-                      <LayoutDashboard size={15} className="text-secondary" />
-                      Admin Control Panel
+                  {user.role === 'admin' ? (
+                    <Link to="/admin" onClick={() => setUserDropdownOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-200 hover:bg-white/10">
+                      <LayoutDashboard size={14} /> Admin Portal
+                    </Link>
+                  ) : user.role === 'karigar' ? (
+                    <Link to="/karigar" onClick={() => setUserDropdownOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-200 hover:bg-white/10">
+                      <LayoutDashboard size={14} /> Karigar Portal
+                    </Link>
+                  ) : (
+                    <Link to="/dashboard" onClick={() => setUserDropdownOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-200 hover:bg-white/10">
+                      <LayoutDashboard size={14} /> My Dashboard
                     </Link>
                   )}
-                  {user.role === 'karigar' && (
-                    <Link to="/karigar" className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-gray-200 hover:bg-white/10 hover:text-white" onClick={() => setDropdownOpen(false)}>
-                      <LayoutDashboard size={15} className="text-secondary" />
-                      Karigar Dashboard
-                    </Link>
-                  )}
-                  {user.role === 'customer' && (
-                    <Link to="/customer/dashboard" className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-gray-200 hover:bg-white/10 hover:text-white" onClick={() => setDropdownOpen(false)}>
-                      <CalendarCheck size={15} className="text-secondary" />
-                      My Bookings & Orders
-                    </Link>
-                  )}
-
-                  <div className="border-t border-[#1F2E54] my-1" />
 
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-red-400 hover:bg-red-500/10 hover:text-red-300 w-full text-left"
+                    className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-white/10 border-t border-white/10 mt-1 cursor-pointer"
                   >
-                    <LogOut size={15} />
-                    Log Out
+                    <LogOut size={14} /> Logout
                   </button>
                 </div>
               )}
             </div>
-          )}
-        </div>
-
-        {/* Mobile Header Actions */}
-        <div className="md:hidden flex items-center gap-2">
-          {!user ? (
-            <Link to="/login" className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#131F3D] border border-[#1F2E54] text-white">
+          ) : (
+            <Link
+              to="/login"
+              className="text-white hover:text-[#FF7A00] font-semibold text-xs sm:text-sm px-3 py-1.5 transition-colors"
+            >
               Log in
             </Link>
-          ) : null}
-          <Link to="/register-karigar" className="px-3 py-1.5 text-xs font-bold rounded-lg bg-secondary text-white shadow-sm">
-            Join Pro
+          )}
+
+          {/* Orange Join as a Pro Button */}
+          <Link
+            to="/register-karigar"
+            className="hidden sm:inline-flex items-center gap-1.5 bg-[#FF7A00] hover:bg-[#F06400] text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full transition-all shadow-md shadow-orange-500/25 hover:scale-[1.02]"
+          >
+            <span>Join as a Pro</span>
+            <ArrowRight size={14} />
           </Link>
-          <button 
-            type="button" 
-            className="p-1.5 text-gray-300 hover:text-white" 
-            onClick={toggleMenu} 
-            aria-label="Toggle navigation menu"
+
+          {/* Mobile Hamburger Toggle */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="lg:hidden p-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            aria-label="Toggle Navigation Menu"
           >
             {isOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -275,27 +264,61 @@ export default function Navbar() {
 
       {/* Mobile Drawer Menu */}
       {isOpen && (
-        <div className="md:hidden bg-[#0A1428] border-b border-[#1F2E54] px-4 py-4 space-y-2 animate-fade-in">
-          <Link to="/" className="block py-2 text-sm text-gray-200" onClick={() => setIsOpen(false)}>Home</Link>
-          <Link to="/find-karigar" className="block py-2 text-sm text-gray-200" onClick={() => setIsOpen(false)}>Explore Karigars</Link>
-          <Link to="/services" className="block py-2 text-sm text-gray-200" onClick={() => setIsOpen(false)}>All Services</Link>
-          <Link to="/about" className="block py-2 text-sm text-gray-200" onClick={() => setIsOpen(false)}>How it Works</Link>
-          <Link to="/register-karigar" className="block py-2 text-sm text-secondary font-semibold" onClick={() => setIsOpen(false)}>For Professionals (Join Now)</Link>
+        <div className="lg:hidden bg-[#061530] border-t border-white/10 px-4 pt-3 pb-6 space-y-2">
+          <Link
+            to="/"
+            onClick={() => setIsOpen(false)}
+            className="block py-2 px-3 rounded-xl text-sm font-semibold hover:bg-white/10"
+          >
+            Home
+          </Link>
+          <Link
+            to="/find-karigar"
+            onClick={() => setIsOpen(false)}
+            className="block py-2 px-3 rounded-xl text-sm font-semibold hover:bg-white/10"
+          >
+            Explore Karigars
+          </Link>
+          <Link
+            to="/services"
+            onClick={() => setIsOpen(false)}
+            className="block py-2 px-3 rounded-xl text-sm font-semibold hover:bg-white/10"
+          >
+            All Services
+          </Link>
+          <Link
+            to="/how-it-works"
+            onClick={() => setIsOpen(false)}
+            className="block py-2 px-3 rounded-xl text-sm font-semibold hover:bg-white/10"
+          >
+            How it Works
+          </Link>
+          <Link
+            to="/join-karigar"
+            onClick={() => setIsOpen(false)}
+            className="block py-2 px-3 rounded-xl text-sm font-semibold hover:bg-white/10"
+          >
+            For Professionals
+          </Link>
 
-          {user && (
-            <div className="pt-3 border-t border-[#1F2E54] space-y-2">
-              {user.role === 'customer' && (
-                <Link to="/customer/dashboard" className="block py-1.5 text-sm text-white" onClick={() => setIsOpen(false)}>My Bookings</Link>
-              )}
-              {user.role === 'karigar' && (
-                <Link to="/karigar" className="block py-1.5 text-sm text-white" onClick={() => setIsOpen(false)}>Karigar Portal</Link>
-              )}
-              {user.role === 'admin' && (
-                <Link to="/admin" className="block py-1.5 text-sm text-white" onClick={() => setIsOpen(false)}>Admin Panel</Link>
-              )}
-              <button onClick={handleLogout} className="block py-1.5 text-sm text-red-400">Log Out</button>
-            </div>
-          )}
+          <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
+            {!user && (
+              <Link
+                to="/login"
+                onClick={() => setIsOpen(false)}
+                className="w-full text-center py-2.5 rounded-xl border border-white/20 text-white font-semibold text-sm"
+              >
+                Log In
+              </Link>
+            )}
+            <Link
+              to="/register-karigar"
+              onClick={() => setIsOpen(false)}
+              className="w-full text-center py-2.5 rounded-xl bg-[#FF7A00] hover:bg-[#F06400] text-white font-bold text-sm"
+            >
+              Join as a Professional →
+            </Link>
+          </div>
         </div>
       )}
     </nav>

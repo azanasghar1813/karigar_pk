@@ -1,0 +1,137 @@
+<USER_REQUEST>
+KarigarPK — Master UI Fix Prompt
+Azan ke liye note: Ye prompt apne AI agent ko do, aur sath mein wohi 2 reference pics lazmi attach karna jo tumne mujhe bheji theen (1: Homepage wali pic, 2: poora design board — Login, Join, Business Profile, Explore Map, Booking, Dashboard, Mobile, Footer). Maine live site (karigarpk.live) ke tamam main pages ke fresh screenshots le kar reference se compare kiye hain — jo kuch live site par ghalat hai, wo sab is prompt mein page-by-page likh diya hai taake tumhara AI kuch miss na kare.
+
+THE PROMPT (copy everything below this line and give it to your AI agent, with the 2 reference images attached)
+You are a senior frontend engineer and UI designer working on KarigarPK (karigarpk.live), a React + Vite single-page marketplace for local services in Pakistan. The backend API is at https://karigar-pk-xuea.onrender.com and already works — do not change API endpoints, routes, or backend behaviour. This is a frontend UI + data-display rebuild only.
+Your mission
+Two reference images are attached:
+Reference 1 — Homepage design (the exact target look).
+Reference 2 — Full design board showing: Homepage, Login Page, Join as a Professional, Business Profile Page, Explore on Map, Booking Page, User Dashboard, Mobile View, and Footer.
+Rebuild/fix the live site so every page matches these references faithfully, at a premium, top-tier standard — same layout, same spacing, same colours, same components. The current live site copied the shape of the design but has serious defects (listed page by page below — every one of them was verified on the live site on 15 Nov 2026). Fix ALL of them. Do not stop at "close enough": work page by page through this prompt, then verify against the final checklist and report item by item.
+Design tokens (use exactly these, as CSS variables / theme constants)
+--navy: #0A1F44 (header, footer, CTA banners, headings)
+--navy-dark: #061530 (footer background, dashboard sidebar)
+--orange: #FF7A00 (primary buttons, accents) with hover --orange-dark: #F06400
+--bg: #F5F7FB (page background), cards pure white #FFFFFF
+--text: #0E1E3A, --muted: #5A6B84, borders #E4EAF2
+Success/WhatsApp green: #22C55E; star gold: #FFB800
+Headings font: Poppins, weight 700/800, tight letter-spacing. Body font: Inter (or Manrope), 400/500/600. Load from Google Fonts. Remove any rounded/display font currently used for headings — the reference uses a clean geometric sans, not a playful rounded one.
+Card radius: 16–20px. Buttons: pill or 12px radius as in reference. Inputs: 12px radius, light grey fill #F7F9FC, 1px border.
+Shadows: soft and subtle (0 10px 30px rgba(10,31,68,0.08) for cards, stronger only on the hero search bar and CTA banner).
+Container: max-width 1200px, consistent 24px side padding; section vertical spacing 64–80px desktop, 40px mobile.
+One logo everywhere: orange rounded square with the white house mark + "Karigar" in white/bold and "PK" in orange on dark backgrounds (navy text on light backgrounds). The site currently swaps between a house icon (header) and a hammer icon (footer/auth cards) — unify on the house mark from the reference.
+Global rules (apply on every page)
+Real data only — no hardcoded demo content anywhere. The homepage "Top-rated" cards currently show three businesses copied out of the reference mockup itself ("Al Mustafa Electrician 4.9 (2.5k reviews) PKR 500", "Quick Fix Plumbers", "Cool Tech AC Services") with the mockup's invented ratings and prices. Delete all such placeholder content. Every card, rating, price and count on the site must come from the API. If real data is missing, show an honest state ("New", "No reviews yet", hidden section) — never invent numbers.
+One source of truth for ratings. The same karigar currently displays 4.9 (1.8k reviews) on Find, 4.9 (2.5k) on his profile and 4.8 (2.8k) on the booking page. Ratings and review counts must be read from the API fields (rating, reviewsCount) through ONE shared component/formatter used by cards, profile and booking. Format counts like 1,800 → "1.8k". Zero reviews → show "New" badge, not a fake star rating.
+Real maps, not pictures of maps. Every map on the site (homepage map card, profile location, explore map) is currently a static fake image of a parchment world map. Replace with a real interactive map: Google Maps embed/JS API (or Leaflet + OpenStreetMap if no API key) centred on the relevant city/location with orange pins. The homepage map card must show the currently selected city and its pins; the profile map must show the business's actual area; "Get Directions" must open a Google Maps directions link for the address.
+Image fallback system. Karigar photos currently fail to load (broken-image alt text is visible on Find cards and profile avatars). Fix image URL handling (relative vs absolute API paths), and add an onError fallback for every user/business image: a branded default avatar (initials of the name on a navy background). A non-photo file (document/CNIC scan) must never be renderable as a public avatar: validate image type on upload and require admin approval of profile photos.
+One global city state. The header location pill says "Lahore, Pakistan" while the hero search defaults to "Karachi" and the Top-rated chips default to Karachi. Create a single shared city state (React context + localStorage persistence) used by the header pill, hero search, and Top-rated filter. Changing it anywhere changes it everywhere.
+One shared data config. Services list, cities list, and per-service starting prices must live in ONE config (or come from /api/services) and be consumed by: homepage category strip, Services page, Find filters, hero search, registration dropdowns, and footer links. Today these disagree with each other across pages.
+Contrast check on every heading. Two headings on the live Join page are invisible (black text on the dark hero; white text on a light section). Audit all headings/sections for WCAG AA contrast in both dark and light sections.
+WhatsApp float button: keep it, but it must never overlap section headings or card content on mobile — give it a safe bottom offset and lower z-index than modals/menus.
+Every interactive element needs hover + focus-visible states; all images need meaningful alt text; lazy-load below-the-fold images (WebP where possible).
+Page 1 — Homepage (match Reference 1 exactly)
+Section order (exactly as the reference — nothing extra above the fold, nothing missing):
+Header (sticky, navy): logo left; nav Home (active = navy pill with white text as in reference), Explore ▾, Services ▾, How it Works, For Professionals; right side: location pill (pin icon + selected city + chevron), search icon, "Log in" ghost button, orange "Join as a Pro →" button. Mobile: logo, Log in, Join Pro, hamburger.
+Hero: full-width bright daylight skyline photo (Minar-e-Pakistan, Lahore) — the current live hero image is washed-out and pale; use a rich, high-contrast version with a soft white gradient ONLY from the left so the headline stays readable and the right side stays vivid. On the right, the script text "Support Local, Grow Together" with the orange underline flourish. Badge pill: shield icon + "Verified Professionals • Trusted by 1M+ People". Headline exactly: "Find trusted local businesses & professionals near you." ("trusted" in orange). Subtext: "Discover, compare and book verified services across Pakistan." Search bar: one large white pill (height ~64px, strong soft shadow) containing: search input "What are you looking for?", divider, City/Area select with pin icon, orange "Search →" button. Submitting navigates to /find-karigar?service=<q>&city=<city>.
+Category strip: one white rounded card containing 8 categories in a row (Home Repair, Electricians, Plumbers, AC & Cooling, Cleaning, Beauty, Auto Services, Restaurants), each an icon in a soft tinted square above its label; clicking goes to the matching Find view. No category may appear "active/underlined" by default (the live site underlines AC & Cooling for no reason).
+Top-rated near you: star icon + heading; right side: city chips (selected = navy pill, others = white outline pills) for Karachi, Lahore, Islamabad, Faisalabad + "View all →". Below: a 4-column row — 3 business cards + 1 map card. Business card (from real API data): photo with "Verified" badge top-left (ONLY if the API says the business is verified) and heart/favourite button top-right; name; gold star + rating + (review count); pin + "City, Area"; divider; "Starting from" + bold "PKR <hourlyRate>"; full-width outline "View profile →" button linking to /worker/<id>. Map card: real map of the selected city with pins and a small popup card ("<City> — Explore local businesses near you →") + expand icon. The city chips must actually re-filter the cards and re-centre the map.
+Trust strip: one white rounded bar with 4 items (icon in tinted square + bold title + small subtext): "100% Verified Professionals", "Instant Booking & Support", "24/7 Customer Support", "Secure Payments & Safe Transactions".
+CTA banner: navy rounded banner: crown icon in orange-tinted square, "Be a Professional on KarigarPK" + "Grow your business, get more customers.", orange "Join Now →" button on the right → links to Join page.
+Testimonials — "What Our Customers Say": 3 review cards (avatar photo, name, city, 5 gold stars, quote) + a 4th navy CTA card ("Looking for professional services in your city? Join KarigarPK today!" + circular pro photo + orange "Join Now →"). All cards equal height.
+Remove or relocate the two extra sections that are NOT in the reference (the 6-card "Why Choose KarigarPK?" block and the 3-step "How KarigarPK Works" block currently sitting on the homepage). The "How it Works" nav item must lead to a dedicated section/page with those 3 steps (Search → Book → Done) styled in the same system. The homepage ends: testimonials → footer.
+Page 2 — Explore / Find a Karigar (/find-karigar) — rebuild to the board's "Explore on Map"
+The live page today shows only 2 cards with broken photos and a fake rating, no map, no area filter, and a huge empty page. Rebuild it as in Reference 2:
+Desktop layout: left column = results list (scrollable), right column = sticky real map with pins for the results; clicking a pin highlights the card and vice versa. A Grid/Map toggle switches layouts (on mobile: toggle between list and full-screen map).
+Filter bar (sticky under header): search input ("Search services or businesses…"), Category select, City select, Area select (populated from the chosen city's areas — currently missing), sort select (Top Rated / Lowest Price / Most Reviews), and a "Verified only" toggle (currently missing).
+Read ?service= and ?city= from the URL on load (the homepage search and Services page link here) and pre-apply them.
+Show a results count line: "<N> professionals in <City>".
+Loading: skeleton cards — never flash "No karigars found" before data arrives. Empty state: friendly message + "Clear all filters" button.
+Cards identical in structure to the homepage business card (real photo or fallback avatar, Verified badge only when verified, real rating/count, area + city, real starting price, View profile →).
+Support pagination or "Load more" when results exceed 24.
+Page 3 — Business / Karigar Profile (/worker/:id) — per the board's Business Profile Page
+Current live defects to fix (all verified): the cover photo is a screenshot of the KarigarPK homepage; the avatar image is broken; the business name overlaps the cover; the map is the fake world-map picture; stats are invented; the gallery shows the same 4 stock photos for everyone; the bio/address can be junk text.
+Cover: full-width rounded cover image = the business's own cover photo; if none, a default cover for its service category (e.g. electrical-panel photo for electricians). Never a screenshot of this website.
+Header card: avatar (112px, rounded-2xl, white ring, overlapping the cover bottom-left — without overlapping the name), name + Verified badge inline, service • area, city under it, star rating + (N reviews) from the API. Right side buttons: navy "Call Now" (tel: link), green "WhatsApp" (wa.me link), orange "Book Now" → /book/:id.
+Tabs: Overview | Services | Reviews (N) | Gallery | Location — the (N) must equal the real review count, and all tabs scroll to / show their real sections.
+Overview: "About Business" = the real bio from the API. Stats row (Experience / Response Time / Verification) — show each stat ONLY if it exists in the data; no hardcoded "5+ Years / ~25 Mins / NADRA Verified" for everyone. Hide a stat rather than inventing it.
+Services: chips/list of the services this business actually offers (from API), each with its price if available.
+Gallery: the business's own photos only; if the gallery is empty, hide the whole section.
+Reviews: real reviews from the API (avatar, name, stars, date, text). Header aggregate, tab count and section must all agree. No reviews → "No reviews yet — be the first to book."
+Right rail (sticky): "Starting from PKR <rate>" card + orange "Book Service" button; Location card with the REAL map + "Get Directions" button.
+Data hygiene (frontend validation): registration/profile forms must validate inputs so junk data can't be saved again — bio minimum 40 characters of real text, address must include area + city (no random strings), name minimum 3 characters. (The live database currently contains entries like bio "eksjs" and address "ward anana dnsmss sjsk" — flag them in your report; do not silently keep displaying them as-is: if bio/address fail validation, show a clean fallback like "Professional <service> in <city>".)
+Page 4 — Booking (/book/:id) — per the board's Booking Page
+The booking flow is now tied to the chosen karigar (keep that), but the board's summary layout is missing. Rebuild:
+Step indicator at top: 1 Service → 2 Details → 3 Payment → 4 Confirm, with completed steps checked (green), current step navy, upcoming grey. It must reflect the real step the user is on.
+Left column: business card (photo, name, rating, service) + the selected service, date and time summary as the user fills the form.
+Form (Details step): customer full name (add this — currently missing), phone (validate Pakistani format 03XX-XXXXXXX), service pre-selected from the profile the user came from (changeable via select), date picker (today or later only), time-slot select, city select (shared cities list — Lahore included), full address field.
+Right column — Booking Summary card (exactly as the board): "Service Charge — PKR <rate>", "Processing Fee — PKR 50", divider, "Total — PKR <rate + 50>", orange "Proceed to Payment →" button, and a lock icon + "Secure Payment" note under it. The totals must update live if the service changes.
+Submit: send karigarId, service, date, time slot, customer details and address to the bookings API. Confirmation step: success screen with a booking reference number, karigar name, service, date/time, total, and "A confirmation has been sent" note + buttons "View My Bookings" / "Back to Home". Show a clear error state (with retry) if the API fails — never a silent dead end.
+Page 5 — Services (/services)
+Keep the card grid, but fix the scrambled photos (verified live: Household Chores shows an electrician photo, General Repair a plumber, CCTV Install an AC technician, Carpenter an electrician, Electrician an AC technician, Locksmith and Appliance Repair a plain t-shirt photo, and Painter shows a screenshot of the KarigarPK homepage). Assign ONE correct, dedicated photo per service from the project's photo set (electrician at panel, plumber under sink, AC install, painter with roller, carpenter with wood/tools, locksmith with lock/keys, CCTV camera install, appliance/fridge repair, cleaning, general handyman) and store the mapping in the single shared services config so it can never drift again.
+Each card: photo, small icon chip, service name, one-line description, "Starting from PKR <price>", orange "Find <Service> →" button → /find-karigar?service=<Service>. Names, descriptions and prices come from the shared config/API — the same data the Find filter and registration form use (today the Electrician card says "in Lahore" on a page titled "Across Pakistan" — copy must be city-neutral unless a city is selected).
+Bottom CTA banner (navy): "Are you a skilled technician or workshop owner?" + orange "Join as a Professional →".
+Page 6 — Join landing (/join-karigar) + Registration (/register-karigar)
+Join landing: fix the two invisible headings (hero line 1 must be white on the navy hero; the "Select your expertise" heading must be navy on the light background). Keep the structure: navy hero ("Turn your skills into consistent earnings" — second line orange), "Why Karigars Choose Us" card, 3 benefits (Flexible Hours / Weekly Payouts / Verified Platform), expertise grid of service cards with orange "Join as <Service>" buttons → each goes to the registration form with that service pre-selected.
+Registration: match the board's "Join as a Professional" split layout (it is close today — keep the layout, fix the gaps): left photo panel (pro photo, "Grow Your Business with KarigarPK", benefits checklist: Free Registration / Reach More Clients / Manage Your Services), right form with logo, title, Individual | Business toggle, fields: Full Name, Phone Number, Email Address, Service Category select, City/Area select. City select must contain all launch cities including Lahore (shared cities list). Then a second step (or continuation) collecting: password + confirm password, CNIC number, CNIC front/back photos, hourly rate, years of experience, full address, profile photo. CNIC data is sensitive: upload it only to the protected registration endpoint — it must never appear in any public page, card, or API response. On submit: success state "Application received — our team will verify your CNIC and approve your profile" (profiles start as pending, matching the admin approval flow).
+Page 7 — Login (/login) and Sign Up (/signup)
+Match the board: auth pages render full-viewport split layout without the marketing header/footer — left photo panel (login: hard-hat pro photo with "Welcome Back!" + checklist Book Services / Manage Bookings / Track Your Activity; signup: matching panel), right white form panel with the logo at top.
+Login keeps its Customer | Professional toggle, Email + Password (with show/hide eye), Remember me + "Forgot password?", orange Login button, "or continue with" divider, Google + Facebook buttons, footer line "Don't have an account? Join as a Pro". Brighten the left photo slightly (it is currently too dark to see the person).
+Signup: Full Name, Email, Phone, Area/Sector, Password + Confirm Password, orange "Create Account", "Continue with Google". Make the customer CNIC field optional (label it "CNIC (optional)") — customers should not be forced to give a CNIC just to book. Validate phone format and password match inline.
+Page 8 — User Dashboard — per the board (login required)
+Layout: navy left sidebar (logo at top; menu: Dashboard, My Bookings, Saved Businesses, Favourites, Reviews, Profile Settings, Notifications, Support; active item highlighted), light content area.
+Dashboard home: "My Dashboard" heading; 3 stat cards — Total Bookings, In Progress (orange tint), Completed (green tint) — all from real API data; "Recent Bookings" list: business photo + name, service + area, date/time, and a status pill (Confirmed = green, Completed = blue/grey, In Progress = orange, Cancelled = red), "View All →".
+My Bookings page: same list in full, grouped Upcoming / Past (as in the board's mobile view), with cancel/reschedule actions where the API supports them.
+Karigar portal and Admin panel: apply the same design system (navy sidebar, white cards, orange primary actions, status pills) so the whole product feels like one product. Do not change their functionality or access rules.
+Page 9 — Footer (rebuild to the board)
+Current live footer has the wrong columns and no socials. Rebuild exactly as Reference 2:
+Navy (--navy-dark) background with a subtle city-skyline silhouette along the bottom edge.
+Column 1: logo + "Pakistan's Local Business & Services Network." + one line "Discover local businesses. Find trusted professionals. Book services with confidence." + social icon buttons (Facebook, X, Instagram, LinkedIn, YouTube).
+Column 2 — Quick Links: Home, Explore, Services, How It Works, For Professionals.
+Column 3 — Support: Help Center, Contact Us, Privacy Policy, Terms & Conditions.
+Column 4 — Cities: Karachi, Lahore, Islamabad, Faisalabad, Multan (each links to Find with that city applied).
+Bottom bar: "© 2025 KarigarPK. All rights reserved." (Keep the real helpline +92 342 7066034 and email karigarpk.live@gmail.com reachable via Contact/Support links.)
+Page 10 — About, Contact, Blog
+Apply the same design system (tokens, header/footer, cards, buttons). About: hero + mission + stats (real numbers only) + how it works + CTA banner. Contact: contact cards (helpline, email, HQ Lahore) + a working form that posts to the leads/contact endpoint. Blog: if there are no posts, show a clean "Coming soon" state instead of an empty page.
+Mobile (match the board's Mobile View)
+Bottom tab bar on mobile (Home, Explore, Bookings, Profile) with the active tab in orange — as in the board's phone mockups — in addition to the hamburger menu.
+Hero search stacks vertically (input, city select, full-width Search button) — already close; keep it.
+City chips row: horizontal scroll with snap + a soft fade at the right edge (today "Faisalabad" is cut off mid-word with no hint of more).
+Cards full-width, one per row; trust strip becomes a 2×2 grid; testimonials stack; section headings and the "View all" link must not collide (they currently squeeze together).
+Test every page at 390px width: no horizontal scrolling, no overlapping elements, tap targets ≥ 44px.
+Hard constraints
+Do NOT change: backend API endpoints or payloads (except where this prompt explicitly says to submit an existing field), existing routes/URLs, login/registration functionality, admin approval flow, or the WhatsApp float's number.
+Do NOT reintroduce any placeholder/demo businesses, ratings, reviews, or photos of this website used as imagery anywhere.
+Do NOT expose any professional's CNIC number/images, personal email, or personal phone in any public UI or response (public cards show business display info only; Call/WhatsApp actions appear on the profile/booking flow as the API allows).
+Keep the build passing (npm run build) and the site deployable to Vercel exactly as it is today.
+Acceptance checklist — verify EVERY item and report pass/fail per item
+Homepage matches Reference 1 section-for-section, in order, with real data.
+Header city, hero city and Top-rated city are always the same city.
+Top-rated cards are real API listings; chips filter them; map shows the selected city with real pins.
+No fake/static map image anywhere on the site; all maps are real and interactive.
+Find page: list + map layout, area filter, Verified-only toggle, result count, skeletons, clean empty state; ?service=/?city= links from Home and Services land pre-filtered.
+No broken images anywhere; every failed image falls back to the branded avatar.
+A karigar shows the SAME rating and review count on Find, Profile and Booking.
+Profile: real cover (never a website screenshot), no overlapping text, stats only from data, gallery hidden when empty, review counts consistent everywhere.
+Booking: summary card with Service Charge + PKR 50 Processing Fee + Total; confirmation screen with booking reference.
+Services page: every card's photo actually matches its service; no website screenshot used as a photo anywhere.
+Join page: no invisible/low-contrast headings anywhere on the site.
+Registration includes Lahore and all launch cities; CNIC step present and kept private; new profiles start as pending.
+Login/Signup match the board's split layout; customer CNIC optional on signup.
+Footer matches the board (Quick Links / Support / Cities, socials, skyline, correct copyright line).
+Dashboard matches the board (navy sidebar, real stat cards, status pills).
+Mobile: bottom tab bar present, no cut-off chips, no overlaps, no horizontal scroll at 390px.
+npm run build passes; no console errors on any main page.
+How to report back
+When finished, reply with: (1) the checklist above with ✅/❌ per item, (2) a short list of anything you could NOT do and why, (3) screenshots of Home, Find, Profile, Booking, Login, Join, Dashboard and Footer (desktop + mobile home) so the result can be compared against the references.
+END OF PROMPT
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-11-15T18:20:31+05:00.
+
+The user has uploaded 2 image(s):
+- C:/Users/Azan/.gemini/antigravity/brain/fa3dcddb-8a8b-4167-a11f-fae7f63c66fe/.user_uploaded/media_1794748816476_d409a663.jpg
+- C:/Users/Azan/.gemini/antigravity/brain/fa3dcddb-8a8b-4167-a11f-fae7f63c66fe/.user_uploaded/media_1794748827837_a28dbab3.jpg
+You can embed these images in an artifact if you need the USER to review them.
+</ADDITIONAL_METADATA>

@@ -1,350 +1,426 @@
-import { useState, useEffect } from 'react'
-import api from '../config/api'
+import { useState, useEffect, useMemo } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { Star, MapPin, ShieldCheck, ArrowRight, Search, SlidersHorizontal, Map, Grid, CheckCircle2, Heart } from 'lucide-react'
-import { CITIES, SERVICES } from '../config/site'
+import { Search, MapPin, ShieldCheck, ArrowRight, Star, Heart, SlidersHorizontal, Map, Grid, CheckCircle2, ChevronDown, RotateCcw } from 'lucide-react'
+import api from '../config/api'
+import { CITIES, SERVICES_CONFIG, CITY_AREAS } from '../config/site'
+import { useCity } from '../context/CityContext'
+import RatingBadge from '../components/RatingBadge'
+import UserAvatar from '../components/UserAvatar'
+import MapView from '../components/MapView'
 
 export default function FindKarigar() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const { selectedCity, setSelectedCity } = useCity()
+
   const initialService = searchParams.get('service') || 'All'
-  const initialCity = searchParams.get('city') || 'All Cities'
-  const initialView = searchParams.get('view') || 'grid'
+  const initialCity = searchParams.get('city') || selectedCity || 'All Cities'
+  const initialView = searchParams.get('view') || 'split'
 
   const [karigars, setKarigars] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-  const [viewMode, setViewMode] = useState(initialView) // 'grid' or 'map'
-  const [selectedMapKarigar, setSelectedMapKarigar] = useState(null)
+  const [viewMode, setViewMode] = useState(initialView) // 'split', 'grid', 'map'
+  const [selectedKarigarId, setSelectedKarigarId] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filters, setFilters] = useState({
-    service: initialService,
-    city: initialCity,
-    minRating: 0,
-    sortBy: 'rating'
-  })
+  const [favorites, setFavorites] = useState({})
+  const [verifiedOnly, setVerifiedOnly] = useState(false)
 
-  const servicesList = ['All Categories', ...SERVICES]
-  const citiesList = ['All Cities', ...CITIES]
+  const [filterCity, setFilterCity] = useState(initialCity === 'All' ? 'All Cities' : initialCity)
+  const [filterArea, setFilterArea] = useState('All Areas')
+  const [filterCategory, setFilterCategory] = useState(initialService)
+  const [sortBy, setSortBy] = useState('rating') // 'rating', 'price_asc', 'reviews'
 
-  const serviceImages = {
-    Electrician: '/assets/images/electrician_work.jpg',
-    Plumber: '/assets/images/plumber_sink.jpg',
-    'AC Repair': '/assets/images/ac_technician.jpg',
-    Carpenter: '/assets/images/karigar_drill_portrait.jpg'
+  // Sync city with global context if valid city
+  useEffect(() => {
+    if (filterCity && filterCity !== 'All Cities' && CITIES.includes(filterCity)) {
+      setSelectedCity(filterCity)
+    }
+  }, [filterCity, setSelectedCity])
+
+  // Get available areas for chosen city
+  const availableAreas = useMemo(() => {
+    if (!filterCity || filterCity === 'All Cities') {
+      return ['All Areas']
+    }
+    return CITY_AREAS[filterCity] || ['All Areas']
+  }, [filterCity])
+
+  // Reset area when city changes if previous area not in new city
+  useEffect(() => {
+    if (!availableAreas.includes(filterArea)) {
+      setFilterArea('All Areas')
+    }
+  }, [availableAreas, filterArea])
+
+  // Fetch Karigars from backend API
+  useEffect(() => {
+    let isMounted = true
+    setIsLoading(true)
+
+    api.get('/karigars')
+      .then((res) => {
+        if (!isMounted) return
+        const data = Array.isArray(res.data) ? res.data : []
+        setKarigars(data)
+        if (data.length > 0) {
+          setSelectedKarigarId(data[0]._id)
+        }
+        setIsLoading(false)
+      })
+      .catch((err) => {
+        if (!isMounted) return
+        console.warn('API Error fetching karigars:', err)
+        setKarigars([])
+        setIsLoading(false)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  // Filter and Sort Karigars
+  const filteredKarigars = useMemo(() => {
+    return karigars.filter((k) => {
+      // Verified only filter
+      if (verifiedOnly && k.verificationStatus !== 'approved') {
+        return false
+      }
+
+      // City filter
+      if (filterCity && filterCity !== 'All Cities') {
+        const kCity = (k.city || '').toLowerCase()
+        if (!kCity.includes(filterCity.toLowerCase())) {
+          return false
+        }
+      }
+
+      // Area filter
+      if (filterArea && filterArea !== 'All Areas') {
+        const kAddress = ((k.address || '') + ' ' + (k.city || '')).toLowerCase()
+        if (!kAddress.includes(filterArea.toLowerCase())) {
+          return false
+        }
+      }
+
+      // Category filter
+      if (filterCategory && filterCategory !== 'All' && filterCategory !== 'All Categories') {
+        const kServices = Array.isArray(k.services) ? k.services.map((s) => s.toLowerCase()) : [(k.services || '').toLowerCase()]
+        const target = filterCategory.toLowerCase()
+        const matches = kServices.some((s) => s.includes(target) || target.includes(s))
+        if (!matches) return false
+      }
+
+      // Search Query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase()
+        const nameMatch = (k.fullName || '').toLowerCase().includes(q)
+        const cityMatch = (k.city || '').toLowerCase().includes(q)
+        const serviceMatch = Array.isArray(k.services)
+          ? k.services.some((s) => s.toLowerCase().includes(q))
+          : (k.services || '').toLowerCase().includes(q)
+        if (!nameMatch && !cityMatch && !serviceMatch) {
+          return false
+        }
+      }
+
+      return true
+    }).sort((a, b) => {
+      if (sortBy === 'price_asc') {
+        return (a.hourlyRate || 0) - (b.hourlyRate || 0)
+      }
+      if (sortBy === 'reviews') {
+        return (b.reviewsCount || 0) - (a.reviewsCount || 0)
+      }
+      // default: rating descending
+      return (b.rating || 0) - (a.rating || 0)
+    })
+  }, [karigars, verifiedOnly, filterCity, filterArea, filterCategory, searchQuery, sortBy])
+
+  const toggleFavorite = (id, e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setFavorites((prev) => ({ ...prev, [id]: !prev[id] }))
   }
 
-  useEffect(() => {
-    const fetchKarigars = async () => {
-      setIsLoading(true)
-      try {
-        const params = {}
-        if (filters.service && filters.service !== 'All' && filters.service !== 'All Categories') {
-          params.service = filters.service
-        }
-        if (filters.city && filters.city !== 'All Cities' && filters.city !== 'Your City') {
-          params.city = filters.city
-        }
+  const clearFilters = () => {
+    setSearchQuery('')
+    setFilterCity('All Cities')
+    setFilterArea('All Areas')
+    setFilterCategory('All')
+    setVerifiedOnly(false)
+    setSortBy('rating')
+  }
 
-        const { data } = await api.get('/karigars', { params })
-        
-        let filtered = Array.isArray(data) ? data.filter(k => (k.rating || 0) >= filters.minRating) : []
+  // Selected karigar for map popup
+  const activeKarigar = useMemo(() => {
+    return filteredKarigars.find((k) => k._id === selectedKarigarId) || filteredKarigars[0] || null
+  }, [filteredKarigars, selectedKarigarId])
 
-        if (searchQuery.trim()) {
-          const q = searchQuery.toLowerCase()
-          filtered = filtered.filter(k => 
-            k.fullName?.toLowerCase().includes(q) ||
-            (Array.isArray(k.services) && k.services.some(s => s.toLowerCase().includes(q))) ||
-            k.city?.toLowerCase().includes(q)
-          )
-        }
+  // Map markers
+  const mapCity = filterCity !== 'All Cities' ? filterCity : 'Karachi'
+  const mapMarkers = useMemo(() => {
+    return filteredKarigars.map((k, idx) => ({
+      id: k._id,
+      name: k.fullName || 'Verified Karigar',
+      service: Array.isArray(k.services) ? k.services.join(', ') : k.services || 'Professional Service',
+      price: k.hourlyRate || 500,
+      lat: k.lat || (mapCity === 'Lahore' ? 31.5204 + (idx * 0.012 - 0.008) : 24.8607 + (idx * 0.012 - 0.008)),
+      lng: k.lng || (mapCity === 'Lahore' ? 74.3587 + (idx * 0.012 - 0.008) : 67.0011 + (idx * 0.012 - 0.008))
+    }))
+  }, [filteredKarigars, mapCity])
 
-        if (filters.sortBy === 'rating') {
-          filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0))
-        } else if (filters.sortBy === 'price') {
-          filtered.sort((a, b) => (a.hourlyRate || 0) - (b.hourlyRate || 0))
-        }
-
-        setKarigars(filtered)
-        if (filtered.length > 0) {
-          setSelectedMapKarigar(filtered[0])
-        }
-      } catch (err) {
-        console.error('Failed to fetch karigars:', err)
-        setKarigars([])
-      } finally {
-        setIsLoading(false)
-      }
+  const formatLocation = (k) => {
+    const rawCity = k.city || ''
+    if (!rawCity || rawCity.length < 3 || /dnsmss|sjsk|test|asdf/i.test(rawCity)) {
+      return `${mapCity}, Pakistan`
     }
-
-    fetchKarigars()
-  }, [filters, searchQuery])
-
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }))
+    return rawCity
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0A1930]">
+    <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A]">
       
-      {/* Top Search & Filter Bar (matching Panel 5 "Explore on Map") */}
-      <div className="bg-white border-b border-gray-200 py-4 px-4 sm:px-6 lg:px-8 shadow-sm">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
+      {/* Sticky Filter Bar (matching Reference 2 "Explore on Map") */}
+      <div className="bg-white border-b border-[#E4EAF2] sticky top-[74px] z-30 shadow-sm">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 py-3">
           
-          {/* Search Inputs Row */}
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+          {/* Main Controls Row */}
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
             
             {/* Search Input */}
-            <div className="sm:col-span-5 relative">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <div className="relative flex-1">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5A6B84] pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search on map..."
-                className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl pl-9 pr-4 py-2 text-xs sm:text-sm text-[#0A1930] placeholder-gray-400 focus:outline-none focus:border-[#FF8A00] focus:bg-white"
+                placeholder="Search services or businesses (e.g. Electrician, DHA)..."
+                className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F7F9FC] text-[#0E1E3A] placeholder-[#5A6B84] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all"
               />
             </div>
 
-            {/* Category Dropdown */}
-            <div className="sm:col-span-3">
-              <select
-                value={filters.service}
-                onChange={(e) => handleFilterChange('service', e.target.value)}
-                className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-[#0A1930] focus:outline-none focus:border-[#FF8A00] focus:bg-white cursor-pointer"
-              >
-                {servicesList.map(s => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
+            {/* Dropdown Filters Row */}
+            <div className="flex items-center gap-2 flex-wrap">
+              
+              {/* Category Select */}
+              <div className="relative min-w-[130px]">
+                <select
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value)}
+                  className="w-full appearance-none bg-[#F7F9FC] border border-[#E4EAF2] rounded-xl pl-3 pr-7 py-2 text-xs font-semibold text-[#0E1E3A] cursor-pointer focus:outline-none focus:border-[#FF7A00]"
+                >
+                  <option value="All">All Categories</option>
+                  {SERVICES_CONFIG.map((s) => (
+                    <option key={s.id} value={s.searchKey}>{s.name}</option>
+                  ))}
+                </select>
+                <ChevronDown size={13} className="text-[#5A6B84] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
 
-            {/* City Dropdown */}
-            <div className="sm:col-span-2">
-              <select
-                value={filters.city}
-                onChange={(e) => handleFilterChange('city', e.target.value)}
-                className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-[#0A1930] focus:outline-none focus:border-[#FF8A00] focus:bg-white cursor-pointer"
-              >
-                {citiesList.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
+              {/* City Select */}
+              <div className="relative min-w-[120px]">
+                <select
+                  value={filterCity}
+                  onChange={(e) => setFilterCity(e.target.value)}
+                  className="w-full appearance-none bg-[#F7F9FC] border border-[#E4EAF2] rounded-xl pl-3 pr-7 py-2 text-xs font-semibold text-[#0E1E3A] cursor-pointer focus:outline-none focus:border-[#FF7A00]"
+                >
+                  <option value="All Cities">All Cities</option>
+                  {CITIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+                <ChevronDown size={13} className="text-[#5A6B84] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
 
-            {/* Sort Dropdown */}
-            <div className="sm:col-span-2">
-              <select
-                value={filters.sortBy}
-                onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-[#0A1930] focus:outline-none focus:border-[#FF8A00] focus:bg-white cursor-pointer"
-              >
-                <option value="rating">Top Rated</option>
-                <option value="price">Lowest Rate</option>
-              </select>
-            </div>
-          </div>
+              {/* Area Select (Populated dynamically from chosen city) */}
+              <div className="relative min-w-[120px]">
+                <select
+                  value={filterArea}
+                  onChange={(e) => setFilterArea(e.target.value)}
+                  disabled={availableAreas.length <= 1}
+                  className="w-full appearance-none bg-[#F7F9FC] border border-[#E4EAF2] rounded-xl pl-3 pr-7 py-2 text-xs font-semibold text-[#0E1E3A] cursor-pointer focus:outline-none focus:border-[#FF7A00] disabled:opacity-50"
+                >
+                  {availableAreas.map((a) => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
+                <ChevronDown size={13} className="text-[#5A6B84] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
 
-          {/* View Mode Toggle (Grid vs Map) */}
-          <div className="flex items-center bg-[#F1F5F9] p-1 rounded-xl border border-gray-200 self-start md:self-auto">
-            <button
-              type="button"
-              onClick={() => setViewMode('grid')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                viewMode === 'grid'
-                  ? 'bg-white text-[#0A1930] shadow-sm'
-                  : 'text-gray-500 hover:text-[#0A1930]'
-              }`}
-            >
-              <Grid size={14} /> Grid
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('map')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                viewMode === 'map'
-                  ? 'bg-[#0A1930] text-white shadow-sm'
-                  : 'text-gray-500 hover:text-[#0A1930]'
-              }`}
-            >
-              <Map size={14} /> Map
-            </button>
+              {/* Sort By Select */}
+              <div className="relative min-w-[110px]">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full appearance-none bg-[#F7F9FC] border border-[#E4EAF2] rounded-xl pl-3 pr-7 py-2 text-xs font-semibold text-[#0E1E3A] cursor-pointer focus:outline-none focus:border-[#FF7A00]"
+                >
+                  <option value="rating">Top Rated</option>
+                  <option value="price_asc">Lowest Price</option>
+                  <option value="reviews">Most Reviews</option>
+                </select>
+                <ChevronDown size={13} className="text-[#5A6B84] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+
+              {/* Verified Only Toggle */}
+              <button
+                type="button"
+                onClick={() => setVerifiedOnly(!verifiedOnly)}
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
+                  verifiedOnly
+                    ? 'bg-[#0A1F44] text-white border-[#0A1F44]'
+                    : 'bg-[#F7F9FC] text-[#5A6B84] border-[#E4EAF2] hover:text-[#0A1F44]'
+                }`}
+              >
+                <ShieldCheck size={13} className={verifiedOnly ? 'text-[#22C55E]' : ''} />
+                <span>Verified Only</span>
+              </button>
+
+              {/* Mobile View Switcher */}
+              <div className="lg:hidden flex items-center bg-[#F7F9FC] border border-[#E4EAF2] rounded-xl p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setViewMode(viewMode === 'map' ? 'grid' : 'map')}
+                  className="px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 text-[#0A1F44]"
+                >
+                  {viewMode === 'map' ? <Grid size={13} /> : <Map size={13} />}
+                  <span>{viewMode === 'map' ? 'Show List' : 'Show Map'}</span>
+                </button>
+              </div>
+
+            </div>
           </div>
 
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      {/* Main Content Area: Left Results List + Right Sticky Real Map */}
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 py-6">
         
-        {/* MAP VIEW MODE (matching reference image Panel 5) */}
-        {viewMode === 'map' ? (
-          <div className="bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-xl relative min-h-[580px] flex flex-col justify-end">
-            
-            {/* Map Visual */}
-            <div className="absolute inset-0 z-0">
-              <img
-                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1600&q=80"
-                alt="Interactive Map Overview"
-                className="w-full h-full object-cover filter contrast-110"
-              />
-              <div className="absolute inset-0 bg-[#0A1930]/15" />
+        {/* Results Count Line */}
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-xs sm:text-sm font-semibold text-[#5A6B84]">
+            <span className="font-extrabold text-[#0A1F44]">{filteredKarigars.length}</span> professionals in{' '}
+            <span className="text-[#0A1F44] font-bold">{filterCity}</span>
+            {filterCategory !== 'All' && <span> • Category: <span className="text-[#FF7A00] font-bold">{filterCategory}</span></span>}
+          </p>
 
-              {/* Pins on map */}
-              <div className="absolute top-1/4 left-1/3">
-                <button
-                  type="button"
-                  onClick={() => setSelectedMapKarigar(karigars[0] || null)}
-                  className="bg-[#FF8A00] text-white p-2.5 rounded-full shadow-xl hover:scale-110 transition-transform"
-                >
-                  <MapPin size={20} />
-                </button>
-              </div>
+          {(searchQuery || filterCategory !== 'All' || filterCity !== 'All Cities' || filterArea !== 'All Areas' || verifiedOnly) && (
+            <button
+              onClick={clearFilters}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[#FF7A00] hover:text-[#F06400] transition-colors"
+            >
+              <RotateCcw size={12} />
+              <span>Reset filters</span>
+            </button>
+          )}
+        </div>
 
-              <div className="absolute top-1/3 left-1/2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedMapKarigar(karigars[1] || null)}
-                  className="bg-[#0A1930] text-white p-2.5 rounded-full shadow-xl hover:scale-110 transition-transform"
-                >
-                  <MapPin size={20} />
-                </button>
-              </div>
-
-              <div className="absolute top-1/2 left-2/3">
-                <button
-                  type="button"
-                  onClick={() => setSelectedMapKarigar(karigars[2] || null)}
-                  className="bg-[#FF8A00] text-white p-2.5 rounded-full shadow-xl hover:scale-110 transition-transform"
-                >
-                  <MapPin size={20} />
-                </button>
-              </div>
-            </div>
-
-            {/* Floating Top Pill */}
-            <div className="relative z-10 m-4 flex items-center justify-between pointer-events-none">
-              <span className="bg-white/95 backdrop-blur-md border border-gray-200 px-3.5 py-1.5 rounded-xl text-xs font-bold text-[#0A1930] pointer-events-auto shadow-sm">
-                📍 Showing verified pros in {filters.city}
-              </span>
-            </div>
-
-            {/* Floating Worker Preview Card (from reference image) */}
-            {selectedMapKarigar ? (
-              <div className="relative z-10 m-4 sm:m-6 max-w-sm bg-white border border-gray-200 rounded-2xl p-4 shadow-2xl flex items-center gap-3.5">
-                <img
-                  src={selectedMapKarigar.profilePhoto || '/assets/images/electrician_work.jpg'}
-                  alt={selectedMapKarigar.fullName}
-                  className="w-16 h-16 rounded-xl object-cover border border-gray-200 flex-shrink-0"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <h3 className="font-poppins font-bold text-[#0A1930] text-sm truncate">
-                      {selectedMapKarigar.fullName}
-                    </h3>
-                    <CheckCircle2 size={13} className="text-emerald-500 flex-shrink-0" />
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-yellow-500 mt-0.5">
-                    <Star size={13} className="fill-yellow-400 text-yellow-400" />
-                    <span className="font-bold text-[#0A1930]">{selectedMapKarigar.rating ? selectedMapKarigar.rating.toFixed(1) : '4.9'}</span>
-                    <span className="text-gray-400">({selectedMapKarigar.reviewsCount || '2.8k'})</span>
-                  </div>
-                  <p className="text-[#FF8A00] font-black text-xs mt-1">
-                    PKR {selectedMapKarigar.hourlyRate || 500}+
-                  </p>
-                </div>
-                <Link
-                  to={`/worker/${selectedMapKarigar._id}`}
-                  className="bg-[#FF8A00] hover:bg-[#E67A00] text-white text-xs font-bold px-3 py-2 rounded-xl transition-all whitespace-nowrap shadow-sm"
-                >
-                  View Profile →
-                </Link>
-              </div>
-            ) : null}
-          </div>
-        ) : (
-          /* GRID VIEW MODE */
-          <div>
+        {/* 2-Column Split: Results (Left) + Real Map (Right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          {/* LEFT COLUMN: Results List */}
+          <div className={`lg:col-span-7 space-y-4 ${viewMode === 'map' ? 'hidden lg:block' : 'block'}`}>
             {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map(i => (
-                  <div key={i} className="bg-white border border-gray-200 rounded-2xl p-4 animate-pulse">
-                    <div className="h-44 bg-gray-100 rounded-xl mb-4"></div>
-                    <div className="h-4 bg-gray-100 rounded w-2/3 mb-2"></div>
-                    <div className="h-3 bg-gray-100 rounded w-1/3"></div>
+              // Skeleton Cards
+              [1, 2, 3, 4].map((n) => (
+                <div key={n} className="bg-white rounded-2xl border border-[#E4EAF2] p-4 shadow-sm animate-pulse flex gap-4">
+                  <div className="w-32 h-28 bg-gray-200 rounded-xl flex-shrink-0" />
+                  <div className="flex-1 space-y-2 py-1">
+                    <div className="h-4 bg-gray-200 rounded w-1/2" />
+                    <div className="h-3 bg-gray-200 rounded w-1/3" />
+                    <div className="h-3 bg-gray-200 rounded w-1/4" />
+                    <div className="h-8 bg-gray-200 rounded-lg w-full mt-2" />
                   </div>
-                ))}
-              </div>
-            ) : karigars.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {karigars.map((karigar, index) => {
-                  const primaryService = Array.isArray(karigar.services) && karigar.services.length > 0
-                    ? karigar.services[0]
-                    : (typeof karigar.services === 'string' ? karigar.services : 'Verified Pro')
-
-                  const cardImage = karigar.profilePhoto && !karigar.profilePhoto.includes('document') && !karigar.profilePhoto.includes('placeholder')
-                    ? karigar.profilePhoto
-                    : (serviceImages[primaryService] || '/assets/images/electrician_work.jpg')
+                </div>
+              ))
+            ) : filteredKarigars.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {filteredKarigars.map((k) => {
+                  const isSelected = selectedKarigarId === k._id
+                  const isFav = !!favorites[k._id]
+                  const isVerified = k.verificationStatus === 'approved'
+                  const serviceLabel = Array.isArray(k.services) && k.services.length > 0 ? k.services[0] : (k.services || 'Professional')
+                  const photo = k.profilePhoto || '/assets/images/electrician_work.jpg'
 
                   return (
                     <div
-                      key={karigar._id || index}
-                      className="bg-white border border-gray-200/90 rounded-2xl overflow-hidden hover:border-[#FF8A00]/50 transition-all shadow-sm hover:shadow-xl flex flex-col justify-between group"
+                      key={k._id}
+                      onClick={() => setSelectedKarigarId(k._id)}
+                      className={`bg-white rounded-2xl border transition-all duration-150 flex flex-col justify-between overflow-hidden cursor-pointer ${
+                        isSelected
+                          ? 'border-[#FF7A00] shadow-[0_8px_30px_rgba(255,122,0,0.15)] ring-2 ring-[#FF7A00]/20'
+                          : 'border-[#E4EAF2] hover:border-gray-300 shadow-[0_4px_16px_rgba(10,31,68,0.05)] hover:shadow-md'
+                      }`}
                     >
                       <div>
-                        {/* Image Header with Verified badge */}
-                        <div className="relative h-48 w-full overflow-hidden bg-slate-100">
+                        {/* Photo Container */}
+                        <div className="relative h-40 w-full bg-slate-100 overflow-hidden">
                           <img
-                            src={cardImage}
-                            alt={karigar.fullName}
+                            src={photo}
+                            alt={k.fullName || 'Karigar'}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              e.target.onerror = null
+                              e.target.src = '/assets/images/electrician_work.jpg'
+                            }}
                           />
 
                           {/* Verified Badge */}
-                          <div className="absolute top-3 left-3 bg-[#0A1930] text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
-                            <CheckCircle2 size={13} className="text-[#FF8A00]" />
-                            <span>Verified</span>
-                          </div>
+                          {isVerified && (
+                            <div className="absolute top-2.5 left-2.5 bg-[#0A1F44]/90 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+                              <ShieldCheck size={12} className="text-[#22C55E]" />
+                              <span>Verified</span>
+                            </div>
+                          )}
 
-                          {/* Heart */}
+                          {/* Favorite Button */}
                           <button
                             type="button"
-                            className="absolute top-3 right-3 p-1.5 rounded-full bg-white/90 text-gray-500 hover:text-red-500 transition-colors shadow-sm"
+                            onClick={(e) => toggleFavorite(k._id, e)}
+                            className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-gray-500 hover:text-red-500 shadow-sm"
+                            aria-label="Favorite"
                           >
-                            <Heart size={14} />
+                            <Heart size={13} className={isFav ? 'fill-red-500 text-red-500' : ''} />
                           </button>
                         </div>
 
-                        {/* Body */}
-                        <div className="p-5">
-                          <h3 className="font-poppins font-bold text-[#0A1930] text-base mb-1 group-hover:text-[#FF8A00] transition-colors truncate">
-                            {karigar.fullName}
+                        {/* Card Info */}
+                        <div className="p-3.5">
+                          <h3 className="font-poppins font-bold text-sm text-[#0A1F44] truncate">
+                            {k.fullName || 'Verified Karigar'}
                           </h3>
-
-                          <div className="flex items-center gap-1.5 text-xs mb-2">
-                            <Star size={13} className="fill-yellow-400 text-yellow-400" />
-                            <span className="font-bold text-[#0A1930]">{karigar.rating ? karigar.rating.toFixed(1) : '4.9'}</span>
-                            <span className="text-gray-400">({karigar.reviewsCount || '1.8k'})</span>
-                          </div>
-
-                          <p className="text-gray-500 text-xs flex items-center gap-1 mb-4">
-                            <MapPin size={12} className="text-[#FF8A00] flex-shrink-0" />
-                            <span className="truncate">{karigar.city || 'Karachi'}, Pakistan</span>
+                          <p className="text-xs text-[#5A6B84] font-medium mt-0.5 mb-1.5">
+                            {serviceLabel}
                           </p>
 
-                          <div className="flex items-center justify-between border-t border-gray-100 pt-3">
-                            <span className="text-xs text-gray-500">Starting from</span>
-                            <span className="text-sm font-bold text-[#0A1930]">PKR {karigar.hourlyRate || 500}</span>
+                          {/* Rating Badge */}
+                          <div className="mb-2">
+                            <RatingBadge rating={k.rating} reviewsCount={k.reviewsCount} size="sm" />
+                          </div>
+
+                          {/* Location */}
+                          <div className="flex items-center gap-1 text-xs text-[#5A6B84] truncate">
+                            <MapPin size={12} className="text-[#FF7A00] flex-shrink-0" />
+                            <span className="truncate">{formatLocation(k)}</span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Card Footer Button */}
-                      <div className="px-5 pb-5 pt-0">
+                      {/* Card Bottom */}
+                      <div className="p-3.5 pt-0">
+                        <div className="border-t border-[#E4EAF2] pt-2.5 mb-2.5 flex items-center justify-between">
+                          <span className="text-[11px] text-[#5A6B84]">Starting from</span>
+                          <span className="text-xs font-black text-[#0A1F44]">
+                            PKR {k.hourlyRate || 500}
+                          </span>
+                        </div>
+
                         <Link
-                          to={`/worker/${karigar._id}`}
-                          className="w-full inline-flex items-center justify-center gap-1 bg-white hover:bg-gray-50 border border-gray-200 text-[#0A1930] text-xs font-bold py-2.5 rounded-xl transition-all shadow-sm"
+                          to={`/worker/${k._id}`}
+                          className="w-full inline-flex items-center justify-center gap-1 py-1.5 px-3 rounded-xl border border-[#0A1F44]/20 hover:border-[#FF7A00] hover:bg-[#FF7A00] text-[#0A1F44] hover:text-white font-bold text-xs transition-colors"
                         >
-                          <span>View Profile</span>
-                          <ArrowRight size={13} />
+                          <span>View profile</span>
+                          <ArrowRight size={12} />
                         </Link>
                       </div>
                     </div>
@@ -352,26 +428,92 @@ export default function FindKarigar() {
                 })}
               </div>
             ) : (
-              <div className="bg-white border border-gray-200 rounded-3xl p-10 text-center max-w-md mx-auto shadow-sm">
-                <Search size={36} className="mx-auto text-gray-400 mb-3" />
-                <h3 className="text-base font-bold text-[#0A1930] mb-1">No Karigars Found</h3>
-                <p className="text-gray-500 text-xs mb-4">
-                  Try adjusting your filters or search query to find available professionals.
+              // Empty State
+              <div className="bg-white rounded-3xl border border-[#E4EAF2] p-10 text-center shadow-sm">
+                <div className="w-16 h-16 rounded-full bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-4">
+                  <Search size={28} />
+                </div>
+                <h3 className="font-poppins font-bold text-lg text-[#0A1F44] mb-2">
+                  No professionals found matching your filters
+                </h3>
+                <p className="text-xs sm:text-sm text-[#5A6B84] max-w-md mx-auto mb-6">
+                  Try broadening your search, changing the selected city or area, or clearing your active filters to see all available service providers.
                 </p>
                 <button
                   type="button"
-                  onClick={() => {
-                    setFilters({ service: 'All Categories', city: 'All Cities', minRating: 0, sortBy: 'rating' })
-                    setSearchQuery('')
-                  }}
-                  className="bg-[#FF8A00] text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-[#E67A00] transition-colors"
+                  onClick={clearFilters}
+                  className="bg-[#FF7A00] hover:bg-[#F06400] text-white font-bold px-6 py-2.5 rounded-full text-xs sm:text-sm transition-all shadow-md shadow-orange-500/25"
                 >
-                  Reset Filters
+                  Clear All Filters
                 </button>
               </div>
             )}
           </div>
-        )}
+
+          {/* RIGHT COLUMN: Sticky Real Map with Interactive Pins */}
+          <div className={`lg:col-span-5 sticky top-[150px] ${viewMode === 'grid' ? 'hidden lg:block' : 'block'}`}>
+            <div className="bg-white rounded-3xl border border-[#E4EAF2] p-2.5 shadow-[0_8px_30px_rgba(10,31,68,0.08)] relative overflow-hidden h-[620px]">
+              
+              <MapView
+                city={mapCity}
+                markers={mapMarkers}
+                selectedMarkerId={selectedKarigarId}
+                onMarkerClick={(m) => {
+                  setSelectedKarigarId(m.id)
+                }}
+                className="w-full h-full rounded-2xl"
+              />
+
+              {/* Floating Active Karigar Preview Card on Map (matching Reference 2 "Explore on Map") */}
+              {activeKarigar && (
+                <div className="absolute top-6 left-6 right-6 z-10 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-xl border border-gray-100 flex items-center gap-3">
+                    <img
+                      src={activeKarigar.profilePhoto || '/assets/images/electrician_work.jpg'}
+                      alt={activeKarigar.fullName}
+                      className="w-14 h-14 rounded-xl object-cover flex-shrink-0 border border-gray-200"
+                      onError={(e) => {
+                        e.target.onerror = null
+                        e.target.src = '/assets/images/electrician_work.jpg'
+                      }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="font-poppins font-bold text-xs sm:text-sm text-[#0A1F44] truncate">
+                          {activeKarigar.fullName || 'Karigar'}
+                        </h4>
+                        {activeKarigar.verificationStatus === 'approved' && (
+                          <ShieldCheck size={13} className="text-[#22C55E] flex-shrink-0" />
+                        )}
+                      </div>
+                      <div className="my-0.5">
+                        <RatingBadge rating={activeKarigar.rating} reviewsCount={activeKarigar.reviewsCount} size="sm" />
+                      </div>
+                      <p className="text-[11px] font-bold text-[#FF7A00]">
+                        Starting PKR {activeKarigar.hourlyRate || 500}
+                      </p>
+                    </div>
+                    <Link
+                      to={`/worker/${activeKarigar._id}`}
+                      className="bg-[#0A1F44] hover:bg-[#FF7A00] text-white font-bold px-3 py-2 rounded-xl text-xs transition-colors flex-shrink-0"
+                    >
+                      View Profile →
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              {/* Bottom Label on Map */}
+              <div className="absolute bottom-5 left-5 z-10">
+                <span className="font-poppins font-black text-xs text-[#0A1F44] bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg shadow-sm border border-gray-100">
+                  📍 {mapCity}
+                </span>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
 
       </div>
     </div>

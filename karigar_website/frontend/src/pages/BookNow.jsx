@@ -1,9 +1,11 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect, useContext, useMemo } from 'react'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import { CheckCircle2, Star, MapPin, Clock, ArrowLeft, Calendar, CreditCard, ChevronRight, AlertCircle, Phone, Check, ShieldCheck, Lock, User, Home, ArrowRight } from 'lucide-react'
 import api from '../config/api'
 import { AuthContext } from '../context/AuthContext'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { CheckCircle2, Star, MapPin, Clock, ArrowLeft, Calendar, CreditCard, ChevronRight, AlertCircle, Phone, Check } from 'lucide-react'
-import { SITE_PHONE_DISPLAY, CITIES, SERVICES } from '../config/site'
+import { CITIES, SERVICES_CONFIG } from '../config/site'
+import RatingBadge from '../components/RatingBadge'
+import UserAvatar from '../components/UserAvatar'
 
 export default function BookNow() {
   const { id } = useParams()
@@ -13,87 +15,114 @@ export default function BookNow() {
   const [currentStep, setCurrentStep] = useState(2) // 1: Service, 2: Details, 3: Payment, 4: Confirm
   const [karigar, setKarigar] = useState(null)
   const [loadingKarigar, setLoadingKarigar] = useState(Boolean(id))
-  const [paymentMethod, setPaymentMethod] = useState('cod')
-  
+  const [paymentMethod, setPaymentMethod] = useState('cod') // 'cod' or 'jazzcash'
+
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], [])
+
   const [formData, setFormData] = useState({
+    fullName: user?.name || user?.fullName || '',
+    phone: user?.phone || '',
     serviceType: 'Electrician',
-    address: '',
     city: 'Karachi',
-    phone: user ? (user.phone || '') : '',
-    email: user ? (user.email || '') : '',
-    description: '',
-    name: user ? (user.fullName || '') : '',
-    date: new Date().toISOString().split('T')[0],
-    time: '10:00 AM'
+    address: '',
+    date: todayStr,
+    time: '10:00 AM - 12:00 PM',
+    notes: ''
   })
-  
+
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [confirmedBookingId, setConfirmedBookingId] = useState(null)
+  const [confirmedBooking, setConfirmedBooking] = useState(null)
 
   useEffect(() => {
     if (user) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        name: prev.name || user.fullName || '',
-        email: prev.email || user.email || '',
+        fullName: prev.fullName || user.name || user.fullName || '',
         phone: prev.phone || user.phone || ''
       }))
     }
   }, [user])
 
+  // Fetch karigar details
   useEffect(() => {
-    const fetchKarigarDetails = async () => {
-      if (!id) return
-      setLoadingKarigar(true)
-      try {
-        const { data } = await api.get(`/karigars/${id}`)
-        setKarigar(data)
-        if (data.services && data.services.length > 0) {
-          setFormData(prev => ({
+    let isMounted = true
+    if (!id) return
+
+    setLoadingKarigar(true)
+    api.get(`/karigars/${id}`)
+      .then((res) => {
+        if (!isMounted) return
+        setKarigar(res.data)
+        if (res.data.services && res.data.services.length > 0) {
+          setFormData((prev) => ({
             ...prev,
-            serviceType: data.services[0],
-            city: data.city || prev.city
+            serviceType: res.data.services[0],
+            city: res.data.city && CITIES.includes(res.data.city) ? res.data.city : prev.city
           }))
         }
-      } catch (err) {
-        console.warn('Could not load karigar details:', err)
-      } finally {
         setLoadingKarigar(false)
-      }
-    }
+      })
+      .catch((err) => {
+        if (!isMounted) return
+        console.warn('Could not load karigar details:', err)
+        setLoadingKarigar(false)
+      })
 
-    fetchKarigarDetails()
+    return () => {
+      isMounted = false
+    }
   }, [id])
 
-  const formatPhone = (value) => {
-    const digits = value.replace(/\D/g, '').slice(0, 10)
-    if (digits.length <= 3) return digits
-    return `${digits.slice(0, 3)}-${digits.slice(3)}`
+  // Pricing breakdown: Service rate + PKR 50 processing fee
+  const serviceRate = useMemo(() => {
+    if (karigar && karigar.hourlyRate) {
+      return Number(karigar.hourlyRate)
+    }
+    const matched = SERVICES_CONFIG.find((s) => s.searchKey === formData.serviceType || s.name === formData.serviceType)
+    return matched ? matched.startingPrice : 500
+  }, [karigar, formData.serviceType])
+
+  const processingFee = 50
+  const totalAmount = serviceRate + processingFee
+
+  // Format Pakistani phone: 03XX-XXXXXXX
+  const handlePhoneChange = (e) => {
+    let val = e.target.value.replace(/\D/g, '').slice(0, 11)
+    if (val.length > 4) {
+      val = `${val.slice(0, 4)}-${val.slice(4)}`
+    }
+    setFormData((prev) => ({ ...prev, phone: val }))
+    setError('')
   }
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    const normalized = name === 'phone' ? formatPhone(value) : value
-
-    setFormData(prev => ({
-      ...prev,
-      [name]: normalized
-    }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
     setError('')
   }
 
   const handleProceedToPayment = (e) => {
     e.preventDefault()
-    if (!user) {
-      setError('Please log in or sign up first to proceed with your booking.')
+    if (!formData.fullName.trim() || formData.fullName.trim().length < 3) {
+      setError('Please provide your full name (at least 3 characters).')
       return
     }
-    if (!formData.address || !formData.phone || !formData.date || !formData.time) {
-      setError('Please provide date, time, address, and contact phone.')
+    const cleanDigits = formData.phone.replace(/\D/g, '')
+    if (cleanDigits.length < 10 || cleanDigits.length > 11) {
+      setError('Please enter a valid Pakistani mobile number (e.g. 0300-1234567).')
       return
     }
+    if (!formData.address.trim() || formData.address.trim().length < 8) {
+      setError('Please provide your complete service address (house/street, area).')
+      return
+    }
+    if (!formData.date || formData.date < todayStr) {
+      setError('Please select a valid service date (today or later).')
+      return
+    }
+
+    setError('')
     setCurrentStep(3)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -107,8 +136,14 @@ export default function BookNow() {
         serviceType: formData.serviceType,
         date: formData.date,
         time: formData.time,
-        address: `${formData.address}, ${formData.city}`,
-        notes: formData.description || 'Standard service request'
+        address: `${formData.address.trim()}, ${formData.city}`,
+        customerName: formData.fullName.trim(),
+        customerPhone: formData.phone,
+        paymentMethod: paymentMethod,
+        serviceCharge: serviceRate,
+        processingFee: processingFee,
+        totalAmount: totalAmount,
+        notes: formData.notes || 'Standard booking request'
       }
 
       if (id) {
@@ -116,27 +151,40 @@ export default function BookNow() {
       }
 
       const { data } = await api.post('/bookings', payload)
-      setConfirmedBookingId(data._id)
+      setConfirmedBooking(data)
       setCurrentStep(4)
-      setIsSubmitted(true)
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit booking. Please try again.')
+      console.error('Booking submission error:', err)
+      setError(err.response?.data?.message || 'Failed to submit booking. Please check your details and try again.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0A1930] py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        
-        {/* Back Link */}
-        <Link to="/find-karigar" className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-[#0A1930] mb-6 transition-colors">
-          <ArrowLeft size={14} /> Back to Search
-        </Link>
+  const timeSlots = [
+    '09:00 AM - 11:00 AM',
+    '11:00 AM - 01:00 PM',
+    '02:00 PM - 04:00 PM',
+    '04:00 PM - 06:00 PM',
+    '06:00 PM - 08:00 PM'
+  ]
 
-        {/* 4-Step Stepper Header (matching reference image Panel 6) */}
-        <div className="bg-white border border-gray-200/90 rounded-2xl p-4 sm:p-5 mb-6 shadow-sm">
+  return (
+    <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A] py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1100px] mx-auto">
+        
+        {/* Navigation Breadcrumb */}
+        <div className="mb-6">
+          <Link
+            to={id ? `/worker/${id}` : '/find-karigar'}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#5A6B84] hover:text-[#0A1F44] transition-colors"
+          >
+            <ArrowLeft size={14} /> Back to Profile
+          </Link>
+        </div>
+
+        {/* 4-Step Stepper Header (matching Reference 2 "Booking Page") */}
+        <div className="bg-white border border-[#E4EAF2] rounded-2xl p-4 sm:p-5 mb-8 shadow-sm">
           <div className="flex items-center justify-between relative max-w-xl mx-auto">
             {[
               { num: 1, title: 'Service' },
@@ -149,19 +197,23 @@ export default function BookNow() {
               return (
                 <div key={step.num} className="flex flex-col items-center relative z-10">
                   <div
-                    className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${
+                    className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs transition-all shadow-sm ${
                       isCompleted
-                        ? 'bg-emerald-500 text-white'
+                        ? 'bg-[#22C55E] text-white'
                         : isCurrent
-                        ? 'bg-[#0A1930] text-white ring-4 ring-blue-100'
+                        ? 'bg-[#0A1F44] text-white ring-4 ring-blue-100'
                         : 'bg-gray-100 text-gray-400'
                     }`}
                   >
-                    {isCompleted ? <Check size={14} /> : step.num}
+                    {isCompleted ? <Check size={15} /> : step.num}
                   </div>
                   <span
-                    className={`text-[11px] font-semibold mt-1.5 ${
-                      isCurrent ? 'text-[#0A1930]' : isCompleted ? 'text-emerald-600' : 'text-gray-400'
+                    className={`text-[11px] font-bold mt-1.5 ${
+                      isCurrent
+                        ? 'text-[#0A1F44]'
+                        : isCompleted
+                        ? 'text-[#22C55E]'
+                        : 'text-gray-400'
                     }`}
                   >
                     {step.title}
@@ -169,277 +221,414 @@ export default function BookNow() {
                 </div>
               )
             })}
-            {/* Connecting line */}
+            {/* Connecting Stepper Bar */}
             <div className="absolute top-4 left-6 right-6 h-0.5 bg-gray-200 -z-0">
               <div
-                className="h-full bg-[#0A1930] transition-all duration-300"
+                className="h-full bg-[#0A1F44] transition-all duration-300"
                 style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
-              ></div>
+              />
             </div>
           </div>
         </div>
 
-        {/* Booking Card Main (Clean White with borders & soft shadow) */}
-        <div className="bg-white border border-gray-200/90 rounded-3xl p-6 sm:p-8 shadow-sm">
-          
-          {/* STEP 4: SUCCESS */}
-          {currentStep === 4 ? (
-            <div className="text-center py-6">
-              <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                <CheckCircle2 size={32} />
+        {/* STEP 4: SUCCESS CONFIRMATION SCREEN */}
+        {currentStep === 4 ? (
+          <div className="bg-white border border-[#E4EAF2] rounded-3xl p-8 sm:p-12 text-center max-w-2xl mx-auto shadow-lg animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-emerald-50 text-[#22C55E] rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 size={36} />
+            </div>
+            <span className="text-[#22C55E] text-xs font-bold uppercase tracking-widest block mb-1">
+              Booking Placed Successfully
+            </span>
+            <h2 className="font-poppins text-2xl sm:text-3xl font-extrabold text-[#0A1F44] mb-2">
+              Appointment Confirmed!
+            </h2>
+            <p className="text-xs sm:text-sm text-[#5A6B84] max-w-md mx-auto mb-6">
+              A booking confirmation has been registered. The verified professional will contact you at your phone number to coordinate arrival.
+            </p>
+
+            {/* Booking Details Card */}
+            <div className="bg-[#F7F9FC] border border-[#E4EAF2] rounded-2xl p-5 text-left space-y-2.5 mb-8 text-xs sm:text-sm">
+              <div className="flex justify-between items-center border-b border-[#E4EAF2] pb-2">
+                <span className="text-[#5A6B84]">Booking Reference:</span>
+                <span className="font-mono font-bold text-[#0A1F44] text-xs">
+                  {confirmedBooking?._id || 'KP-' + Math.random().toString(36).substr(2, 9).toUpperCase()}
+                </span>
               </div>
-              <h2 className="font-poppins text-2xl font-bold text-[#0A1930] mb-1">
-                Booking Confirmed!
-              </h2>
-              <p className="text-gray-500 text-xs sm:text-sm max-w-sm mx-auto mb-5">
-                Your service has been scheduled. The verified professional will contact you prior to arrival.
-              </p>
-
-              {confirmedBookingId && (
-                <div className="inline-block bg-[#F8FAFC] border border-gray-200 rounded-xl px-4 py-2 text-xs text-gray-600 mb-6">
-                  Booking Reference: <strong className="text-[#0A1930]">{confirmedBookingId}</strong>
-                </div>
-              )}
-
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Link
-                  to="/customer-dashboard"
-                  className="w-full sm:w-auto bg-[#FF8A00] hover:bg-[#E67A00] text-white font-bold py-2.5 px-6 rounded-xl text-xs transition-all shadow-sm"
-                >
-                  View My Bookings
-                </Link>
-                <Link
-                  to="/"
-                  className="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 px-6 rounded-xl text-xs transition-all"
-                >
-                  Back to Homepage
-                </Link>
+              <div className="flex justify-between items-center">
+                <span className="text-[#5A6B84]">Professional:</span>
+                <span className="font-bold text-[#0A1F44]">{karigar?.fullName || 'Assigned Karigar'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#5A6B84]">Service:</span>
+                <span className="font-bold text-[#0A1F44]">{formData.serviceType}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#5A6B84]">Appointment Date:</span>
+                <span className="font-bold text-[#0A1F44]">{formData.date} ({formData.time})</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#5A6B84]">Total Due (Cash on Delivery):</span>
+                <span className="font-black text-[#FF7A00] text-base">PKR {totalAmount}</span>
               </div>
             </div>
-          ) : currentStep === 3 ? (
-            /* STEP 3: PAYMENT METHOD */
-            <div>
-              <h2 className="font-poppins text-xl font-bold text-[#0A1930] mb-1">
-                Payment Method
-              </h2>
-              <p className="text-gray-500 text-xs mb-5">
-                Choose how you would like to settle upon work completion
-              </p>
 
-              <div className="space-y-3 mb-6">
-                <label
-                  onClick={() => setPaymentMethod('cod')}
-                  className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
-                    paymentMethod === 'cod'
-                      ? 'border-[#FF8A00] bg-orange-50/50'
-                      : 'border-gray-200 bg-white hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">💵</span>
-                    <div>
-                      <h4 className="font-bold text-[#0A1930] text-sm">Cash on Delivery (Recommended)</h4>
-                      <p className="text-gray-500 text-xs">Inspect work first, then pay directly to Karigar</p>
-                    </div>
-                  </div>
-                  <input type="radio" checked={paymentMethod === 'cod'} readOnly className="text-[#FF8A00]" />
-                </label>
-
-                <label
-                  onClick={() => setPaymentMethod('jazzcash')}
-                  className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
-                    paymentMethod === 'jazzcash'
-                      ? 'border-[#FF8A00] bg-orange-50/50'
-                      : 'border-gray-200 bg-white hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">📱</span>
-                    <div>
-                      <h4 className="font-bold text-[#0A1930] text-sm">JazzCash / EasyPaisa Direct</h4>
-                      <p className="text-gray-500 text-xs">Transfer digitally after work is completed</p>
-                    </div>
-                  </div>
-                  <input type="radio" checked={paymentMethod === 'jazzcash'} readOnly className="text-[#FF8A00]" />
-                </label>
-              </div>
-
-              {/* Order breakdown */}
-              <div className="bg-[#F8FAFC] border border-gray-200 rounded-2xl p-4 mb-6 text-xs space-y-2">
-                <div className="flex justify-between text-gray-600">
-                  <span>Starting Service Rate</span>
-                  <span className="font-bold text-[#0A1930]">PKR {karigar?.hourlyRate || 600}</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Platform Verification Fee</span>
-                  <span className="font-bold text-emerald-600">FREE</span>
-                </div>
-                <div className="border-t border-gray-200 pt-2 flex justify-between text-sm font-bold text-[#0A1930]">
-                  <span>Total Due on Arrival</span>
-                  <span className="text-[#FF8A00]">PKR {karigar?.hourlyRate || 600}</span>
-                </div>
-              </div>
-
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-600 px-3.5 py-2 rounded-xl mb-4 text-xs">
-                  {error}
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(2)}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 px-4 rounded-xl text-xs"
-                >
-                  Back
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirmBooking}
-                  disabled={isSubmitting}
-                  className="flex-1 bg-[#FF8A00] hover:bg-[#E67A00] text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all shadow-sm disabled:opacity-50"
-                >
-                  {isSubmitting ? 'Confirming...' : 'Confirm Booking'}
-                </button>
-              </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                to="/dashboard"
+                className="w-full sm:w-auto bg-[#0A1F44] hover:bg-[#102747] text-white font-bold py-3 px-6 rounded-xl text-xs sm:text-sm transition-all shadow-md"
+              >
+                View My Bookings →
+              </Link>
+              <Link
+                to="/"
+                className="w-full sm:w-auto bg-white border border-[#E4EAF2] text-[#0A1F44] hover:bg-gray-50 font-bold py-3 px-6 rounded-xl text-xs sm:text-sm transition-colors"
+              >
+                Back to Home
+              </Link>
             </div>
-          ) : (
-            /* STEP 2: BOOK YOUR SERVICE (matching reference image Panel 6) */
-            <div>
-              <h2 className="font-poppins text-xl font-bold text-[#0A1930] mb-1">
-                Book Your Service
-              </h2>
-              <p className="text-gray-500 text-xs mb-5">
-                Fill in the details below to schedule your visit
-              </p>
-
-              {/* Selected Worker Summary Card (exact matching Panel 6) */}
-              <div className="bg-[#F8FAFC] border border-gray-200 rounded-2xl p-4 mb-6 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <img
-                    src={karigar?.profilePhoto || '/assets/images/plumber_sink.jpg'}
-                    alt={karigar?.fullName || 'Quick Fix Plumbers'}
-                    className="w-14 h-14 rounded-xl object-cover border border-gray-200"
+          </div>
+        ) : (
+          /* STEP 2 & 3: TWO-COLUMN BOOKING WORKFLOW */
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* LEFT COLUMN: Karigar Overview Card + Booking Form */}
+            <div className="lg:col-span-7 space-y-6">
+              
+              {/* Karigar Preview Card (Matching Reference 2 "Booking Page") */}
+              {karigar && (
+                <div className="bg-white border border-[#E4EAF2] rounded-2xl p-4 shadow-sm flex items-center gap-4">
+                  <UserAvatar
+                    src={karigar.profilePhoto}
+                    name={karigar.fullName}
+                    className="w-16 h-16 rounded-xl object-cover bg-[#0A1F44]"
+                    textClassName="text-base font-bold text-white"
                   />
-                  <div>
-                    <h3 className="font-poppins font-bold text-[#0A1930] text-sm sm:text-base">
-                      {karigar?.fullName || 'Quick Fix Plumbers'}
-                    </h3>
-                    <div className="flex items-center gap-1 text-yellow-500 text-xs mt-0.5">
-                      <Star size={13} className="fill-yellow-400 text-yellow-400" />
-                      <span className="font-bold text-[#0A1930]">{karigar?.rating ? karigar.rating.toFixed(1) : '4.8'}</span>
-                      <span className="text-gray-400">({karigar?.reviewsCount || '2.8k reviews'})</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="font-poppins font-bold text-sm sm:text-base text-[#0A1F44] truncate">
+                        {karigar.fullName}
+                      </h3>
+                      {karigar.verificationStatus === 'approved' && (
+                        <ShieldCheck size={14} className="text-[#22C55E]" />
+                      )}
                     </div>
+                    <div className="my-1">
+                      <RatingBadge rating={karigar.rating} reviewsCount={karigar.reviewsCount} size="sm" />
+                    </div>
+                    <p className="text-xs text-[#5A6B84] truncate">
+                      {formData.serviceType} • {karigar.city || formData.city}
+                    </p>
                   </div>
-                </div>
-
-                <div className="text-right">
-                  <span className="font-poppins font-black text-base sm:text-lg text-[#0A1930]">
-                    PKR {karigar?.hourlyRate || 600}
-                  </span>
-                </div>
-              </div>
-
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-600 px-3.5 py-2 rounded-xl mb-4 text-xs">
-                  {error}
+                  <div className="text-right flex-shrink-0">
+                    <span className="text-[11px] text-[#5A6B84] block">Rate</span>
+                    <span className="font-black text-sm text-[#0A1F44]">PKR {serviceRate}</span>
+                  </div>
                 </div>
               )}
 
-              <form onSubmit={handleProceedToPayment} className="space-y-4">
+              {/* Form Card */}
+              <div className="bg-white border border-[#E4EAF2] rounded-3xl p-6 sm:p-8 shadow-sm">
                 
-                {/* Date & Time Picker */}
-                <div>
-                  <label className="text-xs font-semibold text-gray-700 block mb-1">
-                    Select Date & Time *
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="relative">
-                      <Calendar size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                {error && (
+                  <div className="mb-5 p-3.5 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center gap-2">
+                    <AlertCircle size={15} className="flex-shrink-0 text-red-600" />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                {currentStep === 2 ? (
+                  /* STEP 2: DETAILS FORM */
+                  <form onSubmit={handleProceedToPayment} className="space-y-4">
+                    <h2 className="font-poppins font-bold text-xl text-[#0A1F44] mb-1">
+                      Book Your Service
+                    </h2>
+                    <p className="text-xs text-[#5A6B84] mb-5">
+                      Fill out your contact and location details to schedule this appointment.
+                    </p>
+
+                    {/* Customer Full Name */}
+                    <div>
+                      <label className="block text-xs font-bold text-[#0A1F44] mb-1.5">
+                        Your Full Name *
+                      </label>
                       <input
-                        type="date"
-                        name="date"
-                        value={formData.date}
+                        type="text"
+                        name="fullName"
+                        value={formData.fullName}
                         onChange={handleChange}
-                        className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm text-[#0A1930] focus:outline-none focus:border-[#FF8A00] focus:bg-white"
+                        placeholder="e.g. Tariq Mansoor"
                         required
+                        className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F7F9FC] text-[#0E1E3A] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all"
                       />
                     </div>
 
-                    <div className="relative">
-                      <Clock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                      <select
-                        name="time"
-                        value={formData.time}
-                        onChange={handleChange}
-                        className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm text-[#0A1930] focus:outline-none focus:border-[#FF8A00] focus:bg-white cursor-pointer"
+                    {/* Customer Phone Number */}
+                    <div>
+                      <label className="block text-xs font-bold text-[#0A1F44] mb-1.5">
+                        Phone Number (03XX-XXXXXXX) *
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handlePhoneChange}
+                        placeholder="0300-1234567"
                         required
+                        className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F7F9FC] text-[#0E1E3A] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all"
+                      />
+                    </div>
+
+                    {/* Service Type Selection */}
+                    <div>
+                      <label className="block text-xs font-bold text-[#0A1F44] mb-1.5">
+                        Selected Service *
+                      </label>
+                      <select
+                        name="serviceType"
+                        value={formData.serviceType}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F7F9FC] text-[#0E1E3A] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all font-medium"
                       >
-                        <option value="10:00 AM">10:00 AM (Morning)</option>
-                        <option value="01:00 PM">01:00 PM (Afternoon)</option>
-                        <option value="04:00 PM">04:00 PM (Evening)</option>
-                        <option value="07:00 PM">07:00 PM (Night)</option>
+                        {SERVICES_CONFIG.map((s) => (
+                          <option key={s.id} value={s.searchKey}>{s.name} (PKR {s.startingPrice})</option>
+                        ))}
                       </select>
                     </div>
+
+                    {/* Date & Time Slot Row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-[#0A1F44] mb-1.5">
+                          Appointment Date *
+                        </label>
+                        <input
+                          type="date"
+                          name="date"
+                          min={todayStr}
+                          value={formData.date}
+                          onChange={handleChange}
+                          required
+                          className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F7F9FC] text-[#0E1E3A] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-[#0A1F44] mb-1.5">
+                          Preferred Time Window *
+                        </label>
+                        <select
+                          name="time"
+                          value={formData.time}
+                          onChange={handleChange}
+                          className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F7F9FC] text-[#0E1E3A] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all"
+                        >
+                          {timeSlots.map((slot) => (
+                            <option key={slot} value={slot}>{slot}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* City Select */}
+                    <div>
+                      <label className="block text-xs font-bold text-[#0A1F44] mb-1.5">
+                        City *
+                      </label>
+                      <select
+                        name="city"
+                        value={formData.city}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F7F9FC] text-[#0E1E3A] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all"
+                      >
+                        {CITIES.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Address Textarea */}
+                    <div>
+                      <label className="block text-xs font-bold text-[#0A1F44] mb-1.5">
+                        Complete Street / House Address *
+                      </label>
+                      <textarea
+                        name="address"
+                        rows={2}
+                        value={formData.address}
+                        onChange={handleChange}
+                        placeholder="House #, Street #, Sector / Phase, Landmark..."
+                        required
+                        className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F7F9FC] text-[#0E1E3A] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all resize-none"
+                      />
+                    </div>
+
+                    {/* Optional Notes */}
+                    <div>
+                      <label className="block text-xs font-bold text-[#0A1F44] mb-1.5">
+                        Problem Description / Notes (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        name="notes"
+                        value={formData.notes}
+                        onChange={handleChange}
+                        placeholder="e.g. Main breaker tripping continuously"
+                        className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F7F9FC] text-[#0E1E3A] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all"
+                      />
+                    </div>
+
+                    <div className="pt-3">
+                      <button
+                        type="submit"
+                        className="w-full bg-[#FF7A00] hover:bg-[#F06400] text-white font-bold py-3 px-6 rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-orange-500/25 flex items-center justify-center gap-2 hover:scale-[1.01]"
+                      >
+                        <span>Proceed to Payment</span>
+                        <ArrowRight size={15} />
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  /* STEP 3: PAYMENT METHOD FORM */
+                  <div className="space-y-5">
+                    <div className="flex items-center justify-between">
+                      <h2 className="font-poppins font-bold text-xl text-[#0A1F44]">
+                        Select Payment Method
+                      </h2>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(2)}
+                        className="text-xs font-bold text-[#5A6B84] hover:text-[#0A1F44]"
+                      >
+                        ← Edit Details
+                      </button>
+                    </div>
+
+                    <p className="text-xs text-[#5A6B84]">
+                      Choose how you would like to settle the service invoice.
+                    </p>
+
+                    <div className="space-y-3">
+                      {/* Cash on Delivery */}
+                      <label
+                        className={`flex items-start gap-3 p-4 rounded-2xl border cursor-pointer transition-all ${
+                          paymentMethod === 'cod'
+                            ? 'border-[#FF7A00] bg-orange-50/20 ring-1 ring-[#FF7A00]'
+                            : 'border-[#E4EAF2] hover:border-gray-300 bg-white'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="cod"
+                          checked={paymentMethod === 'cod'}
+                          onChange={() => setPaymentMethod('cod')}
+                          className="mt-1 accent-[#FF7A00]"
+                        />
+                        <div className="flex-1">
+                          <span className="font-bold text-sm text-[#0A1F44] block">Cash on Delivery (COD)</span>
+                          <span className="text-xs text-[#5A6B84] block mt-0.5">
+                            Pay the professional directly in cash after the job is completed to your satisfaction.
+                          </span>
+                        </div>
+                      </label>
+
+                      {/* JazzCash / EasyPaisa Direct */}
+                      <label
+                        className={`flex items-start gap-3 p-4 rounded-2xl border cursor-pointer transition-all ${
+                          paymentMethod === 'jazzcash'
+                            ? 'border-[#FF7A00] bg-orange-50/20 ring-1 ring-[#FF7A00]'
+                            : 'border-[#E4EAF2] hover:border-gray-300 bg-white'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="jazzcash"
+                          checked={paymentMethod === 'jazzcash'}
+                          onChange={() => setPaymentMethod('jazzcash')}
+                          className="mt-1 accent-[#FF7A00]"
+                        />
+                        <div className="flex-1">
+                          <span className="font-bold text-sm text-[#0A1F44] block">JazzCash / EasyPaisa</span>
+                          <span className="text-xs text-[#5A6B84] block mt-0.5">
+                            Direct mobile wallet transfer upon service arrival.
+                          </span>
+                        </div>
+                      </label>
+                    </div>
+
+                    <div className="pt-4 border-t border-[#E4EAF2]">
+                      <button
+                        type="button"
+                        onClick={handleConfirmBooking}
+                        disabled={isSubmitting}
+                        className="w-full bg-[#FF7A00] hover:bg-[#F06400] text-white font-bold py-3.5 px-6 rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-orange-500/25 flex items-center justify-center gap-2 hover:scale-[1.01] disabled:opacity-50"
+                      >
+                        <span>{isSubmitting ? 'Confirming Appointment...' : `Confirm & Book Now (PKR ${totalAmount})`}</span>
+                        <Check size={16} />
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-gray-700 block mb-1">City *</label>
-                    <select
-                      name="city"
-                      value={formData.city}
-                      onChange={handleChange}
-                      className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-[#0A1930] focus:outline-none focus:border-[#FF8A00] focus:bg-white cursor-pointer"
-                    >
-                      {CITIES.map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-semibold text-gray-700 block mb-1">Phone Number *</label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="312-3456789"
-                      className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-[#0A1930] focus:outline-none focus:border-[#FF8A00] focus:bg-white"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-gray-700 block mb-1">Address / Sector *</label>
-                  <input
-                    type="text"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    placeholder="House/Plot #, Street, Phase / Block"
-                    className="w-full bg-[#F8FAFC] border border-gray-200 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-[#0A1930] focus:outline-none focus:border-[#FF8A00] focus:bg-white"
-                    required
-                  />
-                </div>
-
-                {/* Big Orange Proceed Button (exact matching Panel 6) */}
-                <button
-                  type="submit"
-                  className="w-full bg-[#FF8A00] hover:bg-[#E67A00] text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-md hover:shadow-orange-500/30 flex items-center justify-center gap-2 mt-2"
-                >
-                  <span>Proceed to Payment</span>
-                  <ChevronRight size={16} />
-                </button>
-              </form>
+              </div>
             </div>
-          )}
 
-        </div>
+            {/* RIGHT COLUMN: Booking Summary Card (Exact from Reference 2 "Booking Page") */}
+            <div className="lg:col-span-5 sticky top-[100px]">
+              <div className="bg-white border border-[#E4EAF2] rounded-3xl p-6 shadow-sm">
+                
+                <h3 className="font-poppins font-bold text-base text-[#0A1F44] mb-4">
+                  Booking Summary
+                </h3>
+
+                <div className="space-y-3 text-xs sm:text-sm">
+                  <div className="flex items-center justify-between text-[#5A6B84]">
+                    <span>Service Charge</span>
+                    <span className="font-bold text-[#0A1F44]">PKR {serviceRate}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[#5A6B84]">
+                    <span>Processing Fee</span>
+                    <span className="font-bold text-[#0A1F44]">PKR {processingFee}</span>
+                  </div>
+
+                  <div className="border-t border-[#E4EAF2] pt-3 flex items-center justify-between">
+                    <span className="font-bold text-sm text-[#0A1F44]">Total</span>
+                    <span className="font-black text-lg text-[#FF7A00]">
+                      PKR {totalAmount}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Appointment Schedule Preview */}
+                <div className="mt-5 p-3.5 rounded-2xl bg-[#F7F9FC] border border-[#E4EAF2] text-xs space-y-1.5">
+                  <div className="flex items-center gap-2 text-[#0A1F44] font-semibold">
+                    <Calendar size={13} className="text-[#FF7A00]" />
+                    <span>{formData.date || 'Date not chosen'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[#5A6B84]">
+                    <Clock size={13} className="text-[#FF7A00]" />
+                    <span>{formData.time}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[#5A6B84]">
+                    <MapPin size={13} className="text-[#FF7A00]" />
+                    <span>{formData.city}, Pakistan</span>
+                  </div>
+                </div>
+
+                {/* Secure Payment Note */}
+                <div className="mt-5 flex items-center justify-center gap-1.5 text-xs text-[#5A6B84]">
+                  <Lock size={13} className="text-[#22C55E]" />
+                  <span>Secure Payment Guarantee</span>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        )}
 
       </div>
     </div>
