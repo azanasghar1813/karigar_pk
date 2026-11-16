@@ -6,9 +6,10 @@ export default function AreaInsightsStrip({
   totalBusinesses = 0,
   verifiedCount = 0,
   topCategory = 'Electrician',
-  recentlyAdded = 0
+  recentlyAdded = null
 }) {
   const isCityWide = !selectedArea || selectedArea === 'All Areas'
+  const showRecentlyAdded = typeof recentlyAdded === 'number' && !isNaN(recentlyAdded)
 
   return (
     <div className="bg-white border border-[#E4EAF2] rounded-3xl p-5 sm:p-6 mb-6 shadow-[0_4px_20px_rgba(10,31,68,0.04)]">
@@ -34,8 +35,8 @@ export default function AreaInsightsStrip({
         </div>
       </div>
 
-      {/* 4-Stat Metric Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Dynamic Metric Grid */}
+      <div className={`grid grid-cols-2 ${showRecentlyAdded ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-4`}>
         {/* Metric 1: Total Businesses */}
         <div className="bg-[#F8FAFC] border border-[#E4EAF2] rounded-2xl p-3.5 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0A1F44] flex items-center justify-center flex-shrink-0">
@@ -75,18 +76,20 @@ export default function AreaInsightsStrip({
           </div>
         </div>
 
-        {/* Metric 4: Recently Added */}
-        <div className="bg-[#F8FAFC] border border-[#E4EAF2] rounded-2xl p-3.5 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
-            <Sparkles size={20} />
+        {/* Metric 4: Recently Added (Rendered ONLY when real data is available) */}
+        {showRecentlyAdded && (
+          <div className="bg-[#F8FAFC] border border-[#E4EAF2] rounded-2xl p-3.5 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
+              <Sparkles size={20} />
+            </div>
+            <div className="min-w-0">
+              <span className="text-[11px] text-[#5A6B84] font-medium block truncate">Recently Added</span>
+              <span className="font-poppins font-extrabold text-base sm:text-lg text-[#0A1F44]">
+                {recentlyAdded.toLocaleString()}
+              </span>
+            </div>
           </div>
-          <div className="min-w-0">
-            <span className="text-[11px] text-[#5A6B84] font-medium block truncate">Recently Added</span>
-            <span className="font-poppins font-extrabold text-base sm:text-lg text-[#0A1F44]">
-              {recentlyAdded.toLocaleString()}+
-            </span>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   )

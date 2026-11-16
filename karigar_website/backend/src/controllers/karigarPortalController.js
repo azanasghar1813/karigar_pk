@@ -2,6 +2,7 @@ const Karigar = require('../models/Karigar');
 const Booking = require('../models/Booking');
 const Review = require('../models/Review');
 const User = require('../models/User');
+const Listing = require('../models/Listing');
 const admin = require('../config/firebase');
 
 // @desc    Get dashboard stats
@@ -215,6 +216,79 @@ const updateSchedule = async (req, res) => {
   }
 };
 
+// @desc    Get logged in karigar profile and verification status
+// @route   GET /api/karigar-portal/profile
+// @access  Private/Karigar
+const getMyProfile = async (req, res) => {
+  try {
+    const karigar = await Karigar.findById(req.karigar._id);
+    if (!karigar) {
+      return res.status(404).json({ message: 'Karigar profile not found' });
+    }
+    const listing = await Listing.findOne({ claimedBy: karigar._id });
+    res.json({
+      karigar,
+      listing
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Resubmit corrected field for admin review
+// @route   PUT /api/karigar-portal/correction
+// @access  Private/Karigar
+const resubmitCorrection = async (req, res) => {
+  try {
+    const karigar = await Karigar.findById(req.karigar._id);
+    if (!karigar) {
+      return res.status(404).json({ message: 'Karigar not found' });
+    }
+
+    const { field, value } = req.body;
+    if (field && value !== undefined) {
+      if (field === 'bio') karigar.bio = value;
+      else if (field === 'hourlyRate') karigar.hourlyRate = Number(value);
+      else if (field === 'address') karigar.address = value;
+      else if (field === 'area') karigar.area = value;
+      else if (field === 'phone') karigar.phone = value;
+      else if (field === 'fullName') karigar.fullName = value;
+      else if (field === 'cnicNumber') karigar.cnicNumber = value;
+    }
+
+    if (req.files) {
+      if (req.files.profilePhoto) karigar.profilePhoto = req.files.profilePhoto[0].path;
+      if (req.files.coverPhoto) karigar.coverPhoto = req.files.coverPhoto[0].path;
+      if (req.files.cnicFrontFile) karigar.cnicFront = req.files.cnicFrontFile[0].path;
+      if (req.files.cnicBackFile) karigar.cnicBack = req.files.cnicBackFile[0].path;
+    }
+
+    // Clear correctionNote and reset verificationStatus to pending
+    karigar.correctionNote = { field: '', message: '' };
+    karigar.verificationStatus = 'pending';
+    await karigar.save();
+
+    // If listing exists, sync it
+    const listing = await Listing.findOne({ claimedBy: karigar._id });
+    if (listing) {
+      listing.claimStatus = 'pending';
+      if (field === 'bio') listing.bio = value;
+      if (field === 'hourlyRate') listing.hourlyRate = Number(value);
+      if (field === 'address') listing.address = value;
+      if (field === 'area') listing.area = value;
+      await listing.save();
+    }
+
+    res.json({
+      success: true,
+      message: 'Correction resubmitted for admin review.',
+      karigar
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   toggleAvailability,
@@ -223,5 +297,7 @@ module.exports = {
   requestApproval,
   updateProfile,
   getMyReviews,
-  updateSchedule
+  updateSchedule,
+  getMyProfile,
+  resubmitCorrection
 };

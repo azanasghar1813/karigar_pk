@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Listing = require('../models/Listing');
 
 // Public fields whitelist: guarantees internal notes and sensitive administrative flags are never leaked
-const PUBLIC_LISTING_FIELDS = '_id name service city area address phone whatsapp rating source sourceUrl coordinates photos claimStatus claimedBy isActive createdAt updatedAt';
+const PUBLIC_LISTING_FIELDS = '_id name service city area address phone whatsapp rating source sourceUrl coordinates photos hourlyRate bio claimStatus claimedBy isActive createdAt updatedAt';
 
 /**
  * @desc    Get all directory listings with filtering, search, pagination
@@ -86,6 +86,8 @@ const getAreasWithCounts = async (req, res) => {
       match.city = new RegExp(`^${city.trim()}$`, 'i');
     }
 
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
     const areaAggregation = await Listing.aggregate([
       { $match: match },
       {
@@ -94,13 +96,38 @@ const getAreasWithCounts = async (req, res) => {
             area: { $ifNull: ['$area', 'General'] },
             service: '$service'
           },
-          count: { $sum: 1 }
+          count: { $sum: 1 },
+          recentlyAdded: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ['$createdAt', null] },
+                    { $gte: ['$createdAt', thirtyDaysAgo] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          },
+          verifiedCount: {
+            $sum: {
+              $cond: [
+                { $eq: ['$claimStatus', 'verified'] },
+                1,
+                0
+              ]
+            }
+          }
         }
       },
       {
         $group: {
           _id: '$_id.area',
           totalCount: { $sum: '$count' },
+          recentlyAdded: { $sum: '$recentlyAdded' },
+          verifiedCount: { $sum: '$verifiedCount' },
           services: {
             $push: {
               service: '$_id.service',
@@ -115,6 +142,8 @@ const getAreasWithCounts = async (req, res) => {
           _id: 0,
           area: '$_id',
           totalCount: 1,
+          recentlyAdded: 1,
+          verifiedCount: 1,
           services: 1
         }
       }

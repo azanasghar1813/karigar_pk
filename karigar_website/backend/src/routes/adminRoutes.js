@@ -27,7 +27,13 @@ const {
   getReviews,
   toggleFeatureReview,
   deleteReview,
-  getAdminListings
+  getAdminListings,
+  getClaimsQueue,
+  approveClaim,
+  rejectClaim,
+  requestClaimCorrection,
+  unclaimListing,
+  markListingClosed
 } = require('../controllers/adminController');
 
 // All routes require authentication + admin role
@@ -74,5 +80,13 @@ router.delete('/reviews/:id', deleteReview);
 
 // Directory listings
 router.get('/listings', getAdminListings);
+
+// Claims Queue & Verification Actions
+router.get('/claims', getClaimsQueue);
+router.put('/claims/:listingId/approve', approveClaim);
+router.put('/claims/:listingId/reject', rejectClaim);
+router.put('/claims/:listingId/correction', requestClaimCorrection);
+router.put('/claims/:listingId/unclaim', unclaimListing);
+router.put('/claims/:listingId/close', markListingClosed);
 
 module.exports = router;

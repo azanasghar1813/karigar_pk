@@ -31,6 +31,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsAndConditions from './pages/TermsAndConditions'
 import CustomerDashboard from './pages/CustomerDashboard'
 import ListingProfile from './pages/ListingProfile'
+import ClaimListing from './pages/ClaimListing'
 import NotFound from './pages/NotFound'
 
 // Admin pages
@@ -64,6 +65,7 @@ function App() {
             <Route path="/find-karigar" element={<PublicLayout><FindKarigar /></PublicLayout>} />
             <Route path="/worker/:id" element={<PublicLayout><WorkerProfile /></PublicLayout>} />
             <Route path="/listing/:id" element={<PublicLayout><ListingProfile /></PublicLayout>} />
+            <Route path="/claim/:id" element={<PublicLayout><ClaimListing /></PublicLayout>} />
             <Route path="/book" element={<PublicLayout><BookNow /></PublicLayout>} />
             <Route path="/book/:id" element={<PublicLayout><BookNow /></PublicLayout>} />
             <Route path="/how-it-works" element={<PublicLayout><HowItWorksPage /></PublicLayout>} />

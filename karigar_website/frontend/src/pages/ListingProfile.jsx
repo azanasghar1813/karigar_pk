@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Star, ShieldCheck, MapPin, Phone, MessageCircle, ArrowLeft, ExternalLink, AlertCircle, Building2, Wrench, CheckCircle2, Info, Share2 } from 'lucide-react'
+import { Star, ShieldCheck, MapPin, Phone, MessageCircle, ArrowLeft, ExternalLink, AlertCircle, Building2, Wrench, CheckCircle2, Info, Share2, Clock, CalendarCheck } from 'lucide-react'
 import api from '../config/api'
 import { SERVICES_CONFIG, CITY_COORDINATES } from '../config/site'
 import RatingBadge from '../components/RatingBadge'
@@ -106,7 +106,9 @@ export default function ListingProfile() {
     }
   ]
 
-  const isUnclaimed = listing.claimStatus === 'unclaimed' || !listing.claimedBy
+  const isVerified = listing.claimStatus === 'verified'
+  const isPending = listing.claimStatus === 'pending'
+  const isUnclaimed = !isVerified && !isPending
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A] py-6 px-4 sm:px-6 lg:px-8">
@@ -140,13 +142,17 @@ export default function ListingProfile() {
             
             {/* Top Right Badges */}
             <div className="absolute top-4 right-4 flex items-center gap-2">
-              {isUnclaimed ? (
-                <span className="inline-flex items-center gap-1.5 bg-amber-500/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">
-                  <AlertCircle size={13} /> Unclaimed Listing
+              {isVerified ? (
+                <span className="inline-flex items-center gap-1.5 bg-emerald-600/95 backdrop-blur-md text-white px-3.5 py-1.5 rounded-full text-xs font-bold shadow-md">
+                  <ShieldCheck size={14} /> Verified Business
+                </span>
+              ) : isPending ? (
+                <span className="inline-flex items-center gap-1.5 bg-amber-500/95 backdrop-blur-md text-white px-3.5 py-1.5 rounded-full text-xs font-bold shadow-md">
+                  <Clock size={14} /> Claim Under Review
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 bg-emerald-600/90 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">
-                  <ShieldCheck size={13} /> Verified Business
+                <span className="inline-flex items-center gap-1.5 bg-slate-800/85 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">
+                  <AlertCircle size={13} /> Unclaimed Listing
                 </span>
               )}
             </div>
@@ -163,13 +169,17 @@ export default function ListingProfile() {
                     {listing.name}
                   </h1>
 
-                  {isUnclaimed ? (
+                  {isVerified ? (
+                    <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
+                      <ShieldCheck size={13} className="text-[#22C55E]" /> Verified Professional
+                    </span>
+                  ) : isPending ? (
                     <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
-                      Unclaimed Directory
+                      <Clock size={13} className="text-amber-600" /> Claim Under Review
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
-                      <ShieldCheck size={13} className="text-[#22C55E]" /> Verified
+                    <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
+                      Unclaimed Directory
                     </span>
                   )}
                 </div>
@@ -201,7 +211,7 @@ export default function ListingProfile() {
                 </div>
               </div>
 
-              {/* Action Buttons: Call Now, WhatsApp, Claim Business */}
+              {/* Action Buttons: Call Now, WhatsApp, Book / Claim Button */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
                 {rawPhone ? (
                   <a
@@ -233,13 +243,28 @@ export default function ListingProfile() {
                   </a>
                 )}
 
-                {/* Prominent Claim Button */}
-                <Link
-                  to={`/register-karigar?claimListingId=${listing._id}&name=${encodeURIComponent(listing.name)}`}
-                  className="inline-flex items-center justify-center gap-1.5 bg-[#FF7A00] hover:bg-[#F06400] text-white font-bold py-2.5 px-5 rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-orange-500/25 hover:scale-[1.02]"
-                >
-                  <span>Is this your business? Claim it — it's FREE</span>
-                </Link>
+                {/* Primary Action Button: Book Now (if verified) / Under Review / Claim Button (if unclaimed) */}
+                {isVerified ? (
+                  <Link
+                    to={`/book?listingId=${listing._id}&name=${encodeURIComponent(listing.name)}&service=${encodeURIComponent(listing.service)}&city=${encodeURIComponent(listing.city)}${listing.claimedBy ? `&karigarId=${listing.claimedBy}` : ''}`}
+                    className="inline-flex items-center justify-center gap-2 bg-[#FF7A00] hover:bg-[#F06400] text-white font-bold py-2.5 px-6 rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-orange-500/25 hover:scale-[1.02]"
+                  >
+                    <CalendarCheck size={15} />
+                    <span>Book Now</span>
+                  </Link>
+                ) : isPending ? (
+                  <span className="inline-flex items-center justify-center gap-1.5 bg-amber-50 text-amber-800 border border-amber-200 font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm">
+                    <Clock size={15} className="text-amber-600" />
+                    <span>Claim Under Review</span>
+                  </span>
+                ) : (
+                  <Link
+                    to={`/claim/${listing._id}`}
+                    className="inline-flex items-center justify-center gap-1.5 bg-[#FF7A00] hover:bg-[#F06400] text-white font-bold py-2.5 px-5 rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-orange-500/25 hover:scale-[1.02]"
+                  >
+                    <span>Is this your business? Claim it — it's FREE</span>
+                  </Link>
+                )}
               </div>
 
             </div>
@@ -382,35 +407,95 @@ export default function ListingProfile() {
           {/* RIGHT COLUMN: Claim Card & Quick Help */}
           <div className="lg:col-span-4 space-y-6">
             
-            {/* Business Claim Callout */}
-            <div className="bg-gradient-to-br from-[#0A1F44] to-[#102747] rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
-              <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-[#FF7A00] mb-4">
-                <Building2 size={24} />
+            {/* Status-Aware Card */}
+            {isVerified ? (
+              <div className="bg-gradient-to-br from-[#0A1F44] to-[#102747] rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4">
+                  <ShieldCheck size={26} />
+                </div>
+
+                <span className="text-emerald-400 text-xs font-bold uppercase tracking-widest block mb-1">
+                  Verified Partner
+                </span>
+
+                <h3 className="font-poppins text-lg font-bold text-white mb-2 leading-tight">
+                  Verified Business Profile
+                </h3>
+
+                <p className="text-xs text-gray-300 leading-relaxed mb-6">
+                  <strong>{listing.name}</strong> is an officially verified professional on KarigarPK. You can book guaranteed services directly with transparent pricing and customer protection.
+                </p>
+
+                <Link
+                  to={`/book?listingId=${listing._id}&name=${encodeURIComponent(listing.name)}&service=${encodeURIComponent(listing.service)}&city=${encodeURIComponent(listing.city)}${listing.claimedBy ? `&karigarId=${listing.claimedBy}` : ''}`}
+                  className="w-full inline-flex items-center justify-center gap-2 bg-[#FF7A00] hover:bg-[#F06400] text-white font-bold py-3 px-4 rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-orange-500/25 hover:scale-[1.02]"
+                >
+                  <CalendarCheck size={16} />
+                  <span>Book Online Now</span>
+                </Link>
+
+                {listing.claimedBy && (
+                  <Link
+                    to={`/worker/${listing.claimedBy}`}
+                    className="w-full inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 px-4 rounded-xl text-xs mt-2.5 transition-all"
+                  >
+                    <span>View Verified Pro Profile →</span>
+                  </Link>
+                )}
               </div>
+            ) : isPending ? (
+              <div className="bg-gradient-to-br from-[#0A1F44] to-[#102747] rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-4">
+                  <Clock size={26} />
+                </div>
 
-              <span className="text-[#FF7A00] text-xs font-bold uppercase tracking-widest block mb-1">
-                Business Owner?
-              </span>
+                <span className="text-amber-400 text-xs font-bold uppercase tracking-widest block mb-1">
+                  Claim In Progress
+                </span>
 
-              <h3 className="font-poppins text-lg font-bold text-white mb-2 leading-tight">
-                Claim this business profile
-              </h3>
+                <h3 className="font-poppins text-lg font-bold text-white mb-2 leading-tight">
+                  Verification Under Review
+                </h3>
 
-              <p className="text-xs text-gray-300 leading-relaxed mb-6">
-                Are you the owner or manager of <strong>{listing.name}</strong>? Claiming your profile is 100% free and allows you to update operating hours, add photos, verify credentials, and receive customer bookings.
-              </p>
+                <p className="text-xs text-gray-300 leading-relaxed mb-4">
+                  A claim application for <strong>{listing.name}</strong> was submitted and is currently being verified by the KarigarPK administrative desk. Response within 24 hours.
+                </p>
 
-              <Link
-                to={`/register-karigar?claimListingId=${listing._id}&name=${encodeURIComponent(listing.name)}`}
-                className="w-full inline-flex items-center justify-center gap-2 bg-[#FF7A00] hover:bg-[#F06400] text-white font-bold py-3 px-4 rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-orange-500/25 hover:scale-[1.02]"
-              >
-                <span>Claim It — It's 100% FREE</span>
-              </Link>
+                <div className="bg-white/10 rounded-xl p-3 text-xs text-gray-200 flex items-center gap-2">
+                  <Info size={16} className="text-amber-400 flex-shrink-0" />
+                  <span>If you are the owner, check your Karigar Dashboard for status updates.</span>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gradient-to-br from-[#0A1F44] to-[#102747] rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+                <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-[#FF7A00] mb-4">
+                  <Building2 size={24} />
+                </div>
 
-              <p className="text-[10px] text-gray-400 text-center mt-3">
-                No credit card or payment required. Free for Pakistani businesses.
-              </p>
-            </div>
+                <span className="text-[#FF7A00] text-xs font-bold uppercase tracking-widest block mb-1">
+                  Business Owner?
+                </span>
+
+                <h3 className="font-poppins text-lg font-bold text-white mb-2 leading-tight">
+                  Claim this business profile
+                </h3>
+
+                <p className="text-xs text-gray-300 leading-relaxed mb-6">
+                  Are you the owner or manager of <strong>{listing.name}</strong>? Claiming your profile is 100% free and allows you to update operating hours, add photos, verify credentials, and receive customer bookings.
+                </p>
+
+                <Link
+                  to={`/claim/${listing._id}`}
+                  className="w-full inline-flex items-center justify-center gap-2 bg-[#FF7A00] hover:bg-[#F06400] text-white font-bold py-3 px-4 rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-orange-500/25 hover:scale-[1.02]"
+                >
+                  <span>Claim It — It's 100% FREE</span>
+                </Link>
+
+                <p className="text-[10px] text-gray-400 text-center mt-3">
+                  Instant SMS OTP verification. Free for Pakistani businesses.
+                </p>
+              </div>
+            )}
 
             {/* Support / Inquiries Box */}
             <div className="bg-white border border-[#E4EAF2] rounded-3xl p-6 shadow-sm">

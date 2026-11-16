@@ -26,6 +26,27 @@ export default function ExploreAreasView({
     return sorted.length > 0 ? sorted[0][0] : 'Electrician'
   }, [areas])
 
+  // Calculate real sum of recentlyAdded across all areas from backend aggregation (no fake data)
+  const totalRecentlyAdded = useMemo(() => {
+    if (!areas || areas.length === 0) return null
+    let sum = 0
+    let hasValidData = false
+    for (const a of areas) {
+      if (typeof a.recentlyAdded === 'number') {
+        sum += a.recentlyAdded
+        hasValidData = true
+      }
+    }
+    return hasValidData ? sum : null
+  }, [areas])
+
+  // Calculate total verified count across areas from backend aggregation
+  const totalVerified = useMemo(() => {
+    if (!areas || areas.length === 0) return verifiedCount
+    const sum = areas.reduce((acc, a) => acc + (typeof a.verifiedCount === 'number' ? a.verifiedCount : 0), 0)
+    return sum > 0 ? sum : verifiedCount
+  }, [areas, verifiedCount])
+
   const handleSelectArea = (selectedAreaName) => {
     setArea(selectedAreaName)
     setViewMode('grid') // Switches to Grid filtered by that area
@@ -38,9 +59,9 @@ export default function ExploreAreasView({
         city={city}
         selectedArea={area}
         totalBusinesses={totalBusinesses}
-        verifiedCount={verifiedCount}
+        verifiedCount={totalVerified}
         topCategory={topCategory}
-        recentlyAdded={Math.round(totalBusinesses * 0.18)}
+        recentlyAdded={totalRecentlyAdded}
       />
 
       {/* Area Cards Section */}

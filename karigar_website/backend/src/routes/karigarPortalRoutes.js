@@ -10,12 +10,15 @@ const {
   requestApproval,
   updateProfile,
   getMyReviews,
-  updateSchedule
+  updateSchedule,
+  getMyProfile,
+  resubmitCorrection
 } = require('../controllers/karigarPortalController');
 
 // All portal routes require Karigar authentication
 router.use(protectKarigar);
 
+router.get('/profile', getMyProfile);
 router.get('/reviews', getMyReviews);
 router.put('/schedule', updateSchedule);
 
@@ -32,5 +35,12 @@ router.put('/profile', upload.fields([
   { name: 'cnicFrontFile', maxCount: 1 },
   { name: 'cnicBackFile', maxCount: 1 }
 ]), updateProfile);
+
+router.put('/correction', upload.fields([
+  { name: 'profilePhoto', maxCount: 1 },
+  { name: 'coverPhoto', maxCount: 1 },
+  { name: 'cnicFrontFile', maxCount: 1 },
+  { name: 'cnicBackFile', maxCount: 1 }
+]), resubmitCorrection);
 
 module.exports = router;

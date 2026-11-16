@@ -69,6 +69,14 @@ const listingSchema = new mongoose.Schema(
       type: [String],
       default: []
     },
+    hourlyRate: {
+      type: Number,
+      default: null
+    },
+    bio: {
+      type: String,
+      default: ''
+    },
     claimStatus: {
       type: String,
       enum: ['unclaimed', 'pending', 'verified', 'rejected'],

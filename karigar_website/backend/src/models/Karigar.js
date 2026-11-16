@@ -26,11 +26,24 @@ const karigarSchema = new mongoose.Schema({
     required: true, 
     trim: true, 
     maxLength: 15,
-    match: [/^[0-9+]{5}-[0-9+]{7}-[0-9]{1}$/, 'Please add a valid CNIC (e.g., 12345-1234567-1)']
+    match: [/^[0-9+]{5}-[0-9+]{7}-[0-9]{1}$/, 'Please add a valid CNIC (e.g., 12345-1234567-1)'],
+    select: false
   },
-  cnicFront: { type: String },
-  cnicBack: { type: String },
+  cnicFront: { type: String, select: false },
+  cnicBack: { type: String, select: false },
   profilePhoto: { type: String },
+  coverPhoto: { type: String, default: '' },
+  gallery: [{ type: String }],
+  area: { type: String, default: '' },
+  address: { type: String, default: '' },
+  coordinates: {
+    lat: { type: Number, default: null },
+    lng: { type: Number, default: null }
+  },
+  correctionNote: {
+    field: { type: String, default: '' },
+    message: { type: String, default: '' }
+  },
   hourlyRate: { type: Number, default: 500, min: 0 },
   bio: { type: String, trim: true, maxLength: 1000 },
   rating: { type: Number, default: 0, min: 0, max: 5 },

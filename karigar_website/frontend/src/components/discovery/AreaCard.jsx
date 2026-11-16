@@ -36,9 +36,17 @@ export default function AreaCard({
             </div>
           </div>
 
-          <span className="bg-[#F5F7FB] border border-[#E4EAF2] text-[#0A1F44] font-extrabold text-xs px-2.5 py-1 rounded-xl flex-shrink-0">
-            {area.totalCount} Listings
-          </span>
+          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+            <span className="bg-[#F5F7FB] border border-[#E4EAF2] text-[#0A1F44] font-extrabold text-xs px-2.5 py-1 rounded-xl">
+              {area.totalCount} Listings
+            </span>
+            {typeof area.verifiedCount === 'number' && area.verifiedCount > 0 && (
+              <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-[10px] px-2 py-0.5 rounded-lg">
+                <ShieldCheck size={11} className="text-[#22C55E]" />
+                <span>{area.verifiedCount} Verified</span>
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Top Categories in Area */}

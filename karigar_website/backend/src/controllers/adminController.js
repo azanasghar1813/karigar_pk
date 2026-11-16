@@ -5,6 +5,9 @@ const Service = require('../models/Service');
 const Review = require('../models/Review');
 const User = require('../models/User');
 const Listing = require('../models/Listing');
+const Claim = require('../models/Claim');
+const sendEmail = require('../utils/sendEmail');
+const NOTIFICATION_TEXTS = require('../config/notificationTexts');
 
 // ─────────────────────────────────────────────
 // DASHBOARD STATS
@@ -651,6 +654,281 @@ const getAdminListings = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────────
+// CLAIMS QUEUE & VERIFICATION REVIEW
+// ─────────────────────────────────────────────
+
+// @desc    Get all listings in pending claim queue joined with claimant Karigar data
+// @route   GET /api/admin/claims
+// @access  Admin
+const getClaimsQueue = async (req, res) => {
+  try {
+    const claims = await Listing.find({
+      claimStatus: { $in: ['pending', 'rejected'] },
+      claimedBy: { $ne: null }
+    })
+      .populate({
+        path: 'claimedBy',
+        select: '+cnicNumber +cnicFront +cnicBack'
+      })
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    // Also get active claim records for correctionNotes
+    const listingIds = claims.map(c => c._id);
+    const claimRecords = await Claim.find({ listing: { $in: listingIds } }).lean();
+    const claimRecordMap = {};
+    claimRecords.forEach(cr => {
+      claimRecordMap[cr.listing.toString()] = cr;
+    });
+
+    const enrichedClaims = claims.map(c => ({
+      ...c,
+      claimDetails: claimRecordMap[c._id.toString()] || null
+    }));
+
+    res.json({
+      total: enrichedClaims.length,
+      claims: enrichedClaims
+    });
+  } catch (error) {
+    console.error('Error in getClaimsQueue:', error);
+    res.status(500).json({ message: 'Failed to fetch claims queue' });
+  }
+};
+
+// @desc    Approve business listing claim
+// @route   PUT /api/admin/claims/:listingId/approve
+// @access  Admin
+const approveClaim = async (req, res) => {
+  try {
+    const { listingId } = req.params;
+    const listing = await Listing.findById(listingId);
+    if (!listing) return res.status(404).json({ message: 'Listing not found' });
+    if (!listing.claimedBy) return res.status(400).json({ message: 'Listing has no attached claimant' });
+
+    const karigar = await Karigar.findById(listing.claimedBy);
+    if (!karigar) return res.status(404).json({ message: 'Claimant Karigar profile not found' });
+
+    // 1. Approve Karigar account
+    karigar.verificationStatus = 'approved';
+    karigar.approvedBy = req.user._id;
+    karigar.approvedAt = new Date();
+    karigar.rejectionReason = '';
+    karigar.correctionNote = { field: '', message: '' };
+    await karigar.save();
+
+    // 2. Update Listing: public profile source
+    listing.claimStatus = 'verified';
+    if (karigar.hourlyRate) listing.hourlyRate = karigar.hourlyRate;
+    if (karigar.bio) listing.bio = karigar.bio;
+    if (karigar.area) listing.area = karigar.area;
+    if (karigar.address) listing.address = karigar.address;
+    if (karigar.coordinates) listing.coordinates = karigar.coordinates;
+    const allPhotos = [karigar.profilePhoto, karigar.coverPhoto, ...(karigar.gallery || [])].filter(Boolean);
+    if (allPhotos.length > 0) listing.photos = allPhotos;
+    await listing.save();
+
+    // 3. Update Claim document
+    await Claim.findOneAndUpdate(
+      { listing: listing._id },
+      { status: 'approved', rejectionReason: '' }
+    );
+
+    // 4. Send Approval Notification
+    const approveMsg = NOTIFICATION_TEXTS.CLAIM_APPROVED(listing.name);
+    console.log(`\n[CLAIM APPROVED] Listing: "${listing.name}" | Owner: ${karigar.fullName}\n`);
+    await sendEmail({
+      to: karigar.email,
+      subject: `KarigarPK: Business Claim Approved for ${listing.name}`,
+      text: approveMsg,
+      html: `<div style="font-family: Arial, sans-serif; padding: 20px; color: #0A1F44;">
+        <h2 style="color: #22C55E;">Mubarak Ho! Claim Approved</h2>
+        <p>${approveMsg}</p>
+        <p>Aapka business ab Verified badge ke sath live hai aur customers aapko direct book kar sakte hain.</p>
+      </div>`
+    }).catch(e => console.warn('Email notify error:', e.message));
+
+    res.json({
+      success: true,
+      message: 'Claim approved successfully. Listing is now verified.'
+    });
+  } catch (error) {
+    console.error('Error in approveClaim:', error);
+    res.status(500).json({ message: error.message || 'Failed to approve claim' });
+  }
+};
+
+// @desc    Reject business listing claim with written reason
+// @route   PUT /api/admin/claims/:listingId/reject
+// @access  Admin
+const rejectClaim = async (req, res) => {
+  try {
+    const { listingId } = req.params;
+    const { reason } = req.body;
+
+    if (!reason || reason.trim().length < 5) {
+      return res.status(400).json({ message: 'Written rejection reason is required (at least 5 characters).' });
+    }
+
+    const listing = await Listing.findById(listingId);
+    if (!listing) return res.status(404).json({ message: 'Listing not found' });
+
+    // 1. Update Karigar
+    if (listing.claimedBy) {
+      await Karigar.findByIdAndUpdate(listing.claimedBy, {
+        verificationStatus: 'rejected',
+        rejectionReason: reason.trim()
+      });
+    }
+
+    // 2. Update Listing
+    listing.claimStatus = 'rejected';
+    await listing.save();
+
+    // 3. Update Claim
+    const claim = await Claim.findOneAndUpdate(
+      { listing: listing._id },
+      { status: 'rejected', rejectionReason: reason.trim() },
+      { new: true }
+    );
+
+    // 4. Send Rejection Notification
+    const rejectMsg = NOTIFICATION_TEXTS.CLAIM_REJECTED(listing.name, reason.trim());
+    if (listing.claimedBy) {
+      const karigar = await Karigar.findById(listing.claimedBy);
+      if (karigar) {
+        await sendEmail({
+          to: karigar.email,
+          subject: `KarigarPK: Claim Status for ${listing.name}`,
+          text: rejectMsg,
+          html: `<div style="font-family: Arial, sans-serif; padding: 20px; color: #0A1F44;">
+            <h2 style="color: #EF4444;">Claim Status Update</h2>
+            <p>${rejectMsg}</p>
+            <p><strong>Wajah (Reason):</strong> ${reason.trim()}</p>
+          </div>`
+        }).catch(e => console.warn('Email notify error:', e.message));
+      }
+    }
+
+    res.json({
+      success: true,
+      message: 'Claim rejected with written reason stored.'
+    });
+  } catch (error) {
+    console.error('Error in rejectClaim:', error);
+    res.status(500).json({ message: error.message || 'Failed to reject claim' });
+  }
+};
+
+// @desc    Request correction from owner without full rejection
+// @route   PUT /api/admin/claims/:listingId/correction
+// @access  Admin
+const requestClaimCorrection = async (req, res) => {
+  try {
+    const { listingId } = req.params;
+    const { field, message } = req.body;
+
+    if (!field || !message || message.trim().length < 5) {
+      return res.status(400).json({ message: 'Field name and clear correction message are required.' });
+    }
+
+    const listing = await Listing.findById(listingId);
+    if (!listing) return res.status(404).json({ message: 'Listing not found' });
+
+    // 1. Update Karigar
+    if (listing.claimedBy) {
+      await Karigar.findByIdAndUpdate(listing.claimedBy, {
+        verificationStatus: 'pending',
+        correctionNote: { field: field.trim(), message: message.trim() }
+      });
+    }
+
+    // 2. Update Claim
+    await Claim.findOneAndUpdate(
+      { listing: listing._id },
+      {
+        status: 'correction-needed',
+        correctionNote: { field: field.trim(), message: message.trim() }
+      }
+    );
+
+    // 3. Send Notification
+    const correctionMsg = NOTIFICATION_TEXTS.CLAIM_CORRECTION(listing.name, field.trim(), message.trim());
+    if (listing.claimedBy) {
+      const karigar = await Karigar.findById(listing.claimedBy);
+      if (karigar) {
+        await sendEmail({
+          to: karigar.email,
+          subject: `KarigarPK: Action Needed for ${listing.name}`,
+          text: correctionMsg,
+          html: `<div style="font-family: Arial, sans-serif; padding: 20px; color: #0A1F44;">
+            <h2 style="color: #F59E0B;">Correction Needed on your Claim</h2>
+            <p>${correctionMsg}</p>
+            <p><strong>Field:</strong> ${field.trim()}</p>
+            <p><strong>Message:</strong> ${message.trim()}</p>
+          </div>`
+        }).catch(e => console.warn('Email notify error:', e.message));
+      }
+    }
+
+    res.json({
+      success: true,
+      message: 'Correction request dispatched to owner.'
+    });
+  } catch (error) {
+    console.error('Error in requestClaimCorrection:', error);
+    res.status(500).json({ message: error.message || 'Failed to request correction' });
+  }
+};
+
+// @desc    Fraud action: unclaim a listing and detach claimant
+// @route   PUT /api/admin/claims/:listingId/unclaim
+// @access  Admin
+const unclaimListing = async (req, res) => {
+  try {
+    const { listingId } = req.params;
+    const listing = await Listing.findById(listingId);
+    if (!listing) return res.status(404).json({ message: 'Listing not found' });
+
+    listing.claimStatus = 'unclaimed';
+    listing.claimedBy = null;
+    await listing.save();
+
+    await Claim.deleteMany({ listing: listing._id });
+
+    res.json({
+      success: true,
+      message: 'Listing unclaimed successfully. Status reset to unclaimed.'
+    });
+  } catch (error) {
+    console.error('Error in unclaimListing:', error);
+    res.status(500).json({ message: error.message || 'Failed to unclaim listing' });
+  }
+};
+
+// @desc    Mark business permanently closed
+// @route   PUT /api/admin/claims/:listingId/close
+// @access  Admin
+const markListingClosed = async (req, res) => {
+  try {
+    const { listingId } = req.params;
+    const listing = await Listing.findById(listingId);
+    if (!listing) return res.status(404).json({ message: 'Listing not found' });
+
+    listing.isActive = false;
+    await listing.save();
+
+    res.json({
+      success: true,
+      message: 'Listing marked closed and deactivated from public directory.'
+    });
+  } catch (error) {
+    console.error('Error in markListingClosed:', error);
+    res.status(500).json({ message: error.message || 'Failed to mark closed' });
+  }
+};
+
 module.exports = {
   getStats,
   getActiveUsers,
@@ -677,5 +955,11 @@ module.exports = {
   getReviews,
   toggleFeatureReview,
   deleteReview,
-  getAdminListings
+  getAdminListings,
+  getClaimsQueue,
+  approveClaim,
+  rejectClaim,
+  requestClaimCorrection,
+  unclaimListing,
+  markListingClosed
 };
