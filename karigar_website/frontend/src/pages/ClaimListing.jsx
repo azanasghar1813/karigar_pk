@@ -299,6 +299,8 @@ export default function ClaimListing() {
       data.append('experience', formData.experience)
       data.append('bio', formData.bio.trim())
       data.append('cnicNumber', formData.cnicNumber)
+      data.append('workingHours', formData.workingHours || '09:00 AM - 07:00 PM')
+      data.append('workingDays', JSON.stringify(formData.workingDays || []))
       data.append('services', JSON.stringify(formData.services.length > 0 ? formData.services : [listing.service]))
 
       if (formData.coordinates) {

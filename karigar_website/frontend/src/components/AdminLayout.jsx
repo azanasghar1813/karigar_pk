@@ -12,12 +12,14 @@ import {
   Menu,
   X,
   ChevronRight,
+  Send,
 } from 'lucide-react'
 import { AuthContext } from '../context/AuthContext'
 
 const NAV_ITEMS = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { to: '/admin/karigars', label: 'Karigars', icon: Users },
+  { to: '/admin/karigars', label: 'Karigars', icon: Users, exact: true },
+  { to: '/admin/karigars?status=claims', label: 'Claims & Invites', icon: Send },
   { to: '/admin/users', label: 'Customers', icon: Users },
   { to: '/admin/bookings', label: 'Bookings', icon: ClipboardList },
   { to: '/admin/leads', label: 'Leads', icon: PhoneCall },

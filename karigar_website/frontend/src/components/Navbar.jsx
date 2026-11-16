@@ -48,7 +48,7 @@ export default function Navbar() {
 
   return (
     <nav className="bg-[#0A1F44] border-b border-white/10 text-white sticky top-0 z-50 shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[66px] flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[60px] sm:h-[62px] flex items-center justify-between">
         
         {/* Brand Logo Left using /logo.png */}
         <div className="flex-shrink-0">

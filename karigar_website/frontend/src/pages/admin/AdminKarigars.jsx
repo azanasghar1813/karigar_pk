@@ -1,22 +1,25 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { CheckCircle, XCircle, Clock, Eye, X, ChevronDown, Users, MessageSquare, Ban, Trash2 } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Eye, X, ChevronDown, Users, MessageSquare, Ban, Trash2, Send, Search, Building2, ShieldCheck, Mail, ArrowRight, RefreshCw } from 'lucide-react'
 import api from '../../config/api'
 
 const STATUS_TABS = [
-  { key: '', label: 'All' },
-  { key: 'pending', label: 'Pending' },
+  { key: '', label: 'All Karigars' },
+  { key: 'pending', label: 'Pending Approvals' },
   { key: 'approved', label: 'Approved' },
   { key: 'rejected', label: 'Rejected' },
+  { key: 'claims', label: 'Business Claims & Directory' },
 ]
 
 const STATUS_BADGE = {
   pending: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
   approved: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
   rejected: 'bg-red-500/15 text-red-400 border-red-500/30',
+  unclaimed: 'bg-slate-700/40 text-slate-300 border-slate-600',
+  verified: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
 }
 
-function KarigarModal({ karigar, onClose, onApprove, onReject, onRestrict, onDelete, onUpdateRate, loading }) {
+function KarigarModal({ karigar, onClose, onApprove, onReject, onRestrict, onDelete, onUpdateRate, onSendInvite, loading, inviting }) {
   const [rejectionReason, setRejectionReason] = useState('')
   const [showRejectForm, setShowRejectForm] = useState(false)
   const [newRate, setNewRate] = useState(karigar.hourlyRate || '')
@@ -34,6 +37,16 @@ function KarigarModal({ karigar, onClose, onApprove, onReject, onRestrict, onDel
             <p className="text-slate-400 text-sm">{karigar.email} · {karigar.city}</p>
           </div>
           <div className="flex items-center gap-3">
+            {karigar.phone && (
+              <button
+                type="button"
+                onClick={() => onSendInvite && onSendInvite(karigar)}
+                disabled={inviting}
+                className="flex items-center gap-1.5 text-xs bg-orange-500/20 text-orange-300 hover:bg-orange-500/30 px-3 py-1 rounded border border-orange-500/30 transition-colors font-medium"
+              >
+                <Send size={12} /> {inviting ? 'Sending...' : 'Send Claim Invite'}
+              </button>
+            )}
             <span className={`text-xs px-2 py-1 rounded border font-semibold ${STATUS_BADGE[karigar.verificationStatus]}`}>
               {karigar.verificationStatus?.toUpperCase()}
             </span>
@@ -227,6 +240,15 @@ export default function AdminKarigars() {
   const [selected, setSelected] = useState(null)
   const [toast, setToast] = useState('')
 
+  // Directory Claims & Invites View state
+  const [listings, setListings] = useState([])
+  const [listingCounts, setListingCounts] = useState(null)
+  const [listingQuery, setListingQuery] = useState('')
+  const [listingStatus, setListingStatus] = useState('all')
+  const [listingPage, setListingPage] = useState(1)
+  const [listingTotalPages, setListingTotalPages] = useState(1)
+  const [invitingId, setInvitingId] = useState(null)
+
   const showToast = (msg) => {
     setToast(msg)
     setTimeout(() => setToast(''), 3000)
@@ -240,7 +262,51 @@ export default function AdminKarigars() {
       .finally(() => setLoading(false))
   }, [statusFilter])
 
-  useEffect(() => { fetchKarigars() }, [fetchKarigars])
+  const fetchAdminListings = useCallback(() => {
+    setLoading(true)
+    const params = {
+      page: listingPage,
+      limit: 20
+    }
+    if (listingQuery.trim()) params.q = listingQuery.trim()
+    if (listingStatus !== 'all') params.claimStatus = listingStatus
+
+    api.get('/admin/listings', { params })
+      .then(({ data }) => {
+        setListings(data.listings || [])
+        setListingCounts(data.counts || null)
+        setListingTotalPages(data.totalPages || 1)
+      })
+      .catch((err) => {
+        console.error(err)
+        showToast('❌ Failed to fetch directory listings')
+      })
+      .finally(() => setLoading(false))
+  }, [listingPage, listingQuery, listingStatus])
+
+  useEffect(() => {
+    if (statusFilter === 'claims') {
+      fetchAdminListings()
+    } else {
+      fetchKarigars()
+    }
+  }, [statusFilter, fetchKarigars, fetchAdminListings])
+
+  const handleSendInvite = async (listing) => {
+    if (!listing.phone) {
+      showToast('❌ Listing has no phone number on record')
+      return
+    }
+    setInvitingId(listing._id)
+    try {
+      const res = await api.post(`/admin/listings/${listing._id}/send-invite`)
+      showToast(`✅ ${res.data.message || `Invite sent to ${listing.phone}!`}`)
+    } catch (err) {
+      showToast(err.response?.data?.message || '❌ Failed to send invite')
+    } finally {
+      setInvitingId(null)
+    }
+  }
 
   const handleApprove = async () => {
     setActionLoading(true)
@@ -331,19 +397,27 @@ export default function AdminKarigars() {
           onRestrict={handleRestrict}
           onDelete={handleDelete}
           onUpdateRate={handleUpdateRate}
+          onSendInvite={handleSendInvite}
           loading={actionLoading}
+          inviting={actionLoading}
         />
       )}
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white font-poppins">Karigars</h1>
-          <p className="text-slate-400 text-sm mt-1">Review, approve, or reject karigar applications</p>
+          <h1 className="text-2xl font-bold text-white font-poppins">
+            {statusFilter === 'claims' ? 'Business Claims & Directory' : 'Karigars'}
+          </h1>
+          <p className="text-slate-400 text-sm mt-1">
+            {statusFilter === 'claims'
+              ? 'Manage directory listings, inspect claims, and dispatch claim invitation notices'
+              : 'Review, approve, or reject karigar applications'}
+          </p>
         </div>
       </div>
 
       {/* Status Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-slate-800 pb-4">
+      <div className="flex gap-2 mb-6 border-b border-slate-800 pb-4 flex-wrap">
         {STATUS_TABS.map(({ key, label }) => (
           <button
             key={key}
@@ -359,73 +433,230 @@ export default function AdminKarigars() {
         ))}
       </div>
 
-      {loading ? (
-        <div className="space-y-3">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="bg-slate-900 border border-slate-800 rounded-xl h-16 animate-pulse" />
-          ))}
-        </div>
-      ) : karigars.length === 0 ? (
-        <div className="text-center py-16 text-slate-500">
-          <Users size={40} className="mx-auto mb-3 opacity-30" />
-          <p>No karigars found</p>
+      {statusFilter === 'claims' ? (
+        <div className="space-y-6">
+          {/* Quick Metrics */}
+          {listingCounts && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                <span className="text-xs text-slate-500 uppercase font-semibold block">Total Cataloged</span>
+                <span className="text-xl font-bold text-white font-poppins">{listingCounts.total?.toLocaleString() || 0}</span>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                <span className="text-xs text-amber-500 uppercase font-semibold block">Unclaimed Directory</span>
+                <span className="text-xl font-bold text-amber-400 font-poppins">{listingCounts.unclaimed?.toLocaleString() || 0}</span>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                <span className="text-xs text-blue-400 uppercase font-semibold block">Under Review</span>
+                <span className="text-xl font-bold text-blue-400 font-poppins">{listingCounts.pending?.toLocaleString() || 0}</span>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                <span className="text-xs text-emerald-400 uppercase font-semibold block">Verified Businesses</span>
+                <span className="text-xl font-bold text-emerald-400 font-poppins">{listingCounts.verified?.toLocaleString() || 0}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Search & Claim Status Filter */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-4 rounded-xl">
+            <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 flex-1 max-w-md">
+              <Search size={16} className="text-slate-500" />
+              <input
+                type="text"
+                value={listingQuery}
+                onChange={(e) => {
+                  setListingQuery(e.target.value)
+                  setListingPage(1)
+                }}
+                placeholder="Search by business name, phone, or area..."
+                className="bg-transparent text-white text-xs w-full focus:outline-none placeholder-slate-500"
+              />
+            </div>
+
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {[
+                { key: 'all', label: 'All' },
+                { key: 'unclaimed', label: 'Unclaimed' },
+                { key: 'pending', label: 'Pending Review' },
+                { key: 'verified', label: 'Verified' },
+                { key: 'rejected', label: 'Rejected' },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => {
+                    setListingStatus(tab.key)
+                    setListingPage(1)
+                  }}
+                  className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
+                    listingStatus === tab.key
+                      ? 'bg-secondary text-white'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Listings Table */}
+          {loading ? (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="bg-slate-900 border border-slate-800 rounded-xl h-16 animate-pulse" />
+              ))}
+            </div>
+          ) : listings.length === 0 ? (
+            <div className="text-center py-16 text-slate-500 bg-slate-900 border border-slate-800 rounded-xl">
+              <Building2 size={40} className="mx-auto mb-3 opacity-30" />
+              <p>No directory listings match the filter.</p>
+            </div>
+          ) : (
+            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-800 bg-slate-950/50">
+                      <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide">Business & Service</th>
+                      <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden md:table-cell">City / Area</th>
+                      <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden sm:table-cell">Registered Phone</th>
+                      <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide">Claim Status</th>
+                      <th className="text-right text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {listings.map((l) => (
+                      <tr key={l._id} className="hover:bg-slate-800/40 transition-colors">
+                        <td className="px-4 py-3">
+                          <div>
+                            <p className="text-white font-medium">{l.name}</p>
+                            <p className="text-secondary text-xs">{l.service}</p>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-slate-300 hidden md:table-cell">
+                          {l.area ? `${l.area}, ` : ''}{l.city}
+                        </td>
+                        <td className="px-4 py-3 text-slate-300 hidden sm:table-cell">
+                          {l.phone || <span className="text-slate-600 italic">No phone</span>}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs px-2 py-1 rounded border font-semibold ${STATUS_BADGE[l.claimStatus] || STATUS_BADGE.unclaimed}`}>
+                            {l.claimStatus?.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            onClick={() => handleSendInvite(l)}
+                            disabled={invitingId === l._id || !l.phone}
+                            className="inline-flex items-center gap-1.5 text-xs bg-[#FF7A00] hover:bg-[#F06400] disabled:bg-slate-800 disabled:text-slate-600 text-white font-bold px-3 py-1.5 rounded-lg transition-all shadow-sm cursor-pointer"
+                            title={l.phone ? `Send claim invitation to ${l.phone}` : 'No phone number on record'}
+                          >
+                            <Send size={12} />
+                            <span>{invitingId === l._id ? 'Sending...' : 'Send Claim Invite'}</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {listingTotalPages > 1 && (
+                <div className="flex items-center justify-between px-4 py-3 border-t border-slate-800 bg-slate-950/40 text-xs text-slate-400">
+                  <span>Page {listingPage} of {listingTotalPages}</span>
+                  <div className="flex gap-2">
+                    <button
+                      disabled={listingPage <= 1}
+                      onClick={() => setListingPage(p => Math.max(1, p - 1))}
+                      className="px-3 py-1 rounded bg-slate-800 text-white disabled:opacity-40"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      disabled={listingPage >= listingTotalPages}
+                      onClick={() => setListingPage(p => Math.min(listingTotalPages, p + 1))}
+                      className="px-3 py-1 rounded bg-slate-800 text-white disabled:opacity-40"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       ) : (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-800 bg-slate-950/50">
-                  <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide">Karigar</th>
-                  <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden md:table-cell">Phone</th>
-                  <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden sm:table-cell">City</th>
-                  <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden lg:table-cell">Services</th>
-                  <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide">Status</th>
-                  <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden md:table-cell">Registered</th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800">
-                {karigars.map((k) => (
-                  <tr key={k._id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="px-4 py-3">
-                      <div>
-                        <p className="text-white font-medium">{k.fullName}</p>
-                        <p className="text-slate-500 text-xs">{k.email}</p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-slate-300 hidden md:table-cell">{k.phone}</td>
-                    <td className="px-4 py-3 text-slate-300 hidden sm:table-cell">{k.city}</td>
-                    <td className="px-4 py-3 hidden lg:table-cell">
-                      <div className="flex flex-wrap gap-1">
-                        {k.services?.slice(0, 2).map((s) => (
-                          <span key={s} className="bg-slate-800 text-slate-400 text-xs px-2 py-0.5 rounded">{s}</span>
-                        ))}
-                        {k.services?.length > 2 && <span className="text-slate-600 text-xs">+{k.services.length - 2}</span>}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-1 rounded border font-semibold ${STATUS_BADGE[k.verificationStatus]}`}>
-                        {k.verificationStatus}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-slate-500 text-xs hidden md:table-cell">
-                      {new Date(k.createdAt).toLocaleDateString('en-PK')}
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => setSelected(k)}
-                        className="flex items-center gap-1 text-xs text-slate-400 hover:text-white hover:bg-slate-700 px-2 py-1.5 rounded-lg transition-colors"
-                      >
-                        <Eye size={14} /> View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <>
+          {loading ? (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="bg-slate-900 border border-slate-800 rounded-xl h-16 animate-pulse" />
+              ))}
+            </div>
+          ) : karigars.length === 0 ? (
+            <div className="text-center py-16 text-slate-500">
+              <Users size={40} className="mx-auto mb-3 opacity-30" />
+              <p>No karigars found</p>
+            </div>
+          ) : (
+            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-800 bg-slate-950/50">
+                      <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide">Karigar</th>
+                      <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden md:table-cell">Phone</th>
+                      <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden sm:table-cell">City</th>
+                      <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden lg:table-cell">Services</th>
+                      <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide">Status</th>
+                      <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden md:table-cell">Registered</th>
+                      <th className="px-4 py-3" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {karigars.map((k) => (
+                      <tr key={k._id} className="hover:bg-slate-800/40 transition-colors">
+                        <td className="px-4 py-3">
+                          <div>
+                            <p className="text-white font-medium">{k.fullName}</p>
+                            <p className="text-slate-500 text-xs">{k.email}</p>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-slate-300 hidden md:table-cell">{k.phone}</td>
+                        <td className="px-4 py-3 text-slate-300 hidden sm:table-cell">{k.city}</td>
+                        <td className="px-4 py-3 hidden lg:table-cell">
+                          <div className="flex flex-wrap gap-1">
+                            {k.services?.slice(0, 2).map((s) => (
+                              <span key={s} className="bg-slate-800 text-slate-400 text-xs px-2 py-0.5 rounded">{s}</span>
+                            ))}
+                            {k.services?.length > 2 && <span className="text-slate-600 text-xs">+{k.services.length - 2}</span>}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs px-2 py-1 rounded border font-semibold ${STATUS_BADGE[k.verificationStatus]}`}>
+                            {k.verificationStatus}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-slate-500 text-xs hidden md:table-cell">
+                          {new Date(k.createdAt).toLocaleDateString('en-PK')}
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => setSelected(k)}
+                            className="flex items-center gap-1 text-xs text-slate-400 hover:text-white hover:bg-slate-700 px-2 py-1.5 rounded-lg transition-colors"
+                          >
+                            <Eye size={14} /> View
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

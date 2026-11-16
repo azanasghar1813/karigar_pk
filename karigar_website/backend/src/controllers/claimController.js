@@ -375,12 +375,42 @@ const submitClaim = async (req, res) => {
       files.gallery.forEach(f => galleryUrls.push(f.path));
     }
 
+    // Parse workingDays
+    let parsedWorkingDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    if (Array.isArray(workingDays)) {
+      parsedWorkingDays = workingDays.filter(Boolean);
+    } else if (typeof workingDays === 'string') {
+      try {
+        const parsed = JSON.parse(workingDays);
+        if (Array.isArray(parsed)) parsedWorkingDays = parsed.filter(Boolean);
+      } catch {
+        parsedWorkingDays = workingDays.split(',').map(d => d.trim()).filter(Boolean);
+      }
+    }
+
+    // Parse workingHours
+    let parsedWorkingHours = { start: '09:00', end: '18:00', display: '09:00 AM - 07:00 PM' };
+    if (workingHours && typeof workingHours === 'object') {
+      parsedWorkingHours = {
+        start: workingHours.start || '09:00',
+        end: workingHours.end || '18:00',
+        display: workingHours.display || `${workingHours.start || '09:00'} - ${workingHours.end || '18:00'}`
+      };
+    } else if (typeof workingHours === 'string' && workingHours.trim()) {
+      parsedWorkingHours = {
+        start: '09:00',
+        end: '18:00',
+        display: workingHours.trim()
+      };
+    }
+
     // 5. Create or Reuse Karigar Account
     let karigar = await Karigar.findOne({ email: email.toLowerCase().trim() });
     if (karigar) {
       karigar.fullName = ownerName.trim();
       karigar.password = password; // pre-save will rehash
       karigar.phone = cleanPhoneDigits;
+      karigar.whatsapp = whatsapp ? whatsapp.trim() : '';
       karigar.services = parsedServices;
       karigar.experience = Number(experience) || karigar.experience || 1;
       karigar.hourlyRate = Number(hourlyRate) || karigar.hourlyRate || 500;
@@ -395,6 +425,9 @@ const submitClaim = async (req, res) => {
       if (profilePhotoUrl) karigar.profilePhoto = profilePhotoUrl;
       if (coverPhotoUrl) karigar.coverPhoto = coverPhotoUrl;
       if (galleryUrls.length > 0) karigar.gallery = galleryUrls;
+      if (!karigar.availability) karigar.availability = {};
+      karigar.availability.workingDays = parsedWorkingDays;
+      karigar.availability.workingHours = parsedWorkingHours;
       karigar.verificationStatus = 'pending';
       await karigar.save();
     } else {
@@ -403,6 +436,7 @@ const submitClaim = async (req, res) => {
         email: email.toLowerCase().trim(),
         password,
         phone: cleanPhoneDigits,
+        whatsapp: whatsapp ? whatsapp.trim() : '',
         services: parsedServices,
         experience: Number(experience) || 1,
         hourlyRate: Number(hourlyRate) || 500,
@@ -411,6 +445,10 @@ const submitClaim = async (req, res) => {
         area: area || listing.area || '',
         address: address || listing.address || '',
         coordinates: coords,
+        availability: {
+          workingDays: parsedWorkingDays,
+          workingHours: parsedWorkingHours
+        },
         cnicNumber: cnicClean,
         cnicFront: cnicFrontUrl,
         cnicBack: cnicBackUrl,

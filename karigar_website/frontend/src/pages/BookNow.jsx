@@ -141,9 +141,13 @@ export default function BookNow() {
 
     try {
       const payload = {
+        karigar: id,
+        karigarId: id,
+        service: formData.serviceType,
         serviceType: formData.serviceType,
-        date: formData.date,
+        slot: formData.time,
         time: formData.time,
+        date: formData.date,
         address: `${formData.address.trim()}, ${formData.city}`,
         customerName: formData.fullName.trim(),
         customerPhone: formData.phone,
@@ -152,10 +156,6 @@ export default function BookNow() {
         processingFee: processingFee,
         totalAmount: totalAmount,
         notes: formData.notes || 'Standard booking request'
-      }
-
-      if (id) {
-        payload.karigar = id
       }
 
       const { data } = await api.post('/bookings', payload)
@@ -251,8 +251,8 @@ export default function BookNow() {
             <div className="bg-[#F7F9FC] border border-[#E4EAF2] rounded-2xl p-5 text-left space-y-2.5 mb-8 text-xs sm:text-sm">
               <div className="flex justify-between items-center border-b border-[#E4EAF2] pb-2">
                 <span className="text-[#5A6B84]">Booking Reference:</span>
-                <span className="font-mono font-bold text-[#0A1F44] text-xs">
-                  {confirmedBooking?._id || 'KP-' + Math.random().toString(36).substr(2, 9).toUpperCase()}
+                <span className="font-mono font-bold text-[#0A1F44] text-xs bg-orange-50 text-[#FF7A00] px-2 py-0.5 rounded border border-orange-200">
+                  {confirmedBooking?._id ? `BK-${confirmedBooking._id.slice(-6).toUpperCase()}` : 'BK-' + Math.random().toString(36).substr(2, 6).toUpperCase()}
                 </span>
               </div>
               <div className="flex justify-between items-center">
@@ -264,18 +264,18 @@ export default function BookNow() {
                 <span className="font-bold text-[#0A1F44]">{formData.serviceType}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[#5A6B84]">Appointment Date:</span>
+                <span className="text-[#5A6B84]">Appointment Date & Time:</span>
                 <span className="font-bold text-[#0A1F44]">{formData.date} ({formData.time})</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-[#5A6B84]">Total Due (Cash on Delivery):</span>
+              <div className="flex justify-between items-center border-t border-[#E4EAF2] pt-2">
+                <span className="text-[#5A6B84]">Total Due ({paymentMethod === 'cod' ? 'Cash on Delivery' : 'Direct Transfer'}):</span>
                 <span className="font-black text-[#FF7A00] text-base">PKR {totalAmount}</span>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
-                to="/dashboard"
+                to="/customer-dashboard"
                 className="w-full sm:w-auto bg-[#0A1F44] hover:bg-[#102747] text-white font-bold py-3 px-6 rounded-xl text-xs sm:text-sm transition-all shadow-md"
               >
                 View My Bookings →

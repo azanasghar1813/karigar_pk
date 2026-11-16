@@ -8,14 +8,14 @@ export default function MobileTabBar() {
   const tabs = [
     { label: 'Home', to: '/', icon: Home },
     { label: 'Explore', to: '/find-karigar', icon: Compass },
-    { label: 'Bookings', to: user ? '/dashboard' : '/login', icon: CalendarCheck },
-    { label: 'Profile', to: user ? '/dashboard' : '/login', icon: User }
+    { label: 'Bookings', to: user ? '/customer-dashboard' : '/login', icon: CalendarCheck },
+    { label: 'Profile', to: user ? '/customer-dashboard' : '/login', icon: User }
   ]
 
   return (
     <nav
       aria-label="Mobile Bottom Navigation"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-gray-200/90 py-1.5 px-4 shadow-[0_-4px_20px_rgba(10,31,68,0.08)]"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-gray-200/90 py-1 px-2 shadow-[0_-4px_20px_rgba(10,31,68,0.08)]"
     >
       <div className="flex items-center justify-around max-w-md mx-auto">
         {tabs.map((tab) => {
@@ -26,7 +26,7 @@ export default function MobileTabBar() {
               to={tab.to}
               end={tab.to === '/'}
               className={({ isActive }) =>
-                `flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all duration-150 ${
+                `flex flex-col items-center justify-center min-w-[48px] min-h-[48px] px-2 rounded-xl transition-all duration-150 ${
                   isActive
                     ? 'text-[#FF7A00] font-bold scale-105'
                     : 'text-[#5A6B84] hover:text-[#0A1F44] font-medium'

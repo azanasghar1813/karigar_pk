@@ -18,6 +18,12 @@ const karigarSchema = new mongoose.Schema({
     trim: true, 
     maxLength: 20 
   },
+  whatsapp: {
+    type: String,
+    trim: true,
+    default: '',
+    maxLength: 25
+  },
   services: [{ type: String, required: true, trim: true, maxLength: 50 }],
   experience: { type: Number, min: 0, max: 100 },
   city: { type: String, required: true, trim: true, maxLength: 100 },
@@ -65,7 +71,8 @@ const karigarSchema = new mongoose.Schema({
     workingDays: { type: [String], default: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] },
     workingHours: {
       start: { type: String, default: '09:00' },
-      end: { type: String, default: '18:00' }
+      end: { type: String, default: '18:00' },
+      display: { type: String, default: '' }
     },
     blockedDates: [{ type: String }] // Array of ISO date strings e.g. "2026-06-20"
   },

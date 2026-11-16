@@ -33,7 +33,8 @@ const {
   rejectClaim,
   requestClaimCorrection,
   unclaimListing,
-  markListingClosed
+  markListingClosed,
+  sendClaimInvite
 } = require('../controllers/adminController');
 
 // All routes require authentication + admin role
@@ -78,8 +79,10 @@ router.get('/reviews', getReviews);
 router.put('/reviews/:id/feature', toggleFeatureReview);
 router.delete('/reviews/:id', deleteReview);
 
-// Directory listings
+// Directory listings & Claim Invites
 router.get('/listings', getAdminListings);
+router.post('/listings/:id/send-invite', sendClaimInvite);
+router.post('/claims/:listingId/invite', sendClaimInvite);
 
 // Claims Queue & Verification Actions
 router.get('/claims', getClaimsQueue);

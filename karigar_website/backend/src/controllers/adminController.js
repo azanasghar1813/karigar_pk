@@ -929,6 +929,53 @@ const markListingClosed = async (req, res) => {
   }
 };
 
+// @desc    Send claim invitation notification to listing phone / contact
+// @route   POST /api/admin/listings/:id/send-invite
+// @access  Admin
+const sendClaimInvite = async (req, res) => {
+  try {
+    const id = req.params.id || req.params.listingId;
+    const listing = await Listing.findById(id);
+    if (!listing) {
+      return res.status(404).json({ message: 'Listing not found' });
+    }
+
+    if (!listing.phone || !listing.phone.trim()) {
+      return res.status(400).json({ message: 'Listing has no phone number on record to receive invitation.' });
+    }
+
+    const inviteText = NOTIFICATION_TEXTS.CLAIM_INVITE(listing.name);
+    console.log(`\n======================================================`);
+    console.log(`[CLAIM INVITE DISPATCH]`);
+    console.log(`Listing: "${listing.name}" (ID: ${listing._id})`);
+    console.log(`Target Phone: ${listing.phone}`);
+    console.log(`Message: ${inviteText}`);
+    console.log(`======================================================\n`);
+
+    if (listing.email) {
+      await sendEmail({
+        to: listing.email,
+        subject: `KarigarPK: Claim your business profile for ${listing.name}`,
+        text: inviteText,
+        html: `<div style="font-family: Arial, sans-serif; padding: 20px; color: #0A1F44;">
+          <h2 style="color: #FF7A00;">KarigarPK Business Profile Ready</h2>
+          <p>${inviteText}</p>
+          <a href="https://karigarpk.live/claim/${listing._id}" style="display: inline-block; background-color: #FF7A00; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">Claim Listing Now</a>
+        </div>`
+      }).catch(e => console.warn('Email notify error (sendClaimInvite):', e.message));
+    }
+
+    res.json({
+      success: true,
+      message: `Claim invite sent to ${listing.phone} for "${listing.name}".`,
+      inviteText
+    });
+  } catch (error) {
+    console.error('Error in sendClaimInvite:', error);
+    res.status(500).json({ message: error.message || 'Failed to send claim invite' });
+  }
+};
+
 module.exports = {
   getStats,
   getActiveUsers,
@@ -961,5 +1008,6 @@ module.exports = {
   rejectClaim,
   requestClaimCorrection,
   unclaimListing,
-  markListingClosed
+  markListingClosed,
+  sendClaimInvite
 };

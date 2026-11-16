@@ -3,6 +3,7 @@ import { Search, MapPin, ChevronDown, SlidersHorizontal, X } from 'lucide-react'
 import api from '../config/api'
 import { CITIES, SERVICES_CONFIG } from '../config/site'
 import { useDiscovery } from '../context/DiscoveryContext'
+import { parseSmartSearch } from '../utils/smartSearchParser'
 
 // Discovery Hub Components
 import DiscoveryModeTabs from '../components/discovery/DiscoveryModeTabs'
@@ -17,12 +18,15 @@ export default function FindKarigar() {
     city,
     setCity,
     area,
+    setArea,
     service,
     setService,
     query,
     setQuery,
     viewMode,
+    setViewMode,
     filters,
+    setFilter,
     selectedBusiness,
     setSelectedBusiness
   } = useDiscovery()
@@ -32,6 +36,83 @@ export default function FindKarigar() {
   const [listings, setListings] = useState([])
   const [isLoadingAreas, setIsLoadingAreas] = useState(true)
   const [isLoadingItems, setIsLoadingItems] = useState(true)
+
+  // Smart Search NLP state
+  const [smartChips, setSmartChips] = useState([])
+  const [searchInput, setSearchInput] = useState(query || '')
+
+  // Sync search input if external query changes
+  useEffect(() => {
+    if (query !== searchInput && !smartChips.length) {
+      setSearchInput(query || '')
+    }
+  }, [query])
+
+  // Automatically parse natural language queries on mount or when query changes
+  useEffect(() => {
+    if (query && !smartChips.length) {
+      const { filters: parsedFilters, chips: parsedChips, remainingQuery } = parseSmartSearch(query, areasData)
+      if (parsedChips.length > 0) {
+        setSmartChips(parsedChips)
+        if (parsedFilters.service) setService(parsedFilters.service)
+        if (parsedFilters.area) setArea(parsedFilters.area)
+        if (parsedFilters.city) setCity(parsedFilters.city)
+        if (parsedFilters.viewMode) setViewMode(parsedFilters.viewMode)
+        if (parsedFilters.sort) setFilter('sort', parsedFilters.sort)
+        if (parsedFilters.minRating) setFilter('minRating', parsedFilters.minRating)
+        if (parsedFilters.priceMax) setFilter('priceMax', parsedFilters.priceMax)
+        if (parsedFilters.availableNow !== undefined) setFilter('availableNow', parsedFilters.availableNow)
+        setQuery(remainingQuery)
+      }
+    }
+  }, [query, areasData])
+
+  const handleSearchSubmit = (e) => {
+    if (e) e.preventDefault()
+    const { filters: parsedFilters, chips: parsedChips, remainingQuery } = parseSmartSearch(searchInput, areasData)
+
+    if (parsedChips.length > 0) {
+      setSmartChips(parsedChips)
+      if (parsedFilters.service) setService(parsedFilters.service)
+      if (parsedFilters.area) setArea(parsedFilters.area)
+      if (parsedFilters.city) setCity(parsedFilters.city)
+      if (parsedFilters.viewMode) setViewMode(parsedFilters.viewMode)
+      if (parsedFilters.sort) setFilter('sort', parsedFilters.sort)
+      if (parsedFilters.minRating) setFilter('minRating', parsedFilters.minRating)
+      if (parsedFilters.priceMax) setFilter('priceMax', parsedFilters.priceMax)
+      if (parsedFilters.availableNow !== undefined) setFilter('availableNow', parsedFilters.availableNow)
+      setQuery(remainingQuery)
+    } else {
+      setSmartChips([])
+      setQuery(searchInput.trim())
+    }
+  }
+
+  const removeSmartChip = (chip) => {
+    setSmartChips((prev) => prev.filter(c => c.id !== chip.id))
+    if (chip.type === 'service') setService('All')
+    if (chip.type === 'area') setArea('All Areas')
+    if (chip.type === 'city') setCity('Lahore')
+    if (chip.type === 'viewMode') setViewMode('grid')
+    if (chip.type === 'filter') {
+      if (chip.key === 'sort') setFilter('sort', 'rating')
+      if (chip.key === 'minRating') setFilter('minRating', 0)
+      if (chip.key === 'priceMax') setFilter('priceMax', 10000)
+      if (chip.key === 'availableNow') setFilter('availableNow', false)
+    }
+  }
+
+  const clearAllSmartChips = () => {
+    setSmartChips([])
+    setService('All')
+    setArea('All Areas')
+    setFilter('sort', 'rating')
+    setFilter('minRating', 0)
+    setFilter('priceMax', 10000)
+    setFilter('availableNow', false)
+    setSearchInput('')
+    setQuery('')
+  }
 
   // Mobile sheet states
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
@@ -251,17 +332,23 @@ export default function FindKarigar() {
           {/* Top Row: Search & City/Category Dropdowns */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
             
-            {/* Search Input */}
-            <div className="relative flex-1">
+            {/* Search Input with Natural Language Smart Search */}
+            <form onSubmit={handleSearchSubmit} className="relative flex-1">
               <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5A6B84] pointer-events-none" />
               <input
                 type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search services or businesses (e.g. Electrician, DHA, AC Repair)..."
-                className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F8FAFC] text-[#0E1E3A] placeholder-[#5A6B84] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Search services, areas, or try 'saste electrician DHA mein'..."
+                className="w-full pl-9 pr-16 py-2 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F8FAFC] text-[#0E1E3A] placeholder-[#5A6B84] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all"
               />
-            </div>
+              <button
+                type="submit"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-[#0A1F44] hover:bg-[#FF7A00] text-white text-[11px] font-bold px-3 py-1 rounded-lg transition-colors cursor-pointer"
+              >
+                Go
+              </button>
+            </form>
 
             {/* Controls: City Select & Service Select */}
             <div className="flex items-center gap-2">
@@ -313,6 +400,38 @@ export default function FindKarigar() {
             </div>
 
           </div>
+
+          {/* Interpreted Smart Search Filter Chips */}
+          {smartChips.length > 0 && (
+            <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+              <span className="text-[11px] font-bold text-[#5A6B84] uppercase tracking-wider mr-1">
+                Interpreted:
+              </span>
+              {smartChips.map((chip) => (
+                <span
+                  key={chip.id}
+                  className="inline-flex items-center gap-1.5 bg-orange-50/90 border border-orange-200/90 text-[#0A1F44] text-xs font-bold px-2.5 py-1 rounded-full shadow-2xs"
+                >
+                  <span>{chip.label}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeSmartChip(chip)}
+                    className="text-gray-400 hover:text-red-500 cursor-pointer transition-colors"
+                    title={`Remove ${chip.label}`}
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+              <button
+                type="button"
+                onClick={clearAllSmartChips}
+                className="text-[11px] text-[#5A6B84] hover:text-red-500 underline ml-1 cursor-pointer font-medium"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
 
           {/* Mode Tab Bar Row */}
           <div className="flex items-center justify-between pt-1 border-t border-gray-100">

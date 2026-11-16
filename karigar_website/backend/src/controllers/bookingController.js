@@ -8,10 +8,13 @@ const admin = require('../config/firebase');
 // @access  Private
 const createBooking = async (req, res) => {
   try {
-    const { karigar, serviceType, date, time, address, latitude, longitude, notes } = req.body;
+    const karigar = req.body.karigar || req.body.karigarId;
+    const serviceType = req.body.serviceType || req.body.service;
+    const time = req.body.time || req.body.slot;
+    const { date, address, latitude, longitude, notes } = req.body;
 
     if (!karigar || !serviceType || !date || !time || !address) {
-      return res.status(400).json({ message: 'Please provide all required fields' });
+      return res.status(400).json({ message: 'Please provide all required fields (karigar/karigarId, service/serviceType, date, time/slot, address)' });
     }
 
     const booking = new Booking({

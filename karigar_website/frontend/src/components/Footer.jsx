@@ -139,12 +139,12 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: Support (col-span-2) */}
-          <div className="lg:col-span-2">
+          {/* Column 3: Support (col-span-3) */}
+          <div className="lg:col-span-3">
             <h4 className="font-poppins font-bold text-white text-sm mb-4 tracking-wide">
               Support
             </h4>
-            <ul className="space-y-2.5 text-xs text-gray-300">
+            <ul className="space-y-2.5 text-xs text-gray-300 mb-4">
               {supportLinks.map((link) => (
                 <li key={link.label}>
                   <Link to={link.to} className="hover:text-[#FF7A00] transition-colors">
@@ -153,10 +153,21 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
+
+            <div className="pt-3 border-t border-white/10 text-xs text-gray-300 space-y-1.5">
+              <p className="flex items-center gap-1.5">
+                <span className="text-gray-400">Helpline:</span>
+                <a href={`tel:${SITE_PHONE_E164}`} className="text-white hover:text-[#FF7A00] font-bold">{SITE_PHONE_DISPLAY}</a>
+              </p>
+              <p className="flex items-center gap-1.5">
+                <span className="text-gray-400">Email:</span>
+                <a href={`mailto:${SITE_EMAIL}`} className="text-white hover:text-[#FF7A00]">{SITE_EMAIL}</a>
+              </p>
+            </div>
           </div>
 
-          {/* Column 4: Cities (col-span-3) */}
-          <div className="lg:col-span-3">
+          {/* Column 4: Cities (col-span-2) */}
+          <div className="lg:col-span-2">
             <h4 className="font-poppins font-bold text-white text-sm mb-4 tracking-wide">
               Cities
             </h4>
@@ -173,11 +184,6 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-
-            <div className="mt-4 pt-4 border-t border-white/10 text-xs text-gray-400 space-y-1">
-              <p>Helpline: <a href={`tel:${SITE_PHONE_E164}`} className="text-white hover:text-[#FF7A00] font-semibold">{SITE_PHONE_DISPLAY}</a></p>
-              <p>Email: <a href={`mailto:${SITE_EMAIL}`} className="text-white hover:text-[#FF7A00]">{SITE_EMAIL}</a></p>
-            </div>
           </div>
 
         </div>

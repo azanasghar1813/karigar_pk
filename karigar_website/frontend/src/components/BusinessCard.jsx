@@ -1,7 +1,9 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ShieldCheck, Heart, MapPin, AlertCircle, Phone, ArrowRight } from 'lucide-react'
 import RatingBadge from './RatingBadge'
 import { SERVICES_CONFIG } from '../config/site'
+import { isFavorite as checkIsFavorite, toggleFavorite as toggleFavoriteStorage } from '../utils/favorites'
 
 export default function BusinessCard({
   item,
@@ -12,7 +14,26 @@ export default function BusinessCard({
   onSelect = null
 }) {
   const isKarigar = type === 'karigar'
-  const id = item._id
+  const id = item._id || item.id
+
+  const [favState, setFavState] = useState(() => isFavorite || checkIsFavorite(id))
+
+  useEffect(() => {
+    setFavState(isFavorite || checkIsFavorite(id))
+    const handleFavChange = () => {
+      setFavState(checkIsFavorite(id))
+    }
+    window.addEventListener('karigar_favorites_changed', handleFavChange)
+    return () => window.removeEventListener('karigar_favorites_changed', handleFavChange)
+  }, [id, isFavorite])
+
+  const handleHeartClick = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const nowFav = toggleFavoriteStorage(item, type)
+    setFavState(nowFav)
+    if (onToggleFavorite) onToggleFavorite(id, e)
+  }
 
   // Display Name
   const name = isKarigar ? (item.fullName || 'Verified Professional') : (item.name || 'Local Business')
@@ -87,15 +108,11 @@ export default function BusinessCard({
           {/* Favorite Button */}
           <button
             type="button"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              if (onToggleFavorite) onToggleFavorite(id, e)
-            }}
-            className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-gray-500 hover:text-red-500 shadow-sm"
+            onClick={handleHeartClick}
+            className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-gray-500 hover:text-red-500 shadow-sm transition-transform active:scale-90"
             aria-label="Favorite"
           >
-            <Heart size={13} className={isFavorite ? 'fill-red-500 text-red-500' : ''} />
+            <Heart size={13} className={favState ? 'fill-red-500 text-red-500' : ''} />
           </button>
         </div>
 

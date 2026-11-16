@@ -5,9 +5,11 @@ import api from '../config/api'
 import { SERVICES_CONFIG, CITY_COORDINATES } from '../config/site'
 import RatingBadge from '../components/RatingBadge'
 import MapView from '../components/MapView'
+import { useAuth } from '../context/AuthContext'
 
 export default function ListingProfile() {
   const { id } = useParams()
+  const { user } = useAuth()
   const [listing, setListing] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -106,9 +108,21 @@ export default function ListingProfile() {
     }
   ]
 
+  const claimedById = typeof listing.claimedBy === 'object' && listing.claimedBy !== null
+    ? (listing.claimedBy._id || listing.claimedBy.id)
+    : listing.claimedBy
+
+  const currentUserId = user?._id || user?.id
+
+  // Only the logged-in claimant can see their pending claim under review status.
+  // For the general public, the profile remains the normal unclaimed directory listing until approved.
+  const isClaimant = Boolean(
+    claimedById && currentUserId && String(claimedById) === String(currentUserId)
+  )
+
   const isVerified = listing.claimStatus === 'verified'
-  const isPending = listing.claimStatus === 'pending'
-  const isUnclaimed = !isVerified && !isPending
+  const isPendingForClaimant = listing.claimStatus === 'pending' && isClaimant
+  const isUnclaimed = !isVerified && !isPendingForClaimant
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A] py-6 px-4 sm:px-6 lg:px-8">
@@ -146,7 +160,7 @@ export default function ListingProfile() {
                 <span className="inline-flex items-center gap-1.5 bg-emerald-600/95 backdrop-blur-md text-white px-3.5 py-1.5 rounded-full text-xs font-bold shadow-md">
                   <ShieldCheck size={14} /> Verified Business
                 </span>
-              ) : isPending ? (
+              ) : isPendingForClaimant ? (
                 <span className="inline-flex items-center gap-1.5 bg-amber-500/95 backdrop-blur-md text-white px-3.5 py-1.5 rounded-full text-xs font-bold shadow-md">
                   <Clock size={14} /> Claim Under Review
                 </span>
@@ -173,7 +187,7 @@ export default function ListingProfile() {
                     <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
                       <ShieldCheck size={13} className="text-[#22C55E]" /> Verified Professional
                     </span>
-                  ) : isPending ? (
+                  ) : isPendingForClaimant ? (
                     <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
                       <Clock size={13} className="text-amber-600" /> Claim Under Review
                     </span>
@@ -243,7 +257,7 @@ export default function ListingProfile() {
                   </a>
                 )}
 
-                {/* Primary Action Button: Book Now (if verified) / Under Review / Claim Button (if unclaimed) */}
+                {/* Primary Action Button: Book Now (if verified) / Under Review (if claimant) / Claim Button (if unclaimed or general public) */}
                 {isVerified ? (
                   <Link
                     to={`/book?listingId=${listing._id}&name=${encodeURIComponent(listing.name)}&service=${encodeURIComponent(listing.service)}&city=${encodeURIComponent(listing.city)}${listing.claimedBy ? `&karigarId=${listing.claimedBy}` : ''}`}
@@ -252,7 +266,7 @@ export default function ListingProfile() {
                     <CalendarCheck size={15} />
                     <span>Book Now</span>
                   </Link>
-                ) : isPending ? (
+                ) : isPendingForClaimant ? (
                   <span className="inline-flex items-center justify-center gap-1.5 bg-amber-50 text-amber-800 border border-amber-200 font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm">
                     <Clock size={15} className="text-amber-600" />
                     <span>Claim Under Review</span>
@@ -443,7 +457,7 @@ export default function ListingProfile() {
                   </Link>
                 )}
               </div>
-            ) : isPending ? (
+            ) : isPendingForClaimant ? (
               <div className="bg-gradient-to-br from-[#0A1F44] to-[#102747] rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
                 <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-4">
                   <Clock size={26} />

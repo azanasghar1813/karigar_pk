@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Star, ShieldCheck, Heart, MapPin, ArrowRight, Expand, Crown, Headphones, Zap, Shield } from 'lucide-react'
 import api from '../config/api'
 import { useCity } from '../context/CityContext'
-import { CITY_COORDINATES } from '../config/site'
+import { CITY_COORDINATES, CITY_AREAS } from '../config/site'
+import { isFavorite as checkIsFav, toggleFavorite as toggleFavStorage } from '../utils/favorites'
 import RatingBadge from './RatingBadge'
 import MapView from './MapView'
 
@@ -30,10 +31,11 @@ export default function TopRatedSection() {
     setSelectedCity(cityName)
   }
 
-  const toggleFavorite = (id, e) => {
+  const toggleFavorite = (k, e) => {
     e.preventDefault()
     e.stopPropagation()
-    setFavorites((prev) => ({ ...prev, [id]: !prev[id] }))
+    const nowFav = toggleFavStorage(k, 'karigar')
+    setFavorites((prev) => ({ ...prev, [k._id]: nowFav }))
   }
 
   // Fetch real karigars from GET /api/karigars
@@ -82,13 +84,13 @@ export default function TopRatedSection() {
     }))
 
   return (
-    <section className="py-5 sm:py-7 bg-[#F5F7FB]">
+    <section className="py-4 sm:py-6 bg-[#F5F7FB]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Discovery Hub Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 mb-3">
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-            <h3 className="font-poppins text-lg sm:text-xl font-extrabold text-[#0A1F44]">
+            <h3 className="font-poppins text-base sm:text-lg font-extrabold text-[#0A1F44]">
               Discovery Hub
             </h3>
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -96,7 +98,7 @@ export default function TopRatedSection() {
                 { name: 'Explore Areas', to: '/find-karigar' },
                 { name: 'Visual Grid', active: true },
                 { name: 'Local Radar', to: '/find-karigar?view=map' },
-                { name: 'Smart Compare', to: '/services' }
+                { name: 'Smart Compare', to: '/find-karigar?tab=compare' }
               ].map((tab) => {
                 const isSelected = activeDiscoveryTab === tab.name
                 return (
@@ -121,50 +123,55 @@ export default function TopRatedSection() {
           </div>
         </div>
 
-        {/* Top-rated near you Row with Dynamic City Filter Pills */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+        {/* Top-rated near you Row with Area / City Filter Pills matching reference */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 mb-3.5">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-[#FF7A00]/10 flex items-center justify-center text-[#FF7A00]">
-              <Star size={15} className="fill-[#FF7A00] text-[#FF7A00]" />
+            <div className="w-5 h-5 rounded-full bg-[#FF7A00]/10 flex items-center justify-center text-[#FF7A00]">
+              <Star size={14} className="fill-[#FF7A00] text-[#FF7A00]" />
             </div>
-            <h2 className="font-poppins text-lg sm:text-xl font-extrabold text-[#0A1F44] tracking-tight">
+            <h2 className="font-poppins text-base sm:text-lg font-extrabold text-[#0A1F44] tracking-tight">
               Top-rated near you
             </h2>
           </div>
 
-          {/* City Filter Pills */}
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-            {showcaseCities.map((city) => {
-              const isSelected = activeCity === city
-              return (
-                <button
-                  key={city}
-                  type="button"
-                  onClick={() => handleCityChange(city)}
-                  className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all duration-150 cursor-pointer flex items-center gap-1 ${
-                    isSelected
-                      ? 'bg-[#0A1F44] text-white shadow-xs'
-                      : 'bg-white text-[#5A6B84] hover:text-[#0A1F44] border border-[#E4EAF2] hover:border-gray-300'
-                  }`}
-                >
-                  <MapPin size={12} className={isSelected ? 'text-[#FF7A00]' : 'text-gray-400'} />
-                  <span>{city}</span>
-                </button>
-              )
-            })}
+          {/* City / Area Filter Pills matching reference mockup with scroll snap & fade edges */}
+          <div className="relative w-full md:w-auto overflow-hidden">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-1 px-0.5">
+              <button
+                type="button"
+                className="snap-start shrink-0 min-h-[40px] px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-[#0A1F44] text-white shadow-xs"
+              >
+                <MapPin size={13} className="text-[#FF7A00]" />
+                <span>{activeCity}</span>
+              </button>
 
-            <Link
-              to={`/find-karigar?city=${encodeURIComponent(activeCity)}`}
-              className="inline-flex items-center gap-1 text-xs font-bold text-[#FF7A00] hover:text-[#F06400] transition-colors ml-1.5"
-            >
-              <span>View all</span>
-              <ArrowRight size={13} />
-            </Link>
+              {((CITY_AREAS[activeCity] || []).filter(a => a !== 'All Areas').slice(0, 3)).map((area) => (
+                <button
+                  key={area}
+                  type="button"
+                  onClick={() => navigate(`/find-karigar?city=${encodeURIComponent(activeCity)}&area=${encodeURIComponent(area)}`)}
+                  className="snap-start shrink-0 min-h-[40px] px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 bg-white text-[#5A6B84] hover:text-[#0A1F44] border border-[#E4EAF2] hover:border-gray-300"
+                >
+                  <MapPin size={12} className="text-gray-400" />
+                  <span>{area}</span>
+                </button>
+              ))}
+
+              <Link
+                to={`/find-karigar?city=${encodeURIComponent(activeCity)}`}
+                className="snap-start shrink-0 min-h-[40px] px-3 py-2 rounded-full inline-flex items-center gap-1 text-xs font-bold text-[#FF7A00] hover:text-[#F06400] transition-colors"
+              >
+                <span>View all</span>
+                <ArrowRight size={13} />
+              </Link>
+            </div>
+            {/* Subtle right fade edge on mobile */}
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[#F5F7FB] to-transparent md:hidden" />
           </div>
         </div>
 
         {/* Dynamic Cards Grid: Shows ONLY real karigars (0 to 3) + Map Card */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
           
           {/* If 0 real karigars exist for this city: Honest Empty State */}
           {displayKarigars.length === 0 ? (
@@ -223,11 +230,11 @@ export default function TopRatedSection() {
                       {/* Favorite Button */}
                       <button
                         type="button"
-                        onClick={(e) => toggleFavorite(k._id, e)}
+                        onClick={(e) => toggleFavorite(k, e)}
                         className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-gray-500 hover:text-red-500 shadow-xs transition-transform active:scale-90 cursor-pointer"
                         aria-label="Add to favorites"
                       >
-                        <Heart size={14} className={isFav ? 'fill-red-500 text-red-500' : ''} />
+                        <Heart size={14} className={favorites[k._id] || checkIsFav(k._id) ? 'fill-red-500 text-red-500' : ''} />
                       </button>
                     </div>
 
