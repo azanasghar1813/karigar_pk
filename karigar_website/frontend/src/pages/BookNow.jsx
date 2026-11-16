@@ -7,6 +7,14 @@ import { CITIES, SERVICES_CONFIG } from '../config/site'
 import RatingBadge from '../components/RatingBadge'
 import UserAvatar from '../components/UserAvatar'
 
+const BOOKING_TIME_SLOTS = [
+  '09:00 AM - 11:00 AM',
+  '11:00 AM - 01:00 PM',
+  '02:00 PM - 04:00 PM',
+  '04:00 PM - 06:00 PM',
+  '06:00 PM - 08:00 PM'
+]
+
 export default function BookNow() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -26,7 +34,7 @@ export default function BookNow() {
     city: 'Karachi',
     address: '',
     date: todayStr,
-    time: '10:00 AM - 12:00 PM',
+    time: BOOKING_TIME_SLOTS[0],
     notes: ''
   })
 
@@ -160,14 +168,6 @@ export default function BookNow() {
       setIsSubmitting(false)
     }
   }
-
-  const timeSlots = [
-    '09:00 AM - 11:00 AM',
-    '11:00 AM - 01:00 PM',
-    '02:00 PM - 04:00 PM',
-    '04:00 PM - 06:00 PM',
-    '06:00 PM - 08:00 PM'
-  ]
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A] py-8 px-4 sm:px-6 lg:px-8">
@@ -421,9 +421,9 @@ export default function BookNow() {
                           name="time"
                           value={formData.time}
                           onChange={handleChange}
-                          className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F7F9FC] text-[#0E1E3A] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all"
+                          className="w-full px-4 py-2.5 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F7F9FC] text-[#0E1E3A] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all font-medium"
                         >
-                          {timeSlots.map((slot) => (
+                          {BOOKING_TIME_SLOTS.map((slot) => (
                             <option key={slot} value={slot}>{slot}</option>
                           ))}
                         </select>

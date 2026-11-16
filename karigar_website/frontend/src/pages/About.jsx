@@ -97,8 +97,8 @@ export default function About() {
 
         {/* CTA Banner */}
         <div className="bg-[#0A1F44] rounded-3xl p-8 sm:p-12 text-center text-white shadow-xl relative overflow-hidden">
-          <h2 className="font-poppins text-2xl sm:text-3xl font-extrabold mb-3">
-            Experience reliable craftsmanship today
+          <h2 className="font-poppins text-2xl sm:text-3xl font-extrabold text-white mb-3">
+            Experience reliable <span className="text-[#FF7A00]">craftsmanship</span> today
           </h2>
           <p className="text-gray-300 text-xs sm:text-sm max-w-lg mx-auto mb-6">
             Find the right verified technician for your maintenance task anywhere in Pakistan.

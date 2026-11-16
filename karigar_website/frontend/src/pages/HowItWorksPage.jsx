@@ -120,8 +120,8 @@ export default function HowItWorksPage() {
 
         {/* CTA Banner */}
         <div className="bg-[#0A1F44] rounded-3xl p-8 sm:p-12 text-center text-white relative overflow-hidden shadow-xl">
-          <h2 className="font-poppins text-2xl sm:text-4xl font-extrabold mb-3">
-            Ready to experience effortless home service?
+          <h2 className="font-poppins text-2xl sm:text-4xl font-extrabold text-white mb-3">
+            Ready to experience <span className="text-[#FF7A00]">effortless</span> home service?
           </h2>
           <p className="text-gray-300 text-sm max-w-xl mx-auto mb-6">
             Join thousands of happy homeowners and business managers across Pakistan who rely on KarigarPK.

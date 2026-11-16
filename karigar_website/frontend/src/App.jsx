@@ -24,10 +24,12 @@ import RegisterKarigar from './pages/RegisterKarigar'
 import JoinKarigar from './pages/JoinKarigar'
 import About from './pages/About'
 import Blog from './pages/Blog'
+import BlogArticle from './pages/BlogArticle'
 import Contact from './pages/Contact'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsAndConditions from './pages/TermsAndConditions'
 import CustomerDashboard from './pages/CustomerDashboard'
+import NotFound from './pages/NotFound'
 
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -58,11 +60,13 @@ function App() {
             <Route path="/services" element={<PublicLayout><ServicesPage /></PublicLayout>} />
             <Route path="/find-karigar" element={<PublicLayout><FindKarigar /></PublicLayout>} />
             <Route path="/worker/:id" element={<PublicLayout><WorkerProfile /></PublicLayout>} />
+            <Route path="/book" element={<PublicLayout><BookNow /></PublicLayout>} />
             <Route path="/book/:id" element={<PublicLayout><BookNow /></PublicLayout>} />
             <Route path="/how-it-works" element={<PublicLayout><HowItWorksPage /></PublicLayout>} />
             <Route path="/join-karigar" element={<PublicLayout><JoinKarigar /></PublicLayout>} />
             <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
             <Route path="/blog" element={<PublicLayout><Blog /></PublicLayout>} />
+            <Route path="/blog/:slug" element={<PublicLayout><BlogArticle /></PublicLayout>} />
             <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
             <Route path="/privacy-policy" element={<PublicLayout><PrivacyPolicy /></PublicLayout>} />
             <Route path="/terms-and-conditions" element={<PublicLayout><TermsAndConditions /></PublicLayout>} />
@@ -127,6 +131,9 @@ function App() {
               <Route path="reviews" element={<KarigarReviews />} />
               <Route path="profile" element={<KarigarProfile />} />
             </Route>
+
+            {/* Catch-all 404 Route */}
+            <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
           </Routes>
         </Router>
         <Analytics />

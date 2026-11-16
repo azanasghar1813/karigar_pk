@@ -159,7 +159,7 @@ export const SERVICES_CONFIG = [
     name: 'Beauty & Salon',
     searchKey: 'Beauty',
     iconName: 'Smile',
-    image: '/assets/images/cleaning_service.jpg',
+    image: '/assets/images/beauty_salon.jpg',
     startingPrice: 600,
     description: 'Professional salon services, styling, haircut, manicure & home grooming.',
     popular: false
@@ -169,7 +169,7 @@ export const SERVICES_CONFIG = [
     name: 'Restaurants & Cafes',
     searchKey: 'Restaurants',
     iconName: 'UtensilsCrossed',
-    image: '/assets/images/ui_hero_mockup.jpg',
+    image: '/assets/images/restaurant_service.jpg',
     startingPrice: 400,
     description: 'Top local restaurants, catering, bakeries and food destinations near you.',
     popular: false
