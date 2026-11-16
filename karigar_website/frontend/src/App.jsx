@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { CityProvider } from './context/CityContext'
+import { DiscoveryProvider } from './context/DiscoveryContext'
 import AdminRoute from './components/AdminRoute'
 import PublicLayout from './components/PublicLayout'
 import AdminLayout from './components/AdminLayout'
@@ -55,7 +56,8 @@ function App() {
     <AuthProvider>
       <CityProvider>
         <Router>
-          <Routes>
+          <DiscoveryProvider>
+            <Routes>
             {/* Public Marketing Routes with shared Navbar & Footer */}
             <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
             <Route path="/services" element={<PublicLayout><ServicesPage /></PublicLayout>} />
@@ -137,7 +139,8 @@ function App() {
             {/* Catch-all 404 Route */}
             <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
           </Routes>
-        </Router>
+        </DiscoveryProvider>
+      </Router>
         <Analytics />
         <SpeedInsights />
       </CityProvider>
