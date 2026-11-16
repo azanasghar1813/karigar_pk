@@ -1,27 +1,26 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Star, ShieldCheck, Heart, MapPin, ArrowRight, Expand, Crown, Headphones, Zap, Shield } from 'lucide-react'
+import { Star, MapPin, ArrowRight } from 'lucide-react'
 import api from '../config/api'
 import { useCity } from '../context/CityContext'
 import { CITY_COORDINATES, CITY_AREAS } from '../config/site'
-import { isFavorite as checkIsFav, toggleFavorite as toggleFavStorage } from '../utils/favorites'
-import RatingBadge from './RatingBadge'
 import MapView from './MapView'
+import BusinessCard from './BusinessCard'
 
 export default function TopRatedSection() {
   const { selectedCity, setSelectedCity } = useCity()
   const [activeCity, setActiveCity] = useState(selectedCity || 'Lahore')
   const [activeDiscoveryTab, setActiveDiscoveryTab] = useState('Visual Grid')
   const [apiKarigars, setApiKarigars] = useState([])
+  const [apiListings, setApiListings] = useState([])
   const [loading, setLoading] = useState(true)
-  const [favorites, setFavorites] = useState({})
   const navigate = useNavigate()
 
   const showcaseCities = ['Lahore', 'Karachi', 'Islamabad', 'Faisalabad']
 
   // Keep active city synced with global city context
   useEffect(() => {
-    if (selectedCity && showcaseCities.includes(selectedCity)) {
+    if (selectedCity) {
       setActiveCity(selectedCity)
     }
   }, [selectedCity])
@@ -31,56 +30,70 @@ export default function TopRatedSection() {
     setSelectedCity(cityName)
   }
 
-  const toggleFavorite = (k, e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    const nowFav = toggleFavStorage(k, 'karigar')
-    setFavorites((prev) => ({ ...prev, [k._id]: nowFav }))
-  }
-
-  // Fetch real karigars from GET /api/karigars
+  // Fetch real verified karigars AND real directory listings for the active city
   useEffect(() => {
     let isMounted = true
     setLoading(true)
-    api.get('/karigars')
-      .then((res) => {
-        if (!isMounted) return
-        if (Array.isArray(res.data)) {
-          setApiKarigars(res.data)
+
+    const params = {
+      city: activeCity,
+      limit: 6
+    }
+
+    Promise.allSettled([
+      api.get('/karigars'),
+      api.get('/listings', { params })
+    ]).then(([karigarsRes, listingsRes]) => {
+      if (!isMounted) return
+
+      if (karigarsRes.status === 'fulfilled' && Array.isArray(karigarsRes.value?.data)) {
+        setApiKarigars(karigarsRes.value.data.map(k => ({ ...k, type: 'karigar' })))
+      }
+
+      if (listingsRes.status === 'fulfilled' && listingsRes.value?.data) {
+        const raw = listingsRes.value.data.listings || listingsRes.value.data
+        if (Array.isArray(raw)) {
+          setApiListings(raw.map(l => ({ ...l, type: 'listing' })))
         }
-        setLoading(false)
-      })
-      .catch((err) => {
-        if (!isMounted) return
-        console.warn('API karigars fetch error:', err)
-        setLoading(false)
-      })
+      }
+      setLoading(false)
+    }).catch((err) => {
+      if (!isMounted) return
+      console.warn('API fetch error in TopRatedSection:', err)
+      setLoading(false)
+    })
 
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [activeCity])
 
-  // Filter ONLY real karigars for the active city (case-insensitive substring)
-  // If activeCity is 'All' or 'All Cities', show all real karigars
-  const displayKarigars = apiKarigars.filter((k) => {
+  // Filter real karigars for the active city
+  const cityKarigars = apiKarigars.filter((k) => {
     if (!k) return false
     if (!activeCity || activeCity === 'All Cities' || activeCity === 'All') return true
     const kCity = (k.city || '').toLowerCase()
     return kCity.includes(activeCity.toLowerCase())
-  }).slice(0, 3)
+  })
 
-  // Real map markers from verified database records
+  // If city has fewer than 3 verified karigars, top up with real directory listings from this city
+  const displayItems = [...cityKarigars, ...apiListings].slice(0, 3)
+
+  // Real map markers from verified database records or geocoded listings
   const mapCenter = CITY_COORDINATES[activeCity] || CITY_COORDINATES['Lahore']
-  const mapMarkers = displayKarigars
-    .filter((k) => k && k.lat && k.lng)
-    .map((k) => ({
-      id: k._id,
-      name: k.fullName || 'Professional',
-      service: Array.isArray(k.services) && k.services.length > 0 ? k.services.join(', ') : (k.service || 'Service'),
-      price: k.hourlyRate || 500,
-      lat: k.lat,
-      lng: k.lng
+  const mapMarkers = displayItems
+    .filter((item) => {
+      const lat = item.lat || item.coordinates?.lat
+      const lng = item.lng || item.coordinates?.lng
+      return lat && lng
+    })
+    .map((item) => ({
+      id: item._id,
+      name: item.fullName || item.name || 'Business',
+      service: Array.isArray(item.services) && item.services.length > 0 ? item.services[0] : (item.service || 'Service'),
+      price: item.hourlyRate || null,
+      lat: item.lat || item.coordinates?.lat,
+      lng: item.lng || item.coordinates?.lng
     }))
 
   return (
@@ -95,10 +108,10 @@ export default function TopRatedSection() {
             </h3>
             <div className="flex items-center gap-1.5 flex-wrap">
               {[
-                { name: 'Explore Areas', to: '/find-karigar' },
-                { name: 'Visual Grid', active: true },
-                { name: 'Local Radar', to: '/find-karigar?view=map' },
-                { name: 'Smart Compare', to: '/find-karigar?tab=compare' }
+                { name: 'Explore Areas', to: '/find-karigar?view=areas' },
+                { name: 'Visual Grid', to: '/find-karigar?view=grid' },
+                { name: 'Local Radar', to: '/find-karigar?view=radar' },
+                { name: 'Smart Compare', to: '/find-karigar?view=compare' }
               ].map((tab) => {
                 const isSelected = activeDiscoveryTab === tab.name
                 return (
@@ -123,7 +136,7 @@ export default function TopRatedSection() {
           </div>
         </div>
 
-        {/* Top-rated near you Row with Area / City Filter Pills matching reference */}
+        {/* Top-rated near you Row with Area / City Filter Pills */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 mb-3.5">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-full bg-[#FF7A00]/10 flex items-center justify-center text-[#FF7A00]">
@@ -134,7 +147,7 @@ export default function TopRatedSection() {
             </h2>
           </div>
 
-          {/* City / Area Filter Pills matching reference mockup with scroll snap & fade edges */}
+          {/* City / Area Filter Pills strictly for activeCity */}
           <div className="relative w-full md:w-auto overflow-hidden">
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-1 px-0.5">
               <button
@@ -165,25 +178,36 @@ export default function TopRatedSection() {
                 <ArrowRight size={13} />
               </Link>
             </div>
-            {/* Subtle right fade edge on mobile */}
             <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[#F5F7FB] to-transparent md:hidden" />
           </div>
         </div>
 
-        {/* Dynamic Cards Grid: Shows ONLY real karigars (0 to 3) + Map Card */}
+        {/* Dynamic Cards Grid: Shows real karigars + real directory listings (up to 3) + Map Card */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
           
-          {/* If 0 real karigars exist for this city: Honest Empty State */}
-          {displayKarigars.length === 0 ? (
+          {loading ? (
+            // Skeleton loaders
+            [1, 2, 3].map((n) => (
+              <div key={n} className="bg-white rounded-2xl border border-[#E4EAF2] p-4 h-72 animate-pulse flex flex-col justify-between">
+                <div className="h-36 bg-gray-200 rounded-xl" />
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-2/3" />
+                  <div className="h-3 bg-gray-200 rounded w-1/3" />
+                </div>
+                <div className="h-8 bg-gray-200 rounded-xl" />
+              </div>
+            ))
+          ) : displayItems.length === 0 ? (
+            /* Honest Empty State if completely 0 items in activeCity */
             <div className="col-span-1 sm:col-span-2 lg:col-span-3 bg-white rounded-2xl border border-[#E4EAF2] p-8 text-center flex flex-col items-center justify-center min-h-[260px] shadow-xs">
               <div className="w-12 h-12 rounded-full bg-orange-50 text-[#FF7A00] flex items-center justify-center mb-3">
                 <MapPin size={22} />
               </div>
               <h3 className="font-poppins font-bold text-[#0A1F44] text-base mb-1">
-                No verified professionals in {activeCity} yet
+                No listings in {activeCity} yet
               </h3>
               <p className="text-xs text-[#5A6B84] max-w-sm mb-4 leading-relaxed">
-                Be the first skilled service professional to join our verified directory in {activeCity} and start receiving client requests.
+                Be the first skilled service professional to join our verified directory in {activeCity}.
               </p>
               <Link
                 to="/join-karigar"
@@ -194,92 +218,20 @@ export default function TopRatedSection() {
               </Link>
             </div>
           ) : (
-            /* Show ONLY real karigars from database (if 1 show 1, if 2 show 2, if 3 show 3) */
-            displayKarigars.map((k) => {
-              const isFav = !!favorites[k._id]
-              const isVerified = k.verificationStatus === 'approved'
-              const serviceLabel = Array.isArray(k.services) && k.services.length > 0 ? k.services[0] : (k.service || 'Professional')
-              const photo = k.profilePhoto || '/assets/images/karigar_polo_portrait.jpg'
-
-              return (
-                <div
-                  key={k._id}
-                  className="bg-white rounded-2xl border border-[#E4EAF2] overflow-hidden shadow-[0_4px_16px_rgba(10,31,68,0.05)] hover:shadow-[0_10px_28px_rgba(10,31,68,0.09)] hover:border-[#FF7A00]/40 transition-all duration-200 flex flex-col justify-between group"
-                >
-                  <div>
-                    {/* Photo with Verified Badge and Heart Button */}
-                    <div className="relative h-36 sm:h-40 w-full bg-slate-100 overflow-hidden">
-                      <img
-                        src={photo}
-                        alt={k.fullName}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          e.target.onerror = null
-                          e.target.src = '/assets/images/karigar_polo_portrait.jpg'
-                        }}
-                      />
-
-                      {/* Verified Badge */}
-                      {isVerified && (
-                        <div className="absolute top-2.5 left-2.5 bg-[#0A1F44]/90 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
-                          <ShieldCheck size={12} className="text-[#22C55E]" />
-                          <span>Verified</span>
-                        </div>
-                      )}
-
-                      {/* Favorite Button */}
-                      <button
-                        type="button"
-                        onClick={(e) => toggleFavorite(k, e)}
-                        className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-gray-500 hover:text-red-500 shadow-xs transition-transform active:scale-90 cursor-pointer"
-                        aria-label="Add to favorites"
-                      >
-                        <Heart size={14} className={favorites[k._id] || checkIsFav(k._id) ? 'fill-red-500 text-red-500' : ''} />
-                      </button>
-                    </div>
-
-                    {/* Card Content */}
-                    <div className="p-3.5 pb-2">
-                      <h3 className="font-poppins font-bold text-[#0A1F44] text-[15px] leading-snug truncate group-hover:text-[#FF7A00] transition-colors">
-                        {k.fullName}
-                      </h3>
-
-                      {/* Rating & Review Count (Honest Rating Badge) */}
-                      <div className="mt-1 mb-1.5 flex items-center justify-between">
-                        <RatingBadge rating={k.rating} reviewsCount={k.reviewsCount} size="sm" />
-                        <div className="text-right">
-                          <span className="text-[10px] text-[#5A6B84] block leading-none">Starting from</span>
-                          <span className="text-xs font-extrabold text-[#0A1F44]">PKR {k.hourlyRate || 500}</span>
-                        </div>
-                      </div>
-
-                      {/* Location with Pin */}
-                      <div className="flex items-center gap-1 text-[11px] text-[#5A6B84] truncate">
-                        <MapPin size={12} className="text-[#FF7A00] flex-shrink-0" />
-                        <span className="truncate">{k.city}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card Bottom: Solid Orange Book Now Button */}
-                  <div className="p-3.5 pt-1.5">
-                    <Link
-                      to={`/book?karigarId=${k._id}&service=${encodeURIComponent(serviceLabel)}`}
-                      className="w-full inline-flex items-center justify-center gap-1.5 bg-[#FF7A00] hover:bg-[#F06400] text-white font-bold py-2 px-3 rounded-xl text-xs shadow-xs transition-all hover:scale-[1.01]"
-                    >
-                      <span>Book Now</span>
-                      <ArrowRight size={13} />
-                    </Link>
-                  </div>
-                </div>
-              )
-            })
+            /* Render up to 3 real business cards */
+            displayItems.map((item) => (
+              <BusinessCard
+                key={item._id}
+                item={item}
+                type={item.type || (item.verificationStatus ? 'karigar' : 'listing')}
+              />
+            ))
           )}
 
           {/* Map Card for Selected City with Interactive Map */}
           <div className={`bg-white rounded-2xl border border-[#E4EAF2] overflow-hidden shadow-[0_4px_16px_rgba(10,31,68,0.05)] relative min-h-[260px] sm:min-h-[290px] flex flex-col group ${
-            displayKarigars.length === 2 ? 'col-span-1 sm:col-span-2 lg:col-span-2' : 
-            displayKarigars.length === 1 ? 'col-span-1 sm:col-span-1 lg:col-span-3' : 
+            displayItems.length === 2 ? 'col-span-1 sm:col-span-2 lg:col-span-2' : 
+            displayItems.length === 1 ? 'col-span-1 sm:col-span-1 lg:col-span-3' : 
             'col-span-1 sm:col-span-2 lg:col-span-1'
           }`}>
             {/* Interactive Leaflet Map for Active City */}
@@ -301,11 +253,11 @@ export default function TopRatedSection() {
                     {activeCity}
                   </h4>
                   <p className="text-[10px] text-[#5A6B84] truncate">
-                    Explore verified pros in {activeCity}
+                    Explore listings in {activeCity}
                   </p>
                 </div>
                 <Link
-                  to={`/find-karigar?city=${encodeURIComponent(activeCity)}&view=map`}
+                  to={`/find-karigar?city=${encodeURIComponent(activeCity)}&view=radar`}
                   className="w-6 h-6 rounded-full bg-[#0A1F44] text-white flex items-center justify-center hover:bg-[#FF7A00] transition-colors flex-shrink-0"
                   title="Explore city on map"
                 >
@@ -314,87 +266,19 @@ export default function TopRatedSection() {
               </div>
             </div>
 
-            {/* Bottom Google / Map Label & Expand Button */}
+            {/* Bottom Map Expand Button */}
             <div className="absolute bottom-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
-              <span className="text-[10px] font-bold text-gray-500 bg-white/80 px-2 py-0.5 rounded shadow-xs">
-                Google
+              <span className="text-[10px] bg-white/90 backdrop-blur-md text-[#5A6B84] px-2 py-0.5 rounded font-medium shadow-xs">
+                © OpenStreetMap
               </span>
               <Link
-                to={`/find-karigar?city=${encodeURIComponent(activeCity)}&view=map`}
-                className="w-7 h-7 rounded-full bg-white text-[#0A1F44] hover:text-[#FF7A00] flex items-center justify-center shadow-md border border-gray-200 pointer-events-auto transition-transform hover:scale-105"
-                title="Expand map view"
+                to={`/find-karigar?city=${encodeURIComponent(activeCity)}&view=radar`}
+                className="bg-[#0A1F44]/90 backdrop-blur-md hover:bg-[#FF7A00] text-white text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-sm transition-all flex items-center gap-1 pointer-events-auto"
               >
-                <Expand size={13} />
+                <span>Radar View</span>
+                <ArrowRight size={11} />
               </Link>
             </div>
-          </div>
-
-        </div>
-
-        {/* Feature / Value Proposition Bar Directly Below Cards */}
-        <div className="bg-white rounded-2xl border border-[#E4EAF2] p-3 sm:p-4 shadow-[0_4px_20px_rgba(10,31,68,0.04)] flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          
-          {/* 4 Trust Highlights */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-100 flex-1">
-            <div className="flex items-center gap-2.5 pr-2">
-              <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
-                <Shield size={16} />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-[#0A1F44] leading-tight">100% Verified</p>
-                <p className="text-[10px] text-[#5A6B84] leading-tight">Professionals</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5 sm:px-3 pt-2 sm:pt-0">
-              <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
-                <Zap size={16} />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-[#0A1F44] leading-tight">Instant Booking</p>
-                <p className="text-[10px] text-[#5A6B84] leading-tight">& Support</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5 sm:px-3 pt-2 sm:pt-0">
-              <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0">
-                <Headphones size={16} />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-[#0A1F44] leading-tight">24/7 Customer</p>
-                <p className="text-[10px] text-[#5A6B84] leading-tight">Support</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5 sm:pl-3 pt-2 sm:pt-0">
-              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
-                <ShieldCheck size={16} />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-[#0A1F44] leading-tight">Secure Payments</p>
-                <p className="text-[10px] text-[#5A6B84] leading-tight">& Safe Transactions</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Join as Pro Callout Banner */}
-          <div className="bg-[#0A1F44] text-white rounded-xl px-4 py-2.5 flex items-center justify-between gap-3 shadow-sm flex-shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-[#FF7A00]/20 text-[#FF7A00] flex items-center justify-center">
-                <Crown size={15} />
-              </div>
-              <div>
-                <p className="text-xs font-extrabold leading-tight">Be a Professional on KarigarPK</p>
-                <p className="text-[10px] text-gray-300 leading-tight">Grow your business, get more customers.</p>
-              </div>
-            </div>
-            <Link
-              to="/join-karigar"
-              className="inline-flex items-center gap-1 bg-[#FF7A00] hover:bg-[#F06400] text-white text-xs font-bold px-3.5 py-1.5 rounded-lg transition-colors whitespace-nowrap shadow-xs"
-            >
-              <span>Join Now</span>
-              <ArrowRight size={12} />
-            </Link>
           </div>
 
         </div>

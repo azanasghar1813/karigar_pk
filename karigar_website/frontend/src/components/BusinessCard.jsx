@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ShieldCheck, Heart, MapPin, AlertCircle, Phone, ArrowRight } from 'lucide-react'
+import { ShieldCheck, Heart, MapPin, AlertCircle, ArrowRight, Square, CheckSquare, Phone, MessageCircle } from 'lucide-react'
 import RatingBadge from './RatingBadge'
 import { SERVICES_CONFIG } from '../config/site'
 import { isFavorite as checkIsFavorite, toggleFavorite as toggleFavoriteStorage } from '../utils/favorites'
+import { useDiscovery } from '../context/DiscoveryContext'
 
 export default function BusinessCard({
   item,
@@ -15,6 +16,9 @@ export default function BusinessCard({
 }) {
   const isKarigar = type === 'karigar'
   const id = item._id || item.id
+
+  const { toggleCompare, isInCompare } = useDiscovery()
+  const inCompare = isInCompare(id)
 
   const [favState, setFavState] = useState(() => isFavorite || checkIsFavorite(id))
 
@@ -58,6 +62,13 @@ export default function BusinessCard({
     ? `${item.city || 'Pakistan'}`
     : `${item.area ? item.area + ', ' : ''}${item.city || 'Pakistan'}`
 
+  // Phone numbers and sanitized WhatsApp format
+  const phone = item.phone || ''
+  const cleanDigits = phone.replace(/\D/g, '')
+  const waNumber = cleanDigits.startsWith('92')
+    ? cleanDigits
+    : (cleanDigits.startsWith('0') ? `92${cleanDigits.slice(1)}` : `92${cleanDigits}`)
+
   // Target link
   const targetUrl = isKarigar ? `/worker/${id}` : `/listing/${id}`
 
@@ -68,12 +79,42 @@ export default function BusinessCard({
 
   const isUnclaimed = !isKarigar && item.claimStatus !== 'verified'
 
+  const handleCompareClick = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    toggleCompare({
+      _id: id,
+      id,
+      type,
+      name,
+      fullName: isKarigar ? item.fullName : undefined,
+      service: serviceLabel,
+      services: item.services,
+      profilePhoto: item.profilePhoto,
+      photos: item.photos,
+      rating: item.rating,
+      reviewsCount: item.reviewsCount,
+      verificationStatus: item.verificationStatus,
+      claimStatus: item.claimStatus,
+      hourlyRate: item.hourlyRate,
+      phone: item.phone,
+      city: item.city,
+      area: item.area,
+      coordinates: item.coordinates,
+      isOnline: item.isOnline,
+      workingDays: item.workingDays,
+      workingHours: item.workingHours
+    })
+  }
+
   return (
     <div
       onClick={() => onSelect && onSelect(id)}
       className={`bg-white rounded-2xl border transition-all duration-150 flex flex-col justify-between overflow-hidden cursor-pointer group ${
         isSelected
           ? 'border-[#FF7A00] shadow-[0_8px_30px_rgba(255,122,0,0.15)] ring-2 ring-[#FF7A00]/20'
+          : inCompare
+          ? 'border-[#FF7A00]/60 ring-2 ring-[#FF7A00]/10 shadow-sm'
           : 'border-[#E4EAF2] hover:border-gray-300 shadow-[0_4px_16px_rgba(10,31,68,0.05)] hover:shadow-md'
       }`}
     >
@@ -105,15 +146,35 @@ export default function BusinessCard({
             ) : null}
           </div>
 
-          {/* Favorite Button */}
-          <button
-            type="button"
-            onClick={handleHeartClick}
-            className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-gray-500 hover:text-red-500 shadow-sm transition-transform active:scale-90"
-            aria-label="Favorite"
-          >
-            <Heart size={13} className={favState ? 'fill-red-500 text-red-500' : ''} />
-          </button>
+          {/* Top Right Actions: Compare Checkbox + Favorite Heart */}
+          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
+            <button
+              type="button"
+              onClick={handleCompareClick}
+              className={`w-7 h-7 rounded-full backdrop-blur-md flex items-center justify-center shadow-sm transition-all active:scale-90 cursor-pointer ${
+                inCompare
+                  ? 'bg-[#FF7A00] text-white ring-2 ring-white'
+                  : 'bg-white/90 text-[#0A1F44] hover:bg-white hover:text-[#FF7A00]'
+              }`}
+              title={inCompare ? "Remove from comparison" : "Compare this business"}
+              aria-label="Compare"
+            >
+              {inCompare ? (
+                <CheckSquare size={14} className="text-white" />
+              ) : (
+                <Square size={14} />
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleHeartClick}
+              className="w-7 h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-gray-500 hover:text-red-500 shadow-sm transition-transform active:scale-90 cursor-pointer"
+              aria-label="Favorite"
+            >
+              <Heart size={13} className={favState ? 'fill-red-500 text-red-500' : ''} />
+            </button>
+          </div>
         </div>
 
         {/* Card Info */}
@@ -149,14 +210,72 @@ export default function BusinessCard({
       </div>
 
       {/* Card Bottom */}
-      <div className="p-3.5 pt-0">
-        <div className="border-t border-[#E4EAF2] pt-2.5 mb-2.5 flex items-center justify-between">
+      <div className="p-3.5 pt-0 space-y-2">
+        <div className="border-t border-[#E4EAF2] pt-2 flex items-center justify-between">
           <span className="text-[11px] text-[#5A6B84]">
             {isKarigar ? 'Starting from' : 'Contact'}
           </span>
           <span className="text-xs font-black text-[#0A1F44] truncate max-w-[130px]">
-            {isKarigar ? `PKR ${item.hourlyRate || 500}` : (item.phone || 'Public Directory')}
+            {isKarigar
+              ? (item.hourlyRate ? `PKR ${item.hourlyRate}` : '—')
+              : phone ? (
+                <a
+                  href={`tel:${phone}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="hover:text-[#FF7A00] underline decoration-[#FF7A00]/40 transition-colors"
+                  title="Direct call"
+                >
+                  {phone}
+                </a>
+              ) : 'Public Directory'}
           </span>
+        </div>
+
+        {/* Direct Call & WhatsApp Action Buttons */}
+        <div className="grid grid-cols-2 gap-1.5">
+          {phone ? (
+            <a
+              href={`tel:${phone}`}
+              onClick={(e) => e.stopPropagation()}
+              className="py-1.5 px-2 rounded-xl bg-[#0A1F44] hover:bg-[#102747] text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs"
+              title="Direct call"
+            >
+              <Phone size={12} className="text-[#FF7A00]" />
+              <span>Call</span>
+            </a>
+          ) : (
+            <button
+              disabled
+              onClick={(e) => e.stopPropagation()}
+              className="py-1.5 px-2 rounded-xl bg-gray-100 text-gray-400 text-[11px] font-medium inline-flex items-center justify-center gap-1 cursor-not-allowed"
+            >
+              <Phone size={12} />
+              <span>Call N/A</span>
+            </button>
+          )}
+
+          {phone ? (
+            <a
+              href={`https://wa.me/${waNumber}?text=Assalam-o-Alaikum,%20maine%20aap%20ki%20listing%20KarigarPK%20par%20dekhi%20hai.`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="py-1.5 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs"
+              title="Direct WhatsApp"
+            >
+              <MessageCircle size={12} />
+              <span>WhatsApp</span>
+            </a>
+          ) : (
+            <button
+              disabled
+              onClick={(e) => e.stopPropagation()}
+              className="py-1.5 px-2 rounded-xl bg-gray-100 text-gray-400 text-[11px] font-medium inline-flex items-center justify-center gap-1 cursor-not-allowed"
+            >
+              <MessageCircle size={12} />
+              <span>WA N/A</span>
+            </button>
+          )}
         </div>
 
         <Link

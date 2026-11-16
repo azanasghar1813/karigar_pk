@@ -31,9 +31,9 @@ export const CITY_COORDINATES = {
 
 // Popular areas per city for accurate location filtering
 export const CITY_AREAS = {
-  Karachi: ['All Areas', 'DHA Phase 5', 'DHA Phase 6', 'Clifton', 'Gulshan-e-Iqbal', 'North Nazimabad', 'PECHS', 'Bahria Town', 'Gulistan-e-Johar', 'Federal B Area', 'Korangi'],
-  Lahore: ['All Areas', 'DHA Phase 5', 'DHA Phase 6', 'Gulberg', 'Model Town', 'Johar Town', 'Bahria Town', 'Cantt', 'Faisal Town', 'Wapda Town', 'Allama Iqbal Town'],
-  Islamabad: ['All Areas', 'F-6', 'F-7', 'F-8', 'F-10', 'F-11', 'G-9', 'G-11', 'E-7', 'DHA Phase 2', 'Bahria Town Phase 4'],
+  Karachi: ['All Areas', 'Clifton', 'DHA Karachi', 'Gulshan-e-Iqbal', 'Saddar', 'North Nazimabad', 'Bahadurabad', 'PECHS', 'Gulistan-e-Johar', 'Federal B Area', 'Korangi'],
+  Lahore: ['All Areas', 'Gulberg', 'Johar Town', 'Model Town', 'Allama Iqbal Town', 'DHA Lahore', 'Faisal Town', 'Bahria Town', 'Wapda Town', 'Cantt'],
+  Islamabad: ['All Areas', 'F-7', 'F-10', 'Blue Area', 'G-9', 'F-6', 'F-8', 'G-11', 'E-7', 'DHA Phase 2', 'Bahria Town Phase 4'],
   Faisalabad: ['All Areas', 'Civil Lines', 'Madina Town', 'D Ground', 'Peoples Colony', 'Gulberg', 'Kohinoor City'],
   Multan: ['All Areas', 'Cantt', 'Gulgasht Colony', 'Bosan Road', 'Shah Rukn-e-Alam', 'Wapda Town'],
   Rawalpindi: ['All Areas', 'Saddar', 'Bahria Town', 'Chaklala Scheme 3', 'Satellite Town', 'Westridge'],
@@ -162,16 +162,6 @@ export const SERVICES_CONFIG = [
     image: '/assets/images/beauty_salon.jpg',
     startingPrice: 600,
     description: 'Professional salon services, styling, haircut, manicure & home grooming.',
-    popular: false
-  },
-  {
-    id: 'restaurants',
-    name: 'Restaurants & Cafes',
-    searchKey: 'Restaurants',
-    iconName: 'UtensilsCrossed',
-    image: '/assets/images/restaurant_service.jpg',
-    startingPrice: 400,
-    description: 'Top local restaurants, catering, bakeries and food destinations near you.',
     popular: false
   }
 ]

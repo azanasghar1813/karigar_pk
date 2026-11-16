@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo } 
 import { useSearchParams } from 'react-router-dom'
 import { useCity } from './CityContext'
 import { CITIES } from '../config/site'
+import { CITY_COORDINATES } from '../utils/geo'
 
 const DiscoveryContext = createContext()
 
@@ -27,7 +28,7 @@ export function DiscoveryProvider({ children }) {
   const initialVerifiedOnly = searchParams.get('verifiedOnly') === 'true'
   const initialAvailableNow = searchParams.get('availableNow') === 'true'
   const initialMinRating = Number(searchParams.get('minRating')) || 0
-  const initialPriceMax = searchParams.get('priceMax') ? Number(searchParams.get('priceMax')) : 5000
+  const initialPriceMax = searchParams.get('priceMax') ? Number(searchParams.get('priceMax')) : 10000
   const initialSort = searchParams.get('sort') || 'rating'
 
   // 2. React State (Single Shared Source of Truth)
@@ -45,7 +46,7 @@ export function DiscoveryProvider({ children }) {
     sort: initialSort
   })
 
-  // Compare selection (Phase 5 preparation — max 3, persisted in localStorage)
+  // Compare selection (Phase 5 — max 3, persisted in localStorage with full objects or IDs)
   const [compareList, setCompareList] = useState(() => {
     try {
       const saved = localStorage.getItem(COMPARE_STORAGE_KEY)
@@ -59,6 +60,79 @@ export function DiscoveryProvider({ children }) {
     return []
   })
 
+  // Toast message when 4th compare item is attempted
+  const [compareToast, setCompareToast] = useState(null)
+
+  useEffect(() => {
+    if (compareToast) {
+      const timer = setTimeout(() => {
+        setCompareToast(null)
+      }, 3500)
+      return () => clearTimeout(timer)
+    }
+  }, [compareToast])
+
+  // User Geolocation state for Local Radar & Distance calculations
+  const [userLocation, setUserLocationState] = useState(() => {
+    const defaultCoords = CITY_COORDINATES[initialCity] || CITY_COORDINATES.Lahore
+    return {
+      lat: defaultCoords.lat,
+      lng: defaultCoords.lng,
+      isDefault: true,
+      isDenied: false,
+      accuracy: null
+    }
+  })
+
+  // Update default coordinates when city changes if user hasn't provided real location
+  useEffect(() => {
+    setUserLocationState((prev) => {
+      if (prev.isDefault) {
+        const cityCenter = CITY_COORDINATES[city] || CITY_COORDINATES.Lahore
+        return {
+          ...prev,
+          lat: cityCenter.lat,
+          lng: cityCenter.lng
+        }
+      }
+      return prev
+    })
+  }, [city])
+
+  const requestUserLocation = useCallback(() => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocationState({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+          isDefault: false,
+          isDenied: false
+        })
+      },
+      (err) => {
+        const cityCenter = CITY_COORDINATES[city] || CITY_COORDINATES.Lahore
+        setUserLocationState({
+          lat: cityCenter.lat,
+          lng: cityCenter.lng,
+          accuracy: null,
+          isDefault: true,
+          isDenied: true,
+          error: err.message
+        })
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    )
+  }, [city])
+
   // Currently selected/previewed business for Quick Preview Panel
   const [selectedBusiness, setSelectedBusiness] = useState(null)
 
@@ -71,12 +145,14 @@ export function DiscoveryProvider({ children }) {
     }
   }, [compareList])
 
-  // Sync city with global CityContext
+  // Sync city bi-directionally with global CityContext
   useEffect(() => {
-    if (city && CITIES.includes(city) && city !== contextCity) {
-      setSelectedCity(city)
+    if (contextCity && CITIES.includes(contextCity) && contextCity !== city) {
+      setCityState(contextCity)
+      setAreaState('All Areas')
+      updateUrlParams({ city: contextCity, area: 'All Areas' })
     }
-  }, [city, contextCity, setSelectedCity])
+  }, [contextCity, city, updateUrlParams])
 
   // Helper to sync state changes to URL query string
   const updateUrlParams = useCallback((newValues) => {
@@ -128,7 +204,10 @@ export function DiscoveryProvider({ children }) {
     setCityState(newCity)
     setAreaState('All Areas') // reset area when switching city
     updateUrlParams({ city: newCity, area: 'All Areas' })
-  }, [updateUrlParams])
+    if (newCity && CITIES.includes(newCity) && newCity !== contextCity) {
+      setSelectedCity(newCity)
+    }
+  }, [updateUrlParams, contextCity, setSelectedCity])
 
   const setArea = useCallback((newArea) => {
     setAreaState(newArea)
@@ -164,7 +243,7 @@ export function DiscoveryProvider({ children }) {
       verifiedOnly: false,
       availableNow: false,
       minRating: 0,
-      priceMax: 5000,
+      priceMax: 10000,
       sort: 'rating'
     }
     setQueryState('')
@@ -180,27 +259,46 @@ export function DiscoveryProvider({ children }) {
   }, [updateUrlParams])
 
   // Compare functions
-  const toggleCompare = useCallback((id) => {
+  const getItemId = (itemOrId) => {
+    if (!itemOrId) return ''
+    if (typeof itemOrId === 'object') return itemOrId._id || itemOrId.id || ''
+    return String(itemOrId)
+  }
+
+  const toggleCompare = useCallback((itemOrId) => {
+    const targetId = getItemId(itemOrId)
+    if (!targetId) return
+
     setCompareList((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter((item) => item !== id)
+      const exists = prev.some((item) => getItemId(item) === targetId)
+      if (exists) {
+        return prev.filter((item) => getItemId(item) !== targetId)
       }
       if (prev.length >= 3) {
-        return prev // limit to max 3
+        setCompareToast('Sirf 3 businesses compare ho sakte hain')
+        return prev
       }
-      return [...prev, id]
+      // Store the rich item object if provided, otherwise an object with _id
+      const payload = typeof itemOrId === 'object' && itemOrId !== null
+        ? { ...itemOrId, _id: targetId }
+        : { _id: targetId }
+      return [...prev, payload]
     })
   }, [])
 
-  const removeFromCompare = useCallback((id) => {
-    setCompareList((prev) => prev.filter((item) => item !== id))
+  const removeFromCompare = useCallback((itemOrId) => {
+    const targetId = getItemId(itemOrId)
+    setCompareList((prev) => prev.filter((item) => getItemId(item) !== targetId))
   }, [])
 
   const clearCompare = useCallback(() => {
     setCompareList([])
   }, [])
 
-  const isInCompare = useCallback((id) => compareList.includes(id), [compareList])
+  const isInCompare = useCallback((itemOrId) => {
+    const targetId = getItemId(itemOrId)
+    return compareList.some((item) => getItemId(item) === targetId)
+  }, [compareList])
 
   const value = useMemo(() => ({
     city,
@@ -221,6 +319,11 @@ export function DiscoveryProvider({ children }) {
     removeFromCompare,
     clearCompare,
     isInCompare,
+    compareToast,
+    setCompareToast,
+    userLocation,
+    requestUserLocation,
+    setUserLocation: setUserLocationState,
     selectedBusiness,
     setSelectedBusiness
   }), [
@@ -232,6 +335,8 @@ export function DiscoveryProvider({ children }) {
     filters, setFilter,
     resetFilters,
     compareList, toggleCompare, removeFromCompare, clearCompare, isInCompare,
+    compareToast,
+    userLocation, requestUserLocation,
     selectedBusiness, setSelectedBusiness
   ])
 

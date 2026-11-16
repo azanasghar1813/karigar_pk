@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, MapPin, ArrowRight, ShieldCheck, Wrench, Zap, Snowflake, Sparkles, Smile, Car, UtensilsCrossed, Hammer, ChevronDown } from 'lucide-react'
+import { Search, MapPin, ArrowRight, ShieldCheck, Wrench, Zap, Snowflake, Sparkles, Smile, Car, Paintbrush, Hammer, ChevronDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useCity } from '../context/CityContext'
 
@@ -16,7 +16,7 @@ export default function Hero() {
     { name: 'Cleaning', icon: Sparkles, service: 'Cleaner', tint: 'bg-emerald-50 text-emerald-600' },
     { name: 'Beauty', icon: Smile, service: 'Beauty', tint: 'bg-pink-50 text-pink-600' },
     { name: 'Auto Services', icon: Car, service: 'Auto Services', tint: 'bg-indigo-50 text-indigo-600' },
-    { name: 'Restaurants', icon: UtensilsCrossed, service: 'Restaurants', tint: 'bg-orange-50 text-orange-600' }
+    { name: 'Painting', icon: Paintbrush, service: 'Painter', tint: 'bg-orange-50 text-orange-600' }
   ]
 
   const handleSearch = (e) => {
@@ -56,12 +56,12 @@ export default function Hero() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Trust Badge */}
-        <div className="inline-flex items-center gap-2 bg-[#0A1F44] text-white px-3 py-1 rounded-full text-xs font-semibold mb-2.5 shadow-xs">
+        {/* Authentic Directory Trust Badge */}
+        <div className="inline-flex items-center gap-2 bg-[#0A1F44] text-white px-3.5 py-1 rounded-full text-xs font-semibold mb-2.5 shadow-xs">
           <ShieldCheck size={13} className="text-[#FF7A00]" />
-          <span>Verified Professionals</span>
+          <span className="text-[#FF7A00] font-bold">17,000+ businesses listed</span>
           <span className="text-gray-400">•</span>
-          <span className="text-gray-200">Trusted by 1M+ People</span>
+          <span className="text-gray-200">3 shehron mein, claim bilkul free</span>
         </div>
 
         {/* Hero Headline & Content - compact, non-zoomed, matching reference mockup */}

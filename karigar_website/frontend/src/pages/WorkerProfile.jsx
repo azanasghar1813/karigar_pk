@@ -345,7 +345,7 @@ export default function WorkerProfile() {
                         <span className="font-bold text-sm text-[#0A1F44]">{srv}</span>
                       </div>
                       <span className="text-xs font-bold text-[#FF7A00]">
-                        Starting PKR {worker.hourlyRate || 500}
+                        {worker.hourlyRate ? `Starting PKR ${worker.hourlyRate}` : 'Rate on request'}
                       </span>
                     </div>
                   ))}
@@ -429,7 +429,7 @@ export default function WorkerProfile() {
                       id: worker._id,
                       name: worker.fullName,
                       service: primaryService,
-                      price: worker.hourlyRate || 500,
+                      price: worker.hourlyRate || null,
                       lat: mapCenter.lat,
                       lng: mapCenter.lng
                     }]}
@@ -460,9 +460,11 @@ export default function WorkerProfile() {
                 <span className="text-xs text-[#5A6B84] font-medium block mb-1">Service Rate</span>
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-extrabold text-[#0A1F44]">
-                    PKR {worker.hourlyRate || 500}
+                    {worker.hourlyRate ? `PKR ${worker.hourlyRate}` : 'Rate on request'}
                   </span>
-                  <span className="text-xs text-[#5A6B84] font-medium">/ visit</span>
+                  {worker.hourlyRate ? (
+                    <span className="text-xs text-[#5A6B84] font-medium">/ visit</span>
+                  ) : null}
                 </div>
               </div>
 

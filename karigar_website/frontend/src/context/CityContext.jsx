@@ -13,7 +13,7 @@ export function CityProvider({ children }) {
     } catch {
       // ignore localStorage errors
     }
-    return 'Karachi' // Reference default
+    return 'Lahore' // Standard launch city default across all devices
   })
 
   const setSelectedCity = (city) => {

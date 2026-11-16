@@ -100,7 +100,7 @@ export default function QuickPreviewPanel({
 
           <button
             type="button"
-            onClick={() => toggleCompare(id)}
+            onClick={() => toggleCompare(business)}
             className={`absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full text-[10px] font-bold backdrop-blur-md flex items-center gap-1 transition-all shadow-sm ${
               inCompare
                 ? 'bg-[#FF7A00] text-white'
@@ -146,7 +146,7 @@ export default function QuickPreviewPanel({
             {isKarigar ? 'Estimated Starting Rate' : 'Public Contact'}
           </span>
           <span className="font-poppins font-extrabold text-xs sm:text-sm text-[#0A1F44]">
-            {isKarigar ? `PKR ${business.hourlyRate || 500}` : (phone || 'Directory Record')}
+            {isKarigar ? (business.hourlyRate ? `PKR ${business.hourlyRate}` : '—') : (phone || 'Directory Record')}
           </span>
         </div>
       </div>

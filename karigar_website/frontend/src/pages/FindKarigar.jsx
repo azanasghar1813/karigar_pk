@@ -11,7 +11,9 @@ import DiscoverySidebar from '../components/discovery/DiscoverySidebar'
 import ExploreAreasView from '../components/discovery/ExploreAreasView'
 import VisualGridView from '../components/discovery/VisualGridView'
 import SmartCompareView from '../components/discovery/SmartCompareView'
+import LocalRadarView from '../components/discovery/LocalRadarView'
 import QuickPreviewPanel from '../components/discovery/QuickPreviewPanel'
+import CompareTray from '../components/discovery/CompareTray'
 
 export default function FindKarigar() {
   const {
@@ -240,8 +242,8 @@ export default function FindKarigar() {
         return false
       }
 
-      // 7. Max Price
-      if (filters.priceMax && filters.priceMax < 10000 && (k.hourlyRate || 500) > filters.priceMax) {
+      // 7. Max Price (only filter if item has a declared hourly rate)
+      if (filters.priceMax && filters.priceMax < 10000 && k.hourlyRate && k.hourlyRate > filters.priceMax) {
         return false
       }
 
@@ -282,8 +284,8 @@ export default function FindKarigar() {
 
     return list.sort((a, b) => {
       if (filters.sort === 'price_asc') {
-        const pA = a.hourlyRate || 500
-        const pB = b.hourlyRate || 500
+        const pA = a.hourlyRate != null ? a.hourlyRate : 999999
+        const pB = b.hourlyRate != null ? b.hourlyRate : 999999
         return pA - pB
       }
       if (filters.sort === 'reviews') {
@@ -462,8 +464,12 @@ export default function FindKarigar() {
             />
           </div>
 
-          {/* COLUMN 2: Main Dynamic Canvas (col-span-6 on xl with preview, col-span-9 on lg) */}
-          <div className="col-span-1 lg:col-span-9 xl:col-span-6 min-w-0">
+          {/* COLUMN 2: Main Dynamic Canvas */}
+          <div className={`col-span-1 lg:col-span-9 min-w-0 ${
+            viewMode === 'compare' || viewMode === 'radar'
+              ? 'xl:col-span-9'
+              : 'xl:col-span-6'
+          }`}>
             {viewMode === 'areas' && (
               <ExploreAreasView
                 areas={areasData}
@@ -486,6 +492,12 @@ export default function FindKarigar() {
               />
             )}
 
+            {viewMode === 'radar' && (
+              <LocalRadarView
+                allItems={[...karigars, ...listings]}
+              />
+            )}
+
             {viewMode === 'compare' && (
               <SmartCompareView
                 allItems={[...karigars, ...listings]}
@@ -493,12 +505,14 @@ export default function FindKarigar() {
             )}
           </div>
 
-          {/* COLUMN 3: Right Quick Preview Panel (Visible on xl screens, col-span-3) */}
-          <div className="hidden xl:block xl:col-span-3">
-            <QuickPreviewPanel
-              business={selectedBusiness || combinedResults[0]}
-            />
-          </div>
+          {/* COLUMN 3: Right Quick Preview Panel (Visible on xl screens when not in compare or radar mode) */}
+          {viewMode !== 'compare' && viewMode !== 'radar' && (
+            <div className="hidden xl:block xl:col-span-3">
+              <QuickPreviewPanel
+                business={selectedBusiness || combinedResults[0]}
+              />
+            </div>
+          )}
 
         </div>
       </div>
@@ -551,6 +565,9 @@ export default function FindKarigar() {
           </div>
         </div>
       )}
+
+      {/* Persistent Compare Tray across all views */}
+      <CompareTray allItems={[...karigars, ...listings]} />
 
     </div>
   )

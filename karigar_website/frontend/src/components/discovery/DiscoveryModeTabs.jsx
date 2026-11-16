@@ -1,4 +1,4 @@
-import { Map, Grid, Radar, GitCompare, Sparkles } from 'lucide-react'
+import { Map, Grid, Radar, GitCompare } from 'lucide-react'
 import { useDiscovery } from '../../context/DiscoveryContext'
 
 export default function DiscoveryModeTabs() {
@@ -35,18 +35,18 @@ export default function DiscoveryModeTabs() {
         <span>Visual Grid</span>
       </button>
 
-      {/* Tab 3: Local Radar (disabled, "Coming soon") */}
+      {/* Tab 3: Local Radar */}
       <button
         type="button"
-        disabled
-        title="Local Radar is coming in Phase 5"
-        className="px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#F1F5F9] border border-[#E4EAF2] text-[#94A3B8] flex items-center gap-1.5 cursor-not-allowed opacity-80 whitespace-nowrap"
+        onClick={() => setViewMode('radar')}
+        className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+          viewMode === 'radar'
+            ? 'bg-[#0A1F44] text-white shadow-md'
+            : 'bg-white border border-[#E4EAF2] text-[#5A6B84] hover:text-[#0A1F44] hover:border-gray-300'
+        }`}
       >
-        <Radar size={15} />
+        <Radar size={15} className={viewMode === 'radar' ? 'text-[#FF7A00]' : ''} />
         <span>Local Radar</span>
-        <span className="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.2 rounded font-semibold ml-0.5">
-          Coming soon
-        </span>
       </button>
 
       {/* Tab 4: Smart Compare (disabled until 2+ selected) */}

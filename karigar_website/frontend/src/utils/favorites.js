@@ -49,7 +49,7 @@ export function toggleFavorite(item, type = 'listing') {
     const city = item.city || 'Pakistan'
     const area = item.area || ''
     const rating = item.rating || 0
-    const hourlyRate = item.hourlyRate || (isKarigar ? 500 : null)
+    const hourlyRate = item.hourlyRate || null
 
     const savedRecord = {
       id,
