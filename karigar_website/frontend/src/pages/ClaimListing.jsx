@@ -68,6 +68,23 @@ export default function ClaimListing() {
   const mapInstanceRef = useRef(null)
   const markerRef = useRef(null)
 
+  // Helper for masking Pakistani phone: 0317-XXX-7378
+  const formatMaskedPakPhone = (phone) => {
+    if (!phone) return '03XX-XXX-XXXX'
+    const clean = phone.replace(/\D/g, '')
+    let local = clean
+    if (local.startsWith('92') && local.length >= 12) {
+      local = '0' + local.slice(2)
+    }
+    if (local.length >= 11) {
+      return `${local.slice(0, 4)}-XXX-${local.slice(-4)}`
+    }
+    if (local.length >= 10) {
+      return `${local.slice(0, 4)}-XXX-${local.slice(-3)}`
+    }
+    return phone.replace(/(\d{4})\d{3}(\d{4})/, '$1-XXX-$2')
+  }
+
   // 1. Fetch Listing on Load
   useEffect(() => {
     let isMounted = true
@@ -424,7 +441,7 @@ export default function ClaimListing() {
             <div className="bg-[#F8FAFC] border border-[#E4EAF2] rounded-2xl p-4 max-w-sm mx-auto mb-6">
               <span className="text-xs text-[#5A6B84] block mb-1">Registered Phone Number</span>
               <p className="font-poppins font-extrabold text-lg text-[#0A1F44]">
-                {listing?.phone ? listing.phone.replace(/(\d{4})\d{3}(\d{4})/, '$1-XXX-$2') : 'No phone listed'}
+                {formatMaskedPakPhone(listing?.phone)}
               </p>
             </div>
 
@@ -436,6 +453,19 @@ export default function ClaimListing() {
             >
               {isSubmitting ? 'Sending OTP...' : 'Send 6-Digit Verification OTP →'}
             </button>
+
+            {/* Manual fallback when owner no longer has access to phone */}
+            <div className="mt-6 pt-5 border-t border-[#E4EAF2] text-xs text-[#5A6B84] flex items-center justify-center gap-1.5 flex-wrap">
+              <span>Ye number ab aap ke paas nahi?</span>
+              <a
+                href="https://wa.me/923427066034?text=Assalam-o-Alaikum,%20mera%20listing%20number%20tabdeel%20karna%20hai."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-[#FF7A00] hover:underline inline-flex items-center gap-1"
+              >
+                <span>WhatsApp karein +92 342 7066034</span>
+              </a>
+            </div>
           </div>
         )}
 
@@ -453,7 +483,7 @@ export default function ClaimListing() {
               Enter Verification Code
             </h2>
             <p className="text-xs sm:text-sm text-[#5A6B84] mb-6">
-              6-digit OTP code sent to <strong>{maskedPhone}</strong>. It expires in {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}.
+              6-digit OTP code sent to <strong>{formatMaskedPakPhone(maskedPhone || listing?.phone)}</strong>. It expires in {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}.
             </p>
 
             {/* 6 Digit Input Boxes */}
@@ -490,6 +520,19 @@ export default function ClaimListing() {
               >
                 Resend Code {timer > 0 ? `(${timer}s)` : ''}
               </button>
+            </div>
+
+            {/* Manual fallback when owner no longer has access to phone */}
+            <div className="mt-6 pt-5 border-t border-[#E4EAF2] text-xs text-[#5A6B84] flex items-center justify-center gap-1.5 flex-wrap">
+              <span>Ye number ab aap ke paas nahi?</span>
+              <a
+                href="https://wa.me/923427066034?text=Assalam-o-Alaikum,%20mera%20listing%20number%20tabdeel%20karna%20hai."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-[#FF7A00] hover:underline inline-flex items-center gap-1"
+              >
+                <span>WhatsApp karein +92 342 7066034</span>
+              </a>
             </div>
           </div>
         )}

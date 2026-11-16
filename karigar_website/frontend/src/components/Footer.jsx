@@ -191,7 +191,7 @@ export default function Footer() {
         {/* Bottom Bar: Copyright (Exact from Reference 2) */}
         <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
           <p>
-            &copy; 2025 KarigarPK. All rights reserved.
+            &copy; 2026 KarigarPK. All rights reserved.
           </p>
           <p className="text-[11px] text-gray-500">
             Pakistan's Local Business & Services Discovery Network

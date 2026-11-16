@@ -6,13 +6,19 @@ import BusinessCard from '../BusinessCard'
 export default function VisualGridView({
   items = [],
   isLoading = false,
-  onSelectBusiness = null
+  onSelectBusiness = null,
+  hasMore = false,
+  isLoadingMore = false,
+  onLoadMore = null,
+  totalCount = 0
 }) {
   const {
     query,
     area,
     service,
     city,
+    filters,
+    setFilter,
     resetFilters,
     selectedBusiness,
     setSelectedBusiness
@@ -78,6 +84,32 @@ export default function VisualGridView({
 
   // Empty State
   if (items.length === 0) {
+    if (filters.verifiedOnly || filters.availableNow) {
+      return (
+        <div className="bg-white rounded-3xl border border-[#E4EAF2] p-8 sm:p-12 text-center shadow-sm max-w-lg mx-auto">
+          <div className="w-16 h-16 rounded-full bg-amber-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-4">
+            <SlidersHorizontal size={28} />
+          </div>
+          <h3 className="font-poppins font-bold text-lg text-[#0A1F44] mb-2">
+            Abhi is area mein koi verified karigar nahi hai
+          </h3>
+          <p className="text-xs sm:text-sm text-[#5A6B84] leading-relaxed mb-6">
+            Saari local listings aur businesses dekhne ke liye ye button dabayein.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setFilter('verifiedOnly', false)
+              setFilter('availableNow', false)
+            }}
+            className="inline-flex items-center gap-2 bg-[#FF7A00] hover:bg-[#F06400] text-white font-bold py-2.5 px-6 rounded-xl text-xs transition-all shadow-md shadow-orange-500/25 cursor-pointer"
+          >
+            <span>Saari Listings Dekhein</span>
+          </button>
+        </div>
+      )
+    }
+
     return (
       <div className="bg-white rounded-3xl border border-[#E4EAF2] p-10 sm:p-14 text-center shadow-sm max-w-lg mx-auto">
         <div className="w-16 h-16 rounded-full bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-4">
@@ -195,6 +227,27 @@ export default function VisualGridView({
           </div>
         )}
 
+        {/* Load More Pagination for Sectioned View */}
+        {hasMore && (
+          <div className="pt-6 border-t border-[#E4EAF2] text-center">
+            <button
+              type="button"
+              disabled={isLoadingMore}
+              onClick={onLoadMore}
+              className="inline-flex items-center gap-2 bg-[#0A1F44] hover:bg-[#FF7A00] text-white font-bold py-3 px-8 rounded-xl text-xs sm:text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 cursor-pointer"
+            >
+              {isLoadingMore ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Loading more businesses...</span>
+                </>
+              ) : (
+                <span>Load More Businesses ({items.length}{totalCount > 0 ? ` of ${totalCount}` : ''})</span>
+              )}
+            </button>
+          </div>
+        )}
+
       </div>
     )
   }
@@ -223,6 +276,27 @@ export default function VisualGridView({
           />
         ))}
       </div>
+
+      {/* Load More Pagination for Standard Grid */}
+      {hasMore && (
+        <div className="mt-8 pt-6 border-t border-[#E4EAF2] text-center">
+          <button
+            type="button"
+            disabled={isLoadingMore}
+            onClick={onLoadMore}
+            className="inline-flex items-center gap-2 bg-[#0A1F44] hover:bg-[#FF7A00] text-white font-bold py-3 px-8 rounded-xl text-xs sm:text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 cursor-pointer"
+          >
+            {isLoadingMore ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Loading more businesses...</span>
+              </>
+            ) : (
+              <span>Load More Businesses ({items.length}{totalCount > 0 ? ` of ${totalCount}` : ''})</span>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -15,19 +15,11 @@ export default function Signup() {
     email: '',
     phone: '',
     address: '',
-    cnic: '',
     password: '',
     confirmPassword: ''
   })
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-
-  const formatCnic = (value) => {
-    const digits = value.replace(/\D/g, '').slice(0, 13)
-    if (digits.length <= 5) return digits
-    if (digits.length <= 12) return `${digits.slice(0, 5)}-${digits.slice(5)}`
-    return `${digits.slice(0, 5)}-${digits.slice(5, 12)}-${digits.slice(12)}`
-  }
 
   const formatPhone = (value) => {
     const digits = value.replace(/\D/g, '').slice(0, 11)
@@ -37,11 +29,9 @@ export default function Signup() {
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    const normalizedValue = name === 'cnic'
-      ? formatCnic(value)
-      : name === 'phone'
-        ? formatPhone(value)
-        : value
+    const normalizedValue = name === 'phone'
+      ? formatPhone(value)
+      : value
 
     setFormData({
       ...formData,
@@ -69,15 +59,6 @@ export default function Signup() {
       return
     }
 
-    // CNIC is OPTIONAL for customers!
-    if (formData.cnic && formData.cnic.trim()) {
-      const cnicDigits = formData.cnic.replace(/\D/g, '')
-      if (cnicDigits.length !== 13) {
-        setError('If providing CNIC, it must be exactly 13 digits (e.g. 35201-1234567-1).')
-        return
-      }
-    }
-
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match.')
       return
@@ -95,7 +76,6 @@ export default function Signup() {
         fullName: formData.fullName.trim(),
         email: formData.email.trim(),
         phone: formData.phone,
-        cnic: formData.cnic || undefined,
         address: formData.address.trim() || 'Pakistan',
         password: formData.password
       })
@@ -261,35 +241,19 @@ export default function Signup() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-[#0A1F44] mb-1">
-                    Area / Sector
-                  </label>
-                  <div className="relative">
-                    <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5A6B84]" />
-                    <input
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      placeholder="e.g. DHA Phase 6"
-                      className="w-full pl-10 pr-3 py-2.5 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F7F9FC] text-[#0E1E3A] placeholder-[#5A6B84] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#0A1F44] mb-1">
-                    CNIC (Optional)
-                  </label>
+              <div>
+                <label className="block text-xs font-bold text-[#0A1F44] mb-1">
+                  Area / Sector
+                </label>
+                <div className="relative">
+                  <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#5A6B84]" />
                   <input
                     type="text"
-                    name="cnic"
-                    value={formData.cnic}
+                    name="address"
+                    value={formData.address}
                     onChange={handleChange}
-                    placeholder="35201-1234567-1"
-                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F7F9FC] text-[#0E1E3A] placeholder-[#5A6B84] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all"
+                    placeholder="e.g. DHA Phase 6"
+                    className="w-full pl-10 pr-3 py-2.5 text-xs sm:text-sm rounded-xl border border-[#E4EAF2] bg-[#F7F9FC] text-[#0E1E3A] placeholder-[#5A6B84] focus:outline-none focus:border-[#FF7A00] focus:bg-white transition-all"
                   />
                 </div>
               </div>

@@ -38,6 +38,9 @@ export default function FindKarigar() {
   const [listings, setListings] = useState([])
   const [isLoadingAreas, setIsLoadingAreas] = useState(true)
   const [isLoadingItems, setIsLoadingItems] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalListingsCount, setTotalListingsCount] = useState(0)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
 
   // Smart Search NLP state
   const [smartChips, setSmartChips] = useState([])
@@ -148,10 +151,12 @@ export default function FindKarigar() {
   useEffect(() => {
     let isMounted = true
     setIsLoadingItems(true)
+    setCurrentPage(1)
 
     const params = {
       city,
-      limit: 100
+      limit: 60,
+      page: 1
     }
     if (area && area !== 'All Areas') params.area = area
     if (service && service !== 'All') params.service = service
@@ -171,13 +176,16 @@ export default function FindKarigar() {
       setKarigars(fetchedKarigars)
 
       let fetchedListings = []
+      let totalFound = 0
       if (listingsRes.status === 'fulfilled' && listingsRes.value?.data) {
         const raw = listingsRes.value.data.listings || listingsRes.value.data
         if (Array.isArray(raw)) {
           fetchedListings = raw.map(l => ({ ...l, type: 'listing' }))
         }
+        totalFound = listingsRes.value.data.total != null ? listingsRes.value.data.total : fetchedListings.length
       }
       setListings(fetchedListings)
+      setTotalListingsCount(totalFound)
 
       setIsLoadingItems(false)
     }).catch((err) => {
@@ -190,6 +198,42 @@ export default function FindKarigar() {
       isMounted = false
     }
   }, [city, area, service, query, filters.verifiedOnly])
+
+  // Pagination Load More Handler for Discovery Grid
+  const hasMore = listings.length < totalListingsCount
+
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+    setIsLoadingMore(true)
+    const nextPage = currentPage + 1
+    const params = {
+      city,
+      limit: 60,
+      page: nextPage
+    }
+    if (area && area !== 'All Areas') params.area = area
+    if (service && service !== 'All') params.service = service
+    if (query.trim()) params.q = query.trim()
+    if (filters.verifiedOnly) params.verifiedOnly = 'true'
+
+    try {
+      const res = await api.get('/listings', { params })
+      const raw = res.data?.listings || res.data || []
+      if (Array.isArray(raw) && raw.length > 0) {
+        const newItems = raw.map(l => ({ ...l, type: 'listing' }))
+        setListings(prev => {
+          const existingIds = new Set(prev.map(item => item._id))
+          const filtered = newItems.filter(item => !existingIds.has(item._id))
+          return [...prev, ...filtered]
+        })
+        setCurrentPage(nextPage)
+      }
+    } catch (err) {
+      console.warn('Failed to load more listings:', err)
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }
 
   // Total real listings count across all areas of chosen city
   const totalCityCount = useMemo(() => {
@@ -284,31 +328,47 @@ export default function FindKarigar() {
 
     return list.sort((a, b) => {
       if (filters.sort === 'price_asc') {
-        const pA = a.hourlyRate != null ? a.hourlyRate : 999999
-        const pB = b.hourlyRate != null ? b.hourlyRate : 999999
-        return pA - pB
+        const hasA = a.hourlyRate != null && Number(a.hourlyRate) > 0
+        const hasB = b.hourlyRate != null && Number(b.hourlyRate) > 0
+        if (hasA && hasB) {
+          return Number(a.hourlyRate) - Number(b.hourlyRate)
+        }
+        if (hasA && !hasB) return -1
+        if (!hasA && hasB) return 1
+        const rA = a.rating != null ? Number(a.rating) : 0
+        const rB = b.rating != null ? Number(b.rating) : 0
+        return rB - rA
       }
       if (filters.sort === 'reviews') {
-        const rA = a.reviewsCount || 0
-        const rB = b.reviewsCount || 0
-        return rB - rA
+        const rA = Number(a.reviewsCount) || 0
+        const rB = Number(b.reviewsCount) || 0
+        if (rB !== rA) return rB - rA
+        const rateA = a.rating != null ? Number(a.rating) : 0
+        const rateB = b.rating != null ? Number(b.rating) : 0
+        return rateB - rateA
       }
       if (filters.sort === 'newest') {
         const dA = new Date(a.createdAt || 0).getTime()
         const dB = new Date(b.createdAt || 0).getTime()
         return dB - dA
       }
-      // Default: Rating descending
+      // Default: Rating descending, secondary by reviews count
       const rateA = a.rating !== null && a.rating !== undefined ? Number(a.rating) : 0
       const rateB = b.rating !== null && b.rating !== undefined ? Number(b.rating) : 0
-      return rateB - rateA
+      if (rateB !== rateA) return rateB - rateA
+      return (Number(b.reviewsCount) || 0) - (Number(a.reviewsCount) || 0)
     })
   }, [filteredKarigars, filteredListings, filters.sort])
 
-  // Update default selected business
+  // Synchronize selected business with combined results to ensure preview stays fresh
   useEffect(() => {
-    if (combinedResults.length > 0 && !selectedBusiness) {
-      setSelectedBusiness(combinedResults[0])
+    if (combinedResults.length === 0) {
+      if (selectedBusiness) setSelectedBusiness(null)
+    } else {
+      const isStillPresent = selectedBusiness && combinedResults.some(item => item._id === selectedBusiness._id)
+      if (!isStillPresent) {
+        setSelectedBusiness(combinedResults[0])
+      }
     }
   }, [combinedResults, selectedBusiness, setSelectedBusiness])
 
@@ -483,6 +543,10 @@ export default function FindKarigar() {
               <VisualGridView
                 items={combinedResults}
                 isLoading={isLoadingItems}
+                hasMore={hasMore}
+                isLoadingMore={isLoadingMore}
+                onLoadMore={handleLoadMore}
+                totalCount={totalListingsCount}
                 onSelectBusiness={(item) => {
                   setSelectedBusiness(item)
                   if (typeof window !== 'undefined' && window.innerWidth < 1280) {
@@ -509,7 +573,7 @@ export default function FindKarigar() {
           {viewMode !== 'compare' && viewMode !== 'radar' && (
             <div className="hidden xl:block xl:col-span-3">
               <QuickPreviewPanel
-                business={selectedBusiness || combinedResults[0]}
+                business={selectedBusiness}
               />
             </div>
           )}

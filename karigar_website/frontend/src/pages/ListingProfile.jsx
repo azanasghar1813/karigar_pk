@@ -136,10 +136,6 @@ export default function ListingProfile() {
           >
             <ArrowLeft size={14} /> Back to Directory
           </Link>
-
-          <span className="text-xs text-[#5A6B84] font-medium hidden sm:inline-block">
-            Verified Pakistan Directory Record
-          </span>
         </div>
 
         {/* Master Profile Container Card */}

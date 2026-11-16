@@ -20,7 +20,6 @@ const CATEGORY_ALIASES = [
   { match: ['cctv', 'camera', 'security camera'], searchKey: 'CCTV Installation', label: 'CCTV Installation' },
   { match: ['locksmith', 'lock', 'chabi', 'tala'], searchKey: 'Locksmith', label: 'Locksmith' },
   { match: ['appliance', 'fridge', 'washing machine', 'microwave', 'oven'], searchKey: 'Appliance Repair', label: 'Appliance Repair' },
-  { match: ['restaurant', 'food', 'cafe', 'khana', 'catering'], searchKey: 'Restaurants', label: 'Restaurants' },
   { match: ['home repair', 'handyman', 'maintenance', 'marammat'], searchKey: 'General Repair', label: 'Home Repair' }
 ]
 

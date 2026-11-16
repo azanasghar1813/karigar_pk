@@ -8,17 +8,17 @@ const sendEmail = require('../utils/sendEmail');
 const NOTIFICATION_TEXTS = require('../config/notificationTexts');
 
 /**
- * Mask phone number for public OTP verification screen: 0312-3456789 -> 0312-XXX6789
+ * Mask phone number for public OTP verification screen: e.g. 0317-XXX-7378
  */
 function maskPhone(phone) {
-  if (!phone) return '03XX-XXXXXXX';
-  const clean = phone.replace(/\D/g, '');
+  if (!phone) return '03XX-XXX-XXXX';
+  const clean = normalizePhone(phone);
   if (clean.length >= 10) {
     const start = clean.slice(0, 4);
     const end = clean.slice(-4);
-    return `${start}-XXX${end}`;
+    return `${start}-XXX-${end}`;
   }
-  return '03XX-XXXXXXX';
+  return '03XX-XXX-XXXX';
 }
 
 /**

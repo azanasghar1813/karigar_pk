@@ -149,13 +149,13 @@ export default function CustomerDashboard() {
 
   const upcomingBookings = bookings.filter(b => ['pending', 'confirmed', 'in-progress'].includes(b.status))
   const pastBookings = bookings.filter(b => ['completed', 'cancelled'].includes(b.status))
+  const displayName = user?.fullName || user?.name || (user?.email ? user.email.split('@')[0] : 'User')
 
-  // Navy Sidebar 8 Menu Items
+  // Navy Sidebar Menu Items
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'bookings', label: 'My Bookings', icon: Calendar, badge: totalBookings },
-    { id: 'saved', label: 'Saved Businesses', icon: Bookmark, badge: savedBusinesses.length },
-    { id: 'favorites', label: 'Favourites', icon: Heart, badge: savedBusinesses.length },
+    { id: 'saved', label: 'Saved / Favourites', icon: Heart, badge: savedBusinesses.length },
     { id: 'reviews', label: 'Reviews', icon: MessageSquare },
     { id: 'settings', label: 'Profile Settings', icon: Settings },
     { id: 'notifications', label: 'Notifications', icon: Bell },
@@ -185,10 +185,10 @@ export default function CustomerDashboard() {
             {/* User Profile Mini */}
             <div className="flex items-center gap-3 px-2 py-3 mb-4 bg-white/5 rounded-2xl border border-white/10">
               <div className="w-10 h-10 rounded-full bg-[#FF7A00] flex items-center justify-center text-white font-black text-sm">
-                {user?.name ? user.name[0].toUpperCase() : 'U'}
+                {displayName[0].toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-bold text-xs text-white truncate">{user?.name || 'Customer'}</p>
+                <p className="font-bold text-xs text-white truncate">{displayName}</p>
                 <p className="text-[10px] text-gray-400 truncate">{user?.email}</p>
               </div>
             </div>
@@ -251,7 +251,7 @@ export default function CustomerDashboard() {
                       My Dashboard
                     </h1>
                     <p className="text-xs text-[#5A6B84] mt-0.5">
-                      Welcome back, {user?.name || 'Customer'}! Overview of your verified bookings.
+                      Welcome back, {displayName}! Overview of your verified bookings.
                     </p>
                   </div>
                   <Link
@@ -501,7 +501,7 @@ export default function CustomerDashboard() {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="font-poppins font-bold text-xl text-[#0A1F44]">
-                      {activeMenu === 'favorites' ? 'My Favourites' : 'Saved Businesses'}
+                      Saved / Favourites
                     </h2>
                     <p className="text-xs text-[#5A6B84] mt-0.5">
                       Your bookmarked service professionals and local business directory listings

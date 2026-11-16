@@ -83,7 +83,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/register-karigar" element={<RegisterKarigar />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/forgot-password" element={<PublicLayout><ForgotPassword /></PublicLayout>} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
 
             {/* Admin routes — protected by AdminRoute guard, wrapped in AdminLayout */}

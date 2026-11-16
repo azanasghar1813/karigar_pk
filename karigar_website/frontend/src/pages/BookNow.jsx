@@ -31,7 +31,7 @@ export default function BookNow() {
     fullName: user?.name || user?.fullName || '',
     phone: user?.phone || '',
     serviceType: 'Electrician',
-    city: 'Karachi',
+    city: 'Lahore',
     address: '',
     date: todayStr,
     time: BOOKING_TIME_SLOTS[0],
@@ -61,12 +61,13 @@ export default function BookNow() {
     api.get(`/karigars/${id}`)
       .then((res) => {
         if (!isMounted) return
-        setKarigar(res.data)
-        if (res.data.services && res.data.services.length > 0) {
+        const kData = res.data
+        setKarigar(kData)
+        if (kData) {
           setFormData((prev) => ({
             ...prev,
-            serviceType: res.data.services[0],
-            city: res.data.city && CITIES.includes(res.data.city) ? res.data.city : prev.city
+            serviceType: kData.services && kData.services.length > 0 ? kData.services[0] : prev.serviceType,
+            city: kData.city && CITIES.includes(kData.city) ? kData.city : prev.city
           }))
         }
         setLoadingKarigar(false)
@@ -83,12 +84,16 @@ export default function BookNow() {
   }, [id])
 
   // Pricing breakdown: Service rate + PKR 50 processing fee
+  // Selected service startingPrice directly matches dropdown selection to prevent discrepancies
   const serviceRate = useMemo(() => {
+    const matched = SERVICES_CONFIG.find((s) => s.searchKey === formData.serviceType || s.name === formData.serviceType)
+    if (matched && matched.startingPrice) {
+      return Number(matched.startingPrice)
+    }
     if (karigar && karigar.hourlyRate) {
       return Number(karigar.hourlyRate)
     }
-    const matched = SERVICES_CONFIG.find((s) => s.searchKey === formData.serviceType || s.name === formData.serviceType)
-    return matched ? matched.startingPrice : 500
+    return 500
   }, [karigar, formData.serviceType])
 
   const processingFee = 50
@@ -110,8 +115,8 @@ export default function BookNow() {
     setError('')
   }
 
-  const handleProceedToPayment = (e) => {
-    e.preventDefault()
+  const handleConfirmBooking = async (e) => {
+    if (e && e.preventDefault) e.preventDefault()
     if (!formData.fullName.trim() || formData.fullName.trim().length < 3) {
       setError('Please provide your full name (at least 3 characters).')
       return
@@ -130,19 +135,13 @@ export default function BookNow() {
       return
     }
 
-    setError('')
-    setCurrentStep(3)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
-  const handleConfirmBooking = async () => {
     setIsSubmitting(true)
     setError('')
 
     try {
       const payload = {
-        karigar: id,
-        karigarId: id,
+        karigar: id || undefined,
+        karigarId: id || undefined,
         service: formData.serviceType,
         serviceType: formData.serviceType,
         slot: formData.time,
@@ -161,6 +160,7 @@ export default function BookNow() {
       const { data } = await api.post('/bookings', payload)
       setConfirmedBooking(data)
       setCurrentStep(4)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {
       console.error('Booking submission error:', err)
       setError(err.response?.data?.message || 'Failed to submit booking. Please check your details and try again.')
@@ -179,9 +179,35 @@ export default function BookNow() {
             to={id ? `/worker/${id}` : '/find-karigar'}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#5A6B84] hover:text-[#0A1F44] transition-colors"
           >
-            <ArrowLeft size={14} /> Back to Profile
+            <ArrowLeft size={14} /> Back to {id ? 'Profile' : 'Directory'}
           </Link>
         </div>
+
+        {/* Notice Banner when accessed without Karigar ID */}
+        {!id && (
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 sm:p-5 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#FF7A00] text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+                <AlertCircle size={20} />
+              </div>
+              <div>
+                <h4 className="font-poppins font-bold text-sm text-[#0A1F44]">
+                  Aap ne koi makhsoos karigar select nahi kiya
+                </h4>
+                <p className="text-xs text-[#5A6B84] mt-0.5">
+                  Aap yeh general form fill kar sakte hain, ya hamari verified directory se direct kisi karigar ko choose karein.
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/find-karigar"
+              className="inline-flex items-center gap-1.5 bg-[#0A1F44] hover:bg-[#FF7A00] text-white text-xs font-bold py-2.5 px-4 rounded-xl transition-colors whitespace-nowrap shadow-xs"
+            >
+              <span>Explore Verified Karigars</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        )}
 
         {/* 4-Step Stepper Header (matching Reference 2 "Booking Page") */}
         <div className="bg-white border border-[#E4EAF2] rounded-2xl p-4 sm:p-5 mb-8 shadow-sm">
@@ -478,14 +504,68 @@ export default function BookNow() {
                       />
                     </div>
 
-                    <div className="pt-3">
+                    {/* Payment Method Option */}
+                    <div>
+                      <label className="block text-xs font-bold text-[#0A1F44] mb-2">
+                        Payment Method *
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label
+                          className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                            paymentMethod === 'cod'
+                              ? 'border-[#FF7A00] bg-orange-50/20 ring-1 ring-[#FF7A00]'
+                              : 'border-[#E4EAF2] hover:border-gray-300 bg-[#F7F9FC]'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="cod"
+                            checked={paymentMethod === 'cod'}
+                            onChange={() => setPaymentMethod('cod')}
+                            className="mt-0.5 accent-[#FF7A00]"
+                          />
+                          <div>
+                            <span className="font-bold text-xs text-[#0A1F44] block">Cash on Delivery (COD)</span>
+                            <span className="text-[11px] text-[#5A6B84] block mt-0.5">Pay after service completion</span>
+                          </div>
+                        </label>
+
+                        <label
+                          className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                            paymentMethod === 'jazzcash'
+                              ? 'border-[#FF7A00] bg-orange-50/20 ring-1 ring-[#FF7A00]'
+                              : 'border-[#E4EAF2] hover:border-gray-300 bg-[#F7F9FC]'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="jazzcash"
+                            checked={paymentMethod === 'jazzcash'}
+                            onChange={() => setPaymentMethod('jazzcash')}
+                            className="mt-0.5 accent-[#FF7A00]"
+                          />
+                          <div>
+                            <span className="font-bold text-xs text-[#0A1F44] block">JazzCash / EasyPaisa</span>
+                            <span className="text-[11px] text-[#5A6B84] block mt-0.5">Mobile wallet transfer upon arrival</span>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 space-y-2">
                       <button
                         type="submit"
-                        className="w-full bg-[#FF7A00] hover:bg-[#F06400] text-white font-bold py-3 px-6 rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-orange-500/25 flex items-center justify-center gap-2 hover:scale-[1.01]"
+                        disabled={isSubmitting}
+                        className="w-full bg-[#FF7A00] hover:bg-[#F06400] text-white font-bold py-3 px-6 rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-orange-500/25 flex items-center justify-center gap-2 hover:scale-[1.01] disabled:opacity-50 cursor-pointer"
                       >
-                        <span>Proceed to Payment</span>
-                        <ArrowRight size={15} />
+                        <span>{isSubmitting ? 'Confirming Appointment...' : `Confirm Booking (PKR ${totalAmount})`}</span>
+                        <Check size={16} />
                       </button>
+                      <p className="text-[11px] text-center text-[#5A6B84] leading-relaxed">
+                        ⚠️ Payment Note: Payment kaam mukammal hone ke baad direct karigar ko ada karni hai (Cash on Delivery / JazzCash / EasyPaisa).
+                      </p>
                     </div>
                   </form>
                 ) : (

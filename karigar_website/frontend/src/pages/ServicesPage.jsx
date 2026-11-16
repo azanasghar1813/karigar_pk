@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, ShieldCheck, Zap, Wrench, Snowflake, Home, Sparkles, Hammer, Paintbrush, Car, Tv, Video, Key, Smile, UtensilsCrossed } from 'lucide-react'
+import { ArrowRight, ShieldCheck, Zap, Wrench, Snowflake, Home, Sparkles, Hammer, Paintbrush, Car, Tv, Video, Key, Smile } from 'lucide-react'
 import { SERVICES_CONFIG } from '../config/site'
 
 const ICON_MAP = {
@@ -14,8 +14,7 @@ const ICON_MAP = {
   Tv,
   Video,
   Key,
-  Smile,
-  UtensilsCrossed
+  Smile
 }
 
 export default function ServicesPage() {
