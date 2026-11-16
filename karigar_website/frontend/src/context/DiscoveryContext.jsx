@@ -8,6 +8,13 @@ const DiscoveryContext = createContext()
 
 const COMPARE_STORAGE_KEY = 'karigar_compare_selection'
 
+// Helper to reliably extract ID from business object or string ID
+const getItemId = (itemOrId) => {
+  if (!itemOrId) return ''
+  if (typeof itemOrId === 'object') return itemOrId._id || itemOrId.id || ''
+  return String(itemOrId)
+}
+
 export function DiscoveryProvider({ children }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const { selectedCity: contextCity, setSelectedCity } = useCity()
@@ -145,15 +152,6 @@ export function DiscoveryProvider({ children }) {
     }
   }, [compareList])
 
-  // Sync city bi-directionally with global CityContext
-  useEffect(() => {
-    if (contextCity && CITIES.includes(contextCity) && contextCity !== city) {
-      setCityState(contextCity)
-      setAreaState('All Areas')
-      updateUrlParams({ city: contextCity, area: 'All Areas' })
-    }
-  }, [contextCity, city, updateUrlParams])
-
   // Helper to sync state changes to URL query string
   const updateUrlParams = useCallback((newValues) => {
     setSearchParams((prevParams) => {
@@ -198,6 +196,15 @@ export function DiscoveryProvider({ children }) {
       return updated
     }, { replace: true })
   }, [setSearchParams, city, area, service, query, viewMode, filters])
+
+  // Sync city bi-directionally with global CityContext
+  useEffect(() => {
+    if (contextCity && CITIES.includes(contextCity) && contextCity !== city) {
+      setCityState(contextCity)
+      setAreaState('All Areas')
+      updateUrlParams({ city: contextCity, area: 'All Areas' })
+    }
+  }, [contextCity, city, updateUrlParams])
 
   // State Setters that also reflect into URL
   const setCity = useCallback((newCity) => {
@@ -259,12 +266,6 @@ export function DiscoveryProvider({ children }) {
   }, [updateUrlParams])
 
   // Compare functions
-  const getItemId = (itemOrId) => {
-    if (!itemOrId) return ''
-    if (typeof itemOrId === 'object') return itemOrId._id || itemOrId.id || ''
-    return String(itemOrId)
-  }
-
   const toggleCompare = useCallback((itemOrId) => {
     const targetId = getItemId(itemOrId)
     if (!targetId) return
