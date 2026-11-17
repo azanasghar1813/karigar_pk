@@ -1,40 +1,135 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
+  <!-- Core Static Pages -->
   <url>
     <loc>https://www.karigarpk.live/</loc>
-    <changefreq>weekly</changefreq>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-
+  <url>
+    <loc>https://www.karigarpk.live/find-karigar</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
   <url>
     <loc>https://www.karigarpk.live/services</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-
   <url>
-    <loc>https://www.karigarpk.live/find-karigar</loc>
+    <loc>https://www.karigarpk.live/faq</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.8</priority>
   </url>
-
   <url>
-    <loc>https://www.karigarpk.live/about</loc>
+    <loc>https://www.karigarpk.live/how-it-works</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-
   <url>
-    <loc>https://www.karigarpk.live/blog</loc>
-    <changefreq>weekly</changefreq>
+    <loc>https://www.karigarpk.live/join-karigar</loc>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-
+  <url>
+    <loc>https://www.karigarpk.live/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
   <url>
     <loc>https://www.karigarpk.live/contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://www.karigarpk.live/blog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.karigarpk.live/terms-and-conditions</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.karigarpk.live/privacy-policy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Programmatic High-Intent Service Landing Pages (Core) -->
+  <url><loc>https://www.karigarpk.live/services/plumber</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.karigarpk.live/services/electrician</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.karigarpk.live/services/ac-repair</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.karigarpk.live/services/carpenter</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/painter</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/cleaning</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/handyman</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/appliance-repair</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/car-wash</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/cctv</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/locksmith</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/pest-control</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/generator-service</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/geyser-repair</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/movers</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/salon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+
+  <!-- High-Intent Service x City Landing Pages (Lahore) -->
+  <url><loc>https://www.karigarpk.live/services/plumber/lahore</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.karigarpk.live/services/electrician/lahore</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.karigarpk.live/services/ac-repair/lahore</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.karigarpk.live/services/carpenter/lahore</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/painter/lahore</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/cleaning/lahore</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/pest-control/lahore</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/geyser-repair/lahore</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/generator-service/lahore</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/car-wash/lahore</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/cctv/lahore</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/movers/lahore</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+
+  <!-- High-Intent Service x City Landing Pages (Karachi) -->
+  <url><loc>https://www.karigarpk.live/services/plumber/karachi</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.karigarpk.live/services/electrician/karachi</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.karigarpk.live/services/ac-repair/karachi</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.karigarpk.live/services/carpenter/karachi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/painter/karachi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/cleaning/karachi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/pest-control/karachi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/geyser-repair/karachi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/generator-service/karachi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/car-wash/karachi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/cctv/karachi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/movers/karachi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+
+  <!-- High-Intent Service x City Landing Pages (Islamabad) -->
+  <url><loc>https://www.karigarpk.live/services/plumber/islamabad</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.karigarpk.live/services/electrician/islamabad</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.karigarpk.live/services/ac-repair/islamabad</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.karigarpk.live/services/carpenter/islamabad</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/painter/islamabad</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/cleaning/islamabad</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/pest-control/islamabad</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/geyser-repair/islamabad</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/generator-service/islamabad</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/car-wash/islamabad</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/cctv/islamabad</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/movers/islamabad</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+
+  <!-- High-Intent Service x City Landing Pages (Rawalpindi) -->
+  <url><loc>https://www.karigarpk.live/services/plumber/rawalpindi</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.karigarpk.live/services/electrician/rawalpindi</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.karigarpk.live/services/ac-repair/rawalpindi</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.karigarpk.live/services/carpenter/rawalpindi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/painter/rawalpindi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/cleaning/rawalpindi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/pest-control/rawalpindi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/geyser-repair/rawalpindi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/generator-service/rawalpindi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/car-wash/rawalpindi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/cctv/rawalpindi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.karigarpk.live/services/movers/rawalpindi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
 
 </urlset>

@@ -82,7 +82,7 @@ export default function ExploreAreasView({
 
         {isLoading ? (
           // Skeletons to prevent layout shift
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[1, 2, 3, 4, 5, 6].map((n) => (
               <div key={n} className="bg-white rounded-3xl border border-[#E4EAF2] p-5 shadow-xs animate-pulse h-44 flex flex-col justify-between">
                 <div className="space-y-3">
@@ -95,7 +95,7 @@ export default function ExploreAreasView({
             ))}
           </div>
         ) : areas.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-4.5">
             {areas.map((a) => (
               <AreaCard
                 key={a.area}

@@ -143,7 +143,7 @@ export default function TopRatedSection() {
               <Star size={14} className="fill-[#FF7A00] text-[#FF7A00]" />
             </div>
             <h2 className="font-poppins text-base sm:text-lg font-extrabold text-[#0A1F44] tracking-tight">
-              Top-rated near you
+              {cityKarigars.length > 0 ? `Verified Professionals in ${activeCity}` : `Verified & Popular Businesses in ${activeCity}`}
             </h2>
           </div>
 

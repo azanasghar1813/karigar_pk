@@ -83,7 +83,7 @@ export default function CompareTray({ allItems = [] }) {
                   const name = item.name || item.fullName || 'Business'
                   const service = item.service || (Array.isArray(item.services) ? item.services[0] : item.services)
                   const matchedConfig = SERVICES_CONFIG.find(s => s.searchKey === service || s.name === service)
-                  const defaultImg = matchedConfig ? matchedConfig.image : '/assets/images/electrician_work.jpg'
+                  const defaultImg = matchedConfig ? matchedConfig.image : '/assets/images/electrician_work.webp'
                   const photo = item.profilePhoto || (item.photos && item.photos[0]) || defaultImg
 
                   return (
@@ -98,7 +98,7 @@ export default function CompareTray({ allItems = [] }) {
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             e.target.onerror = null
-                            e.target.src = '/assets/images/electrician_work.jpg'
+                            e.target.src = '/assets/images/electrician_work.webp'
                           }}
                         />
                       </div>
@@ -215,7 +215,7 @@ export default function CompareTray({ allItems = [] }) {
                     const name = item.name || item.fullName || 'Business'
                     const service = item.service || (Array.isArray(item.services) ? item.services[0] : item.services)
                     const matchedConfig = SERVICES_CONFIG.find(s => s.searchKey === service || s.name === service)
-                    const defaultImg = matchedConfig ? matchedConfig.image : '/assets/images/electrician_work.jpg'
+                    const defaultImg = matchedConfig ? matchedConfig.image : '/assets/images/electrician_work.webp'
                     const photo = item.profilePhoto || (item.photos && item.photos[0]) || defaultImg
 
                     return (
@@ -230,7 +230,7 @@ export default function CompareTray({ allItems = [] }) {
                             className="w-10 h-10 rounded-lg object-cover bg-white/20 flex-shrink-0"
                             onError={(e) => {
                               e.target.onerror = null
-                              e.target.src = '/assets/images/electrician_work.jpg'
+                              e.target.src = '/assets/images/electrician_work.webp'
                             }}
                           />
                           <div className="min-w-0">

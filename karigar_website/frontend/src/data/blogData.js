@@ -9,7 +9,7 @@ export const BLOG_POSTS = [
     category: 'Safety & Guides',
     readTime: '4 min read',
     icon: '⚡',
-    image: '/assets/images/electrician_work.jpg',
+    image: '/assets/images/electrician_work.webp',
     leadParagraph: 'Faulty electrical wiring is one of the leading causes of residential fires and inverter failures across Pakistani urban centers. Finding a competent, trustworthy electrician requires knowing what questions to ask and what safety practices to demand.',
     sections: [
       {
@@ -54,7 +54,7 @@ export const BLOG_POSTS = [
     category: 'Home Care',
     readTime: '6 min read',
     icon: '🔧',
-    image: '/assets/images/handyman_service.jpg',
+    image: '/assets/images/handyman_service.webp',
     leadParagraph: 'Pakistani homes face unique maintenance challenges: scorching summer heat reaching 45°C, high monsoon rainfall, extreme dust storms, and frequent utility disruptions. Follow this preventative checklist to keep your home in prime condition.',
     sections: [
       {
@@ -109,7 +109,7 @@ export const BLOG_POSTS = [
     category: 'Cost Estimates',
     readTime: '5 min read',
     icon: '💧',
-    image: '/assets/images/plumber_sink.jpg',
+    image: '/assets/images/plumber_sink.webp',
     leadParagraph: 'One of the most common frustrations homeowners face is unpredictable, fluctuating plumbing estimates. Below is our transparent benchmark price guide for standard residential plumbing jobs across Pakistan.',
     sections: [
       {
@@ -152,7 +152,7 @@ export const BLOG_POSTS = [
     category: 'Cooling',
     readTime: '4 min read',
     icon: '❄️',
-    image: '/assets/images/ac_technician.jpg',
+    image: '/assets/images/ac_technician.webp',
     leadParagraph: 'With summer temperatures soaring past 40°C in Pakistan, an unserviced split air conditioner can consume up to 40% more electricity, struggle to cool, or cause premature compressor burnout. Here is everything you need to know before turning on your AC this season.',
     sections: [
       {

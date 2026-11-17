@@ -43,7 +43,7 @@ export default function About() {
 
             <div className="rounded-2xl overflow-hidden border border-[#E4EAF2] shadow-md">
               <img
-                src="/assets/images/karigar_drill_portrait.jpg"
+                src="/assets/images/karigar_drill_portrait.webp"
                 alt="KarigarPK Professional Craftsman"
                 className="w-full h-80 object-cover object-top"
               />

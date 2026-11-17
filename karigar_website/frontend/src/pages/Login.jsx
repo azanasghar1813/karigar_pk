@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Mail, Lock, Eye, EyeOff, User, HardHat, CheckCircle2, ArrowRight } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, User, HardHat, CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react'
 import { AuthContext } from '../context/AuthContext'
 import { auth, googleProvider } from '../config/firebase'
 import { signInWithPopup } from 'firebase/auth'
@@ -96,7 +96,7 @@ export default function Login() {
         <div className="hidden md:flex md:col-span-5 relative flex-col justify-between p-8 lg:p-10 overflow-hidden text-white bg-[#0A1F44]">
           {/* Brightened Background image */}
           <img
-            src="/assets/images/electrician_panel.jpg"
+            src="/assets/images/electrician_panel.webp"
             alt="Verified Karigar at Work"
             className="absolute inset-0 w-full h-full object-cover object-center filter brightness-[0.60] contrast-105"
           />
@@ -149,6 +149,16 @@ export default function Login() {
         <div className="col-span-1 md:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-center bg-white">
           <div className="max-w-md w-full mx-auto">
             
+            {/* Top Navigation Back Link */}
+            <div className="mb-3">
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#5A6B84] hover:text-[#0A1F44] transition-colors"
+              >
+                <ArrowLeft size={14} /> Back to Home
+              </Link>
+            </div>
+
             {/* KarigarPK Logo Centered */}
             <div className="flex items-center justify-center mb-3">
               <BrandLogo variant="light" size="md" />

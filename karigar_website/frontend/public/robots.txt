@@ -1,7 +1,60 @@
+# robots.txt for KarigarPK (https://www.karigarpk.live)
+# Designed for Google Search, Bing, and Generative AI Engines (ChatGPT, Gemini, Perplexity, Claude, Meta AI)
+
 User-agent: *
 Allow: /
+Allow: /services/
+Allow: /find-karigar
+Allow: /listing/
+Allow: /worker/
+Allow: /faq
+Allow: /how-it-works
+Allow: /about
+Allow: /contact
+Allow: /blog/
 Disallow: /admin/
-Disallow: /private/
+Disallow: /admin/*
+Disallow: /karigar/
+Disallow: /karigar/*
+Disallow: /customer-dashboard
 Disallow: /api/
 
+# OpenAI ChatGPT & Search
+User-agent: GPTBot
+Allow: /
+Disallow: /admin/
+Disallow: /karigar/
+Disallow: /api/
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Google Search & Google AI Overviews / Gemini
+User-agent: Googlebot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# Perplexity AI
+User-agent: PerplexityBot
+Allow: /
+
+# Anthropic Claude
+User-agent: ClaudeBot
+Allow: /
+
+# Microsoft Bing & Copilot
+User-agent: Bingbot
+Allow: /
+
+# Meta AI / Facebook
+User-agent: FacebookBot
+Allow: /
+
+# Apple Intelligence / Safari
+User-agent: Applebot
+Allow: /
+
+# Global Sitemap
 Sitemap: https://www.karigarpk.live/sitemap.xml

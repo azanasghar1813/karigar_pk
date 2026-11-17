@@ -21,27 +21,27 @@ export default function AreaCard({
     >
       <div>
         {/* Top Header */}
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0 group-hover:bg-[#FF7A00] group-hover:text-white transition-colors">
-              <MapPin size={20} />
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="w-10 h-10 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0 group-hover:bg-[#FF7A00] group-hover:text-white transition-colors shadow-xs">
+              <MapPin size={18} />
             </div>
-            <div>
-              <h4 className="font-poppins font-bold text-base text-[#0A1F44] group-hover:text-[#FF7A00] transition-colors leading-tight">
+            <div className="min-w-0 flex-1">
+              <h4 className="font-poppins font-bold text-sm sm:text-base text-[#0A1F44] group-hover:text-[#FF7A00] transition-colors leading-tight truncate" title={area.area}>
                 {area.area}
               </h4>
-              <span className="text-xs text-[#5A6B84] font-medium">
+              <span className="text-xs text-[#5A6B84] font-medium block truncate">
                 {city}, Pakistan
               </span>
             </div>
           </div>
 
           <div className="flex flex-col items-end gap-1 flex-shrink-0">
-            <span className="bg-[#F5F7FB] border border-[#E4EAF2] text-[#0A1F44] font-extrabold text-xs px-2.5 py-1 rounded-xl">
+            <span className="bg-[#F5F7FB] border border-[#E4EAF2] text-[#0A1F44] font-extrabold text-xs px-2.5 py-1 rounded-xl whitespace-nowrap shadow-xs">
               {area.totalCount} Listings
             </span>
             {typeof area.verifiedCount === 'number' && area.verifiedCount > 0 && (
-              <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-[10px] px-2 py-0.5 rounded-lg">
+              <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-[10px] px-2 py-0.5 rounded-lg whitespace-nowrap">
                 <ShieldCheck size={11} className="text-[#22C55E]" />
                 <span>{area.verifiedCount} Verified</span>
               </span>

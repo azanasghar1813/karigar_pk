@@ -1,12 +1,68 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, MapPin, ArrowRight, ShieldCheck, Wrench, Zap, Snowflake, Sparkles, Smile, Car, Paintbrush, Hammer, ChevronDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useCity } from '../context/CityContext'
+
+const SLIDES = [
+  {
+    city: 'Lahore',
+    landmark: 'Minar-e-Pakistan, Lahore',
+    image: '/assets/images/lahore_minar_hero.webp'
+  },
+  {
+    city: 'Karachi',
+    landmark: 'Mazar-e-Quaid, Karachi',
+    image: '/assets/images/karachi_mazar_hero.webp'
+  },
+  {
+    city: 'Islamabad',
+    landmark: 'Faisal Mosque, Islamabad',
+    image: '/assets/images/islamabad_faisal_hero.webp'
+  }
+]
 
 export default function Hero() {
   const [keyword, setKeyword] = useState('')
   const { selectedCity, setSelectedCity, cities } = useCity()
   const navigate = useNavigate()
+
+  // Dynamic city slideshow & typewriter animation state
+  const [slideIndex, setSlideIndex] = useState(0)
+  const [displayText, setDisplayText] = useState('Lahore')
+  const [isErasing, setIsErasing] = useState(false)
+
+  useEffect(() => {
+    const currentTarget = SLIDES[slideIndex].city
+    let timeout
+
+    if (!isErasing) {
+      if (displayText.length < currentTarget.length) {
+        // Typing next character smoothly
+        timeout = setTimeout(() => {
+          setDisplayText(currentTarget.slice(0, displayText.length + 1))
+        }, 110)
+      } else {
+        // Completed typing, pause to showcase landmark image
+        timeout = setTimeout(() => {
+          setIsErasing(true)
+        }, 2600)
+      }
+    } else {
+      if (displayText.length > 0) {
+        // Backspacing character by character
+        timeout = setTimeout(() => {
+          setDisplayText(displayText.slice(0, -1))
+        }, 60)
+      } else {
+        // Completely erased, transition to next city & landmark
+        const nextIndex = (slideIndex + 1) % SLIDES.length
+        setSlideIndex(nextIndex)
+        setIsErasing(false)
+      }
+    }
+
+    return () => clearTimeout(timeout)
+  }, [displayText, isErasing, slideIndex])
 
   const categories = [
     { name: 'Home Repair', icon: Hammer, service: 'General Repair', tint: 'bg-blue-50 text-blue-600' },
@@ -22,13 +78,14 @@ export default function Hero() {
   const handleSearch = (e) => {
     e.preventDefault()
     const params = new URLSearchParams()
-    if (keyword.trim()) params.append('service', keyword.trim())
+    if (keyword.trim()) params.append('q', keyword.trim())
     if (selectedCity && selectedCity !== 'All Cities') params.append('city', selectedCity)
+    params.append('view', 'grid')
     navigate(`/find-karigar?${params.toString()}`)
   }
 
   const handleCategoryClick = (serviceKey) => {
-    navigate(`/find-karigar?service=${encodeURIComponent(serviceKey)}&city=${encodeURIComponent(selectedCity)}`)
+    navigate(`/find-karigar?service=${encodeURIComponent(serviceKey)}&city=${encodeURIComponent(selectedCity)}&view=grid`)
   }
 
   const currentCityLabel = selectedCity && selectedCity !== 'All Cities' ? selectedCity : 'Pakistan'
@@ -36,22 +93,21 @@ export default function Hero() {
   return (
     <section className="relative bg-[#F4F7FC] pt-4 pb-5 sm:pt-6 sm:pb-7 overflow-hidden border-b border-[#E4EAF2]/80">
       
-      {/* User's Custom Lahore Minar-e-Pakistan Hero Image:
-          - Uses user's high-res asset /assets/images/lahore_minar_hero.jpg
-          - Moved down (top-5 sm:top-7) for natural sky headroom
-          - Sharpened borders: very subtle, minimal w-8/w-12 gradient blend, no heavy blur
-          - Placed cleanly on right side next to text (image k side py text)
-          - Ends cleanly above the category cards bar
-      */}
+      {/* Dynamic 3-City Landmark Slideshow (Lahore, Karachi, Islamabad) with smooth cross-fade */}
       <div className="absolute right-0 top-4 sm:top-6 lg:top-5 w-full lg:w-[48%] xl:w-[50%] h-[240px] sm:h-[310px] pointer-events-none overflow-hidden select-none z-0 opacity-40 lg:opacity-100">
-        <img
-          src="/assets/images/lahore_minar_hero.jpg"
-          alt="Minar-e-Pakistan Landmark Skyline"
-          className="w-full h-full object-cover object-right filter brightness-100 contrast-102"
-        />
-        {/* Subtle, minimal edge blend - reduced blur as requested */}
-        <div className="absolute inset-y-0 left-0 w-8 sm:w-12 bg-gradient-to-r from-[#F4F7FC] to-transparent hidden lg:block" />
-        <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#F4F7FC] to-transparent" />
+        {SLIDES.map((slide, idx) => (
+          <img
+            key={slide.city}
+            src={slide.image}
+            alt={slide.landmark}
+            className={`absolute inset-0 w-full h-full object-cover object-right filter brightness-100 contrast-102 transition-opacity duration-1000 ease-in-out ${
+              idx === slideIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+            }`}
+          />
+        ))}
+        {/* Subtle, minimal edge blend */}
+        <div className="absolute inset-y-0 left-0 w-8 sm:w-12 bg-gradient-to-r from-[#F4F7FC] to-transparent hidden lg:block z-20" />
+        <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#F4F7FC] to-transparent z-20" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -59,18 +115,23 @@ export default function Hero() {
         {/* Authentic Directory Trust Badge */}
         <div className="inline-flex items-center gap-2 bg-[#0A1F44] text-white px-3.5 py-1 rounded-full text-xs font-semibold mb-2.5 shadow-xs">
           <ShieldCheck size={13} className="text-[#FF7A00]" />
-          <span className="text-[#FF7A00] font-bold">17,000+ businesses listed</span>
+          <span className="text-[#FF7A00] font-bold">17,000+ local businesses</span>
           <span className="text-gray-400">•</span>
-          <span className="text-gray-200">3 shehron mein, claim bilkul free</span>
+          <span className="text-gray-200">Across Lahore, Karachi & Islamabad</span>
         </div>
 
-        {/* Hero Headline & Content - compact, non-zoomed, matching reference mockup */}
+        {/* Hero Headline & Content - character-by-character typewriter animation synced with landmark images */}
         <div className="max-w-xl lg:max-w-[500px] mb-3.5 sm:mb-4">
           <h1 className="font-poppins text-2xl sm:text-3xl lg:text-[38px] xl:text-[40px] font-extrabold text-[#0A1F44] leading-[1.12] mb-2 tracking-tight">
-            Find <span className="text-[#FF7A00]">trusted local</span><br className="hidden sm:inline" /> businesses & professionals<br className="hidden sm:inline" /> near you.
+            Find{' '}<span className="text-[#FF7A00]">trusted local</span><br className="hidden sm:inline" /> businesses & professionals<br className="hidden sm:inline" /> near you.
           </h1>
           <p className="text-xs sm:text-sm text-[#5A6B84] font-medium leading-relaxed max-w-md">
-            Discover, compare and book verified services across {currentCityLabel}.
+            Discover, compare and book verified services across{' '}
+            <span className="font-extrabold text-[#0A1F44] border-b-2 border-[#FF7A00] pb-0.5 inline-flex items-center">
+              <span>{displayText}</span>
+              <span className="text-[#FF7A00] font-black animate-pulse ml-0.5">|</span>
+            </span>
+            .
           </p>
         </div>
 

@@ -499,7 +499,7 @@ export default function LocalRadarView({ allItems = [] }) {
               const matchedConfig = SERVICES_CONFIG.find(
                 s => s.searchKey === serviceLabel || s.name === serviceLabel
               )
-              const defaultImage = matchedConfig ? matchedConfig.image : '/assets/images/electrician_work.jpg'
+              const defaultImage = matchedConfig ? matchedConfig.image : '/assets/images/electrician_work.webp'
               const photo = isKarigar
                 ? (activeBusiness.profilePhoto || defaultImage)
                 : (activeBusiness.photos && activeBusiness.photos.length > 0 ? activeBusiness.photos[0] : defaultImage)
@@ -542,7 +542,7 @@ export default function LocalRadarView({ allItems = [] }) {
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.target.onerror = null
-                          e.target.src = '/assets/images/electrician_work.jpg'
+                          e.target.src = '/assets/images/electrician_work.webp'
                         }}
                       />
                     </div>

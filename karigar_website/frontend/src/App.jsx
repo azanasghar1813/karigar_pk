@@ -32,6 +32,8 @@ import TermsAndConditions from './pages/TermsAndConditions'
 import CustomerDashboard from './pages/CustomerDashboard'
 import ListingProfile from './pages/ListingProfile'
 import ClaimListing from './pages/ClaimListing'
+import FaqPage from './pages/FaqPage'
+import SeoServiceCityPage from './pages/SeoServiceCityPage'
 import NotFound from './pages/NotFound'
 
 // Admin pages
@@ -62,6 +64,9 @@ function App() {
             {/* Public Marketing Routes with shared Navbar & Footer */}
             <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
             <Route path="/services" element={<PublicLayout><ServicesPage /></PublicLayout>} />
+            <Route path="/services/:serviceSlug" element={<PublicLayout><SeoServiceCityPage /></PublicLayout>} />
+            <Route path="/services/:serviceSlug/:citySlug" element={<PublicLayout><SeoServiceCityPage /></PublicLayout>} />
+            <Route path="/faq" element={<PublicLayout><FaqPage /></PublicLayout>} />
             <Route path="/find-karigar" element={<PublicLayout><FindKarigar /></PublicLayout>} />
             <Route path="/worker/:id" element={<PublicLayout><WorkerProfile /></PublicLayout>} />
             <Route path="/listing/:id" element={<PublicLayout><ListingProfile /></PublicLayout>} />

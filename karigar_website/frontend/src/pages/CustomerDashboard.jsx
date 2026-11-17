@@ -620,12 +620,12 @@ export default function CustomerDashboard() {
                           <div>
                             <div className="flex items-start gap-3.5 mb-3">
                               <img
-                                src={item.photo || '/assets/images/electrician_work.jpg'}
+                                src={item.photo || '/assets/images/electrician_work.webp'}
                                 alt={item.name}
                                 className="w-14 h-14 rounded-xl object-cover bg-[#0A1F44] flex-shrink-0"
                                 onError={(e) => {
                                   e.target.onerror = null
-                                  e.target.src = '/assets/images/electrician_work.jpg'
+                                  e.target.src = '/assets/images/electrician_work.webp'
                                 }}
                               />
                               <div className="min-w-0 flex-1">

@@ -3,12 +3,15 @@ import api from '../config/api'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Upload, Eye, EyeOff, CheckCircle2, Building2, User, ArrowRight, ArrowLeft, Phone, Mail, MapPin, Briefcase, ShieldCheck } from 'lucide-react'
 import { CITIES, SERVICES_CONFIG } from '../config/site'
+import { useCity } from '../context/CityContext'
 import BrandLogo from '../components/BrandLogo'
 
 export default function RegisterKarigar() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { selectedCity } = useCity()
   const preselectedService = searchParams.get('service')
+  const defaultCity = searchParams.get('city') || selectedCity || 'Lahore'
   
   const [accountType, setAccountType] = useState('individual') // 'individual' or 'business'
   const [step, setStep] = useState(1)
@@ -17,7 +20,7 @@ export default function RegisterKarigar() {
     fullName: '',
     phone: '',
     email: '',
-    city: 'Karachi',
+    city: defaultCity,
     services: preselectedService ? [preselectedService] : ['Electrician'],
     cnicNumber: '',
     cnicFrontFile: null,
@@ -173,7 +176,7 @@ export default function RegisterKarigar() {
         {/* Left Side: Professional Onboarding Hero (matching Reference 2 "Join as a Professional") */}
         <div className="hidden md:flex md:col-span-5 relative flex-col justify-between p-8 lg:p-10 overflow-hidden text-white bg-[#0A1F44]">
           <img
-            src="/assets/images/karigar_drill_portrait.jpg"
+            src="/assets/images/karigar_drill_portrait.webp"
             alt="Grow Your Business with KarigarPK"
             className="absolute inset-0 w-full h-full object-cover object-top filter brightness-[0.55] contrast-105"
           />
@@ -226,6 +229,16 @@ export default function RegisterKarigar() {
         <div className="col-span-1 md:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-center bg-white">
           <div className="max-w-md w-full mx-auto">
             
+            {/* Top Navigation Back Link */}
+            <div className="mb-4">
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#5A6B84] hover:text-[#0A1F44] transition-colors"
+              >
+                <ArrowLeft size={14} /> Back to Home
+              </Link>
+            </div>
+
             {isSuccess ? (
               <div className="text-center py-8 animate-in fade-in zoom-in-95 duration-200">
                 <div className="w-16 h-16 bg-emerald-50 text-[#22C55E] rounded-full flex items-center justify-center mx-auto mb-4">

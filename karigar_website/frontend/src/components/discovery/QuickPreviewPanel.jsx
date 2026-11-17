@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { Phone, MessageCircle, ShieldCheck, AlertCircle, MapPin, ArrowRight, ExternalLink, GitCompare, Calendar, Check, X } from 'lucide-react'
 import RatingBadge from '../RatingBadge'
-import { SERVICES_CONFIG } from '../../config/site'
+import { SERVICES_CONFIG, getServiceConfig } from '../../config/site'
+import { isPakistaniMobileNumber, getWhatsAppNumber } from '../../utils/phone'
 import { useDiscovery } from '../../context/DiscoveryContext'
 
 export default function QuickPreviewPanel({
@@ -32,10 +33,8 @@ export default function QuickPreviewPanel({
     ? (Array.isArray(business.services) && business.services.length > 0 ? business.services[0] : (business.services || 'Professional Service'))
     : (business.service || 'Local Service')
 
-  const matchedConfig = SERVICES_CONFIG.find(
-    s => s.searchKey === serviceLabel || s.name === serviceLabel || (serviceLabel && serviceLabel.toLowerCase().includes(s.searchKey.toLowerCase()))
-  )
-  const defaultImage = matchedConfig ? matchedConfig.image : '/assets/images/electrician_work.jpg'
+  const matchedConfig = getServiceConfig(serviceLabel)
+  const defaultImage = matchedConfig ? matchedConfig.image : '/assets/images/handyman_service.webp'
   const photo = isKarigar
     ? (business.profilePhoto || defaultImage)
     : (business.photos && business.photos.length > 0 ? business.photos[0] : defaultImage)
@@ -50,8 +49,8 @@ export default function QuickPreviewPanel({
 
   const targetUrl = isKarigar ? `/worker/${id}` : `/listing/${id}`
   const phone = business.phone || ''
-  const cleanDigits = phone.replace(/\D/g, '')
-  const waNumber = cleanDigits.startsWith('92') ? cleanDigits : (cleanDigits.startsWith('0') ? `92${cleanDigits.slice(1)}` : `92${cleanDigits}`)
+  const isMobile = isPakistaniMobileNumber(phone)
+  const waNumber = getWhatsAppNumber(phone)
 
   const inCompare = isInCompare(id)
 
@@ -80,7 +79,7 @@ export default function QuickPreviewPanel({
             className="w-full h-full object-cover"
             onError={(e) => {
               e.target.onerror = null
-              e.target.src = '/assets/images/electrician_work.jpg'
+              e.target.src = defaultImage
             }}
           />
 
@@ -153,14 +152,14 @@ export default function QuickPreviewPanel({
 
       {/* Action Buttons: View Profile, Call, WhatsApp, Book */}
       <div className="space-y-2 pt-2 border-t border-[#E4EAF2]">
-        <div className="grid grid-cols-2 gap-2">
+        <div className={`grid ${phone && isMobile ? 'grid-cols-2' : 'grid-cols-1'} gap-2`}>
           {phone ? (
             <a
               href={`tel:${phone}`}
               className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#0A1F44] hover:bg-[#102747] text-white text-xs font-bold transition-all shadow-xs"
             >
               <Phone size={13} className="text-[#FF7A00]" />
-              <span>Call</span>
+              <span>{isMobile ? 'Call' : `Call Direct (${phone})`}</span>
             </a>
           ) : (
             <button
@@ -172,7 +171,7 @@ export default function QuickPreviewPanel({
             </button>
           )}
 
-          {phone && cleanDigits.length >= 7 ? (
+          {phone && isMobile && (
             <a
               href={`https://wa.me/${waNumber}?text=${encodeURIComponent(`Hello ${name}, I saw your listing on KarigarPK and want to inquire about services.`)}`}
               target="_blank"
@@ -182,14 +181,6 @@ export default function QuickPreviewPanel({
               <MessageCircle size={14} />
               <span>WhatsApp</span>
             </a>
-          ) : (
-            <button
-              disabled
-              className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-gray-100 text-gray-400 text-xs font-bold cursor-not-allowed"
-            >
-              <MessageCircle size={14} />
-              <span>WhatsApp</span>
-            </button>
           )}
         </div>
 

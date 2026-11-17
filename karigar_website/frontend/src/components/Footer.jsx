@@ -13,7 +13,7 @@ export default function Footer() {
   ]
 
   const supportLinks = [
-    { label: 'Help Center', to: '/contact' },
+    { label: 'FAQs & Help', to: '/faq' },
     { label: 'Contact Us', to: '/contact' },
     { label: 'Privacy Policy', to: '/privacy-policy' },
     { label: 'Terms & Conditions', to: '/terms-and-conditions' }

@@ -18,9 +18,10 @@ export default function BrandLogo({ variant = 'dark', size = 'md', to = '/', cla
 
   const content = (
     <div className={`inline-flex items-center gap-2.5 font-poppins font-extrabold select-none ${className}`}>
-      {/* Official KarigarPK Logo from /logo.png */}
+      {/* Official KarigarPK Logo WebP with fallback */}
       <img
-        src="/logo.png"
+        src="/logo.webp"
+        onError={(e) => { e.currentTarget.src = '/logo.png' }}
         alt="KarigarPK Logo"
         className={`${logoSizes[size] || logoSizes.md} object-contain rounded-xl flex-shrink-0 shadow-sm transition-transform duration-200 group-hover:scale-105`}
       />

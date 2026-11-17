@@ -102,7 +102,7 @@ export default function WorkerProfile() {
 
   // Find category default cover photo
   const matchedConfig = SERVICES_CONFIG.find(s => s.searchKey === primaryService || s.name === primaryService)
-  const categoryDefaultCover = matchedConfig ? matchedConfig.image : '/assets/images/electrician_work.jpg'
+  const categoryDefaultCover = matchedConfig ? matchedConfig.image : '/assets/images/electrician_work.webp'
   const coverImage = worker.coverPhoto || categoryDefaultCover
 
   // Clean data hygiene check

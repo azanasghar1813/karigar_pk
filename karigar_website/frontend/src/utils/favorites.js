@@ -43,8 +43,8 @@ export function toggleFavorite(item, type = 'listing') {
       ? (Array.isArray(item.services) && item.services.length > 0 ? item.services[0] : (item.services || item.service || 'Service'))
       : (item.service || 'Local Service')
     const photo = isKarigar
-      ? (item.profilePhoto || item.photo || '/assets/images/electrician_work.jpg')
-      : (item.photos && item.photos.length > 0 ? item.photos[0] : (item.photo || '/assets/images/electrician_work.jpg'))
+      ? (item.profilePhoto || item.photo || '/assets/images/electrician_work.webp')
+      : (item.photos && item.photos.length > 0 ? item.photos[0] : (item.photo || '/assets/images/electrician_work.webp'))
     const phone = item.phone || ''
     const city = item.city || 'Pakistan'
     const area = item.area || ''

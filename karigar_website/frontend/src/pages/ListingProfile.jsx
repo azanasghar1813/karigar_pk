@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Star, ShieldCheck, MapPin, Phone, MessageCircle, ArrowLeft, ExternalLink, AlertCircle, Building2, Wrench, CheckCircle2, Info, Share2, Clock, CalendarCheck } from 'lucide-react'
 import api from '../config/api'
-import { SERVICES_CONFIG, CITY_COORDINATES } from '../config/site'
+import { SERVICES_CONFIG, CITY_COORDINATES, getServiceConfig } from '../config/site'
 import RatingBadge from '../components/RatingBadge'
 import MapView from '../components/MapView'
 import { useAuth } from '../context/AuthContext'
+import { isPakistaniMobileNumber, getWhatsAppNumber } from '../utils/phone'
 
 export default function ListingProfile() {
   const { id } = useParams()
@@ -77,19 +78,17 @@ export default function ListingProfile() {
     )
   }
 
-  // Cover photo based on service category
-  const matchedService = SERVICES_CONFIG.find(
-    s => s.searchKey === listing.service || s.name === listing.service || (listing.service && listing.service.includes(s.searchKey))
-  )
+  // Cover photo based on service category using domain-aware mapping
+  const serviceConfig = getServiceConfig(listing.service)
   const coverImage = (listing.photos && listing.photos.length > 0)
     ? listing.photos[0]
-    : (matchedService ? matchedService.image : '/assets/images/electrician_work.jpg')
+    : (serviceConfig ? serviceConfig.image : '/assets/images/handyman_service.webp')
 
   // Clean phone and WhatsApp
   const rawPhone = listing.phone || ''
-  const rawWhatsApp = listing.whatsapp || listing.phone || ''
-  const cleanDigits = rawWhatsApp.replace(/\D/g, '')
-  const waNumber = cleanDigits.startsWith('92') ? cleanDigits : (cleanDigits.startsWith('0') ? `92${cleanDigits.slice(1)}` : `92${cleanDigits}`)
+  const phoneForWa = listing.whatsapp || listing.phone || ''
+  const hasMobileWhatsApp = isPakistaniMobileNumber(phoneForWa)
+  const waNumber = getWhatsAppNumber(phoneForWa)
 
   // City & area coordinates for Leaflet
   const cityCoords = CITY_COORDINATES[listing.city] || CITY_COORDINATES['Karachi']
@@ -241,7 +240,7 @@ export default function ListingProfile() {
                   </button>
                 )}
 
-                {rawWhatsApp && cleanDigits.length >= 7 && (
+                {hasMobileWhatsApp && (
                   <a
                     href={`https://wa.me/${waNumber}?text=${encodeURIComponent(`Hello ${listing.name}, I found your business listing on KarigarPK and would like to inquire about your services.`)}`}
                     target="_blank"
@@ -541,7 +540,7 @@ export default function ListingProfile() {
           </a>
         ) : null}
 
-        {rawWhatsApp && cleanDigits.length >= 7 ? (
+        {hasMobileWhatsApp ? (
           <a
             href={`https://wa.me/${waNumber}?text=${encodeURIComponent(`Hello ${listing.name}, I found your business listing on KarigarPK and would like to inquire about your services.`)}`}
             target="_blank"

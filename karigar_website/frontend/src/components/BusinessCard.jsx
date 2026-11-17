@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ShieldCheck, Heart, MapPin, AlertCircle, ArrowRight, Square, CheckSquare, Phone, MessageCircle } from 'lucide-react'
 import RatingBadge from './RatingBadge'
-import { SERVICES_CONFIG } from '../config/site'
+import { SERVICES_CONFIG, getServiceConfig } from '../config/site'
 import { isFavorite as checkIsFavorite, toggleFavorite as toggleFavoriteStorage } from '../utils/favorites'
 import { useDiscovery } from '../context/DiscoveryContext'
+import { isPakistaniMobileNumber, getWhatsAppNumber } from '../utils/phone'
 
 export default function BusinessCard({
   item,
@@ -47,11 +48,9 @@ export default function BusinessCard({
     ? (Array.isArray(item.services) && item.services.length > 0 ? item.services[0] : (item.services || 'Professional Service'))
     : (item.service || 'Local Service')
 
-  // Image lookup
-  const matchedConfig = SERVICES_CONFIG.find(
-    s => s.searchKey === serviceLabel || s.name === serviceLabel || (serviceLabel && serviceLabel.toLowerCase().includes(s.searchKey.toLowerCase()))
-  )
-  const defaultImage = matchedConfig ? matchedConfig.image : '/assets/images/electrician_work.jpg'
+  // Image lookup using smart domain matching
+  const serviceConfig = getServiceConfig(serviceLabel)
+  const defaultImage = serviceConfig ? serviceConfig.image : '/assets/images/handyman_service.webp'
 
   const photo = isKarigar
     ? (item.profilePhoto || defaultImage)
@@ -64,10 +63,8 @@ export default function BusinessCard({
 
   // Phone numbers and sanitized WhatsApp format
   const phone = item.phone || ''
-  const cleanDigits = phone.replace(/\D/g, '')
-  const waNumber = cleanDigits.startsWith('92')
-    ? cleanDigits
-    : (cleanDigits.startsWith('0') ? `92${cleanDigits.slice(1)}` : `92${cleanDigits}`)
+  const hasMobileWhatsApp = isPakistaniMobileNumber(phone)
+  const waNumber = getWhatsAppNumber(phone)
 
   // Target link
   const targetUrl = isKarigar ? `/worker/${id}` : `/listing/${id}`
@@ -127,7 +124,7 @@ export default function BusinessCard({
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
               e.target.onerror = null
-              e.target.src = '/assets/images/electrician_work.jpg'
+              e.target.src = '/assets/images/electrician_work.webp'
             }}
           />
 
@@ -232,49 +229,44 @@ export default function BusinessCard({
         </div>
 
         {/* Direct Call & WhatsApp Action Buttons */}
-        <div className="grid grid-cols-2 gap-1.5">
-          {phone ? (
+        <div>
+          {hasMobileWhatsApp ? (
+            <div className="grid grid-cols-2 gap-1.5">
+              <a
+                href={`tel:${phone}`}
+                onClick={(e) => e.stopPropagation()}
+                className="py-2 sm:py-1.5 px-2 rounded-xl bg-[#0A1F44] hover:bg-[#102747] text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs touch-manipulation active:scale-95"
+                title="Direct call"
+              >
+                <Phone size={12} className="text-[#FF7A00]" />
+                <span>Call</span>
+              </a>
+              <a
+                href={`https://wa.me/${waNumber}?text=Assalam-o-Alaikum,%20maine%20aap%20ki%20listing%20KarigarPK%20par%20dekhi%20hai.`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="py-2 sm:py-1.5 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs touch-manipulation active:scale-95"
+                title="Direct WhatsApp"
+              >
+                <MessageCircle size={12} />
+                <span>WhatsApp</span>
+              </a>
+            </div>
+          ) : phone ? (
             <a
               href={`tel:${phone}`}
               onClick={(e) => e.stopPropagation()}
-              className="py-2 sm:py-1.5 px-2 rounded-xl bg-[#0A1F44] hover:bg-[#102747] text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs touch-manipulation active:scale-95"
+              className="w-full py-2 sm:py-1.5 px-2 rounded-xl bg-[#0A1F44] hover:bg-[#102747] text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs touch-manipulation active:scale-95"
               title="Direct call"
             >
               <Phone size={12} className="text-[#FF7A00]" />
-              <span>Call</span>
+              <span>Call ({phone})</span>
             </a>
           ) : (
-            <button
-              disabled
-              onClick={(e) => e.stopPropagation()}
-              className="py-2 sm:py-1.5 px-2 rounded-xl bg-gray-100 text-gray-400 text-[11px] font-medium inline-flex items-center justify-center gap-1 cursor-not-allowed"
-            >
-              <Phone size={12} />
-              <span>Call N/A</span>
-            </button>
-          )}
-
-          {phone ? (
-            <a
-              href={`https://wa.me/${waNumber}?text=Assalam-o-Alaikum,%20maine%20aap%20ki%20listing%20KarigarPK%20par%20dekhi%20hai.`}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="py-2 sm:py-1.5 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs touch-manipulation active:scale-95"
-              title="Direct WhatsApp"
-            >
-              <MessageCircle size={12} />
-              <span>WhatsApp</span>
-            </a>
-          ) : (
-            <button
-              disabled
-              onClick={(e) => e.stopPropagation()}
-              className="py-2 sm:py-1.5 px-2 rounded-xl bg-gray-100 text-gray-400 text-[11px] font-medium inline-flex items-center justify-center gap-1 cursor-not-allowed"
-            >
-              <MessageCircle size={12} />
-              <span>WA N/A</span>
-            </button>
+            <div className="w-full py-1.5 px-2 rounded-xl bg-gray-50 text-gray-400 text-[11px] font-medium text-center border border-gray-100">
+              Verified Directory Listing
+            </div>
           )}
         </div>
 

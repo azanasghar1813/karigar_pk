@@ -9,7 +9,7 @@ export default function AreaInsightsStrip({
   recentlyAdded = null
 }) {
   const isCityWide = !selectedArea || selectedArea === 'All Areas'
-  const showRecentlyAdded = typeof recentlyAdded === 'number' && !isNaN(recentlyAdded)
+  const showRecentlyAdded = typeof recentlyAdded === 'number' && !isNaN(recentlyAdded) && recentlyAdded > 0 && recentlyAdded < totalBusinesses
 
   return (
     <div className="bg-white border border-[#E4EAF2] rounded-3xl p-5 sm:p-6 mb-6 shadow-[0_4px_20px_rgba(10,31,68,0.04)]">
@@ -36,58 +36,58 @@ export default function AreaInsightsStrip({
       </div>
 
       {/* Dynamic Metric Grid */}
-      <div className={`grid grid-cols-2 ${showRecentlyAdded ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-4`}>
+      <div className={`grid grid-cols-2 ${showRecentlyAdded ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3'} gap-3 sm:gap-4`}>
         {/* Metric 1: Total Businesses */}
-        <div className="bg-[#F8FAFC] border border-[#E4EAF2] rounded-2xl p-3.5 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0A1F44] flex items-center justify-center flex-shrink-0">
-            <Building2 size={20} />
+        <div className="bg-[#F8FAFC] border border-[#E4EAF2] rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-xs">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#0A1F44] flex items-center justify-center flex-shrink-0">
+              <Building2 size={15} />
+            </div>
+            <span className="text-xs text-[#5A6B84] font-semibold whitespace-nowrap">Total Businesses</span>
           </div>
-          <div className="min-w-0">
-            <span className="text-[11px] text-[#5A6B84] font-medium block truncate">Total Businesses</span>
-            <span className="font-poppins font-extrabold text-base sm:text-lg text-[#0A1F44]">
-              {totalBusinesses.toLocaleString()}
-            </span>
-          </div>
+          <span className="font-poppins font-black text-base sm:text-lg text-[#0A1F44]">
+            {totalBusinesses.toLocaleString()}
+          </span>
         </div>
 
         {/* Metric 2: Verified Craftsmen */}
-        <div className="bg-[#F8FAFC] border border-[#E4EAF2] rounded-2xl p-3.5 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
-            <ShieldCheck size={20} />
+        <div className="bg-[#F8FAFC] border border-[#E4EAF2] rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-xs">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+              <ShieldCheck size={15} />
+            </div>
+            <span className="text-xs text-[#5A6B84] font-semibold whitespace-nowrap">Verified Pros</span>
           </div>
-          <div className="min-w-0">
-            <span className="text-[11px] text-[#5A6B84] font-medium block truncate">Verified Pros</span>
-            <span className="font-poppins font-extrabold text-base sm:text-lg text-[#0A1F44]">
-              {verifiedCount.toLocaleString()}
-            </span>
-          </div>
+          <span className="font-poppins font-black text-base sm:text-lg text-[#0A1F44]">
+            {verifiedCount.toLocaleString()}
+          </span>
         </div>
 
         {/* Metric 3: Top Category */}
-        <div className="bg-[#F8FAFC] border border-[#E4EAF2] rounded-2xl p-3.5 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
-            <TrendingUp size={20} />
+        <div className="bg-[#F8FAFC] border border-[#E4EAF2] rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-xs">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-7 h-7 rounded-lg bg-amber-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
+              <TrendingUp size={15} />
+            </div>
+            <span className="text-xs text-[#5A6B84] font-semibold whitespace-nowrap">Top Category</span>
           </div>
-          <div className="min-w-0">
-            <span className="text-[11px] text-[#5A6B84] font-medium block truncate">Top Category</span>
-            <span className="font-poppins font-extrabold text-xs sm:text-sm text-[#0A1F44] truncate block" title={topCategory}>
-              {topCategory}
-            </span>
-          </div>
+          <span className="font-poppins font-black text-xs sm:text-sm text-[#0A1F44] truncate" title={topCategory}>
+            {topCategory}
+          </span>
         </div>
 
         {/* Metric 4: Recently Added (Rendered ONLY when real data is available) */}
         {showRecentlyAdded && (
-          <div className="bg-[#F8FAFC] border border-[#E4EAF2] rounded-2xl p-3.5 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
-              <Sparkles size={20} />
+          <div className="bg-[#F8FAFC] border border-[#E4EAF2] rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between shadow-xs">
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="w-7 h-7 rounded-lg bg-orange-50 text-[#FF7A00] flex items-center justify-center flex-shrink-0">
+                <Sparkles size={15} />
+              </div>
+              <span className="text-xs text-[#5A6B84] font-semibold whitespace-nowrap">Recently Added</span>
             </div>
-            <div className="min-w-0">
-              <span className="text-[11px] text-[#5A6B84] font-medium block truncate">Recently Added</span>
-              <span className="font-poppins font-extrabold text-base sm:text-lg text-[#0A1F44]">
-                {recentlyAdded.toLocaleString()}
-              </span>
-            </div>
+            <span className="font-poppins font-black text-base sm:text-lg text-[#0A1F44]">
+              {recentlyAdded.toLocaleString()}
+            </span>
           </div>
         )}
       </div>

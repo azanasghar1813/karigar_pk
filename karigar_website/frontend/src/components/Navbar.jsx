@@ -56,7 +56,7 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Navigation Links (Centered) */}
-        <div className="hidden lg:flex items-center gap-1 xl:gap-2 text-[14px] font-medium">
+        <div className="hidden xl:flex items-center gap-1 xl:gap-2 text-[14px] font-medium">
           <Link 
             to="/" 
             className={`px-4 py-1.5 rounded-full transition-all duration-150 ${
@@ -146,12 +146,12 @@ export default function Navbar() {
           <div className="relative" ref={cityRef}>
             <button
               onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
-              className="flex items-center gap-1.5 bg-white/10 hover:bg-white/15 text-white text-xs sm:text-sm font-medium px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full border border-white/10 transition-all cursor-pointer shadow-sm"
+              className="flex items-center gap-1.5 bg-white/10 hover:bg-white/15 active:scale-98 text-white text-xs sm:text-sm font-semibold px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full border border-white/15 transition-all cursor-pointer shadow-sm"
+              title={`Selected city: ${selectedCity}`}
             >
-              <MapPin size={13} className="text-[#FF7A00] flex-shrink-0" />
-              <span className="max-w-[70px] sm:max-w-[130px] truncate">{selectedCity}</span>
-              <span className="hidden sm:inline text-white/80">, Pakistan</span>
-              <ChevronDown size={11} className={`text-gray-400 transition-transform ${cityDropdownOpen ? 'rotate-180' : ''}`} />
+              <MapPin size={14} className="text-[#FF7A00] flex-shrink-0" />
+              <span className="font-bold tracking-tight whitespace-nowrap">{selectedCity}</span>
+              <ChevronDown size={12} className={`text-gray-300 transition-transform duration-200 ${cityDropdownOpen ? 'rotate-180 text-white' : ''}`} />
             </button>
 
             {cityDropdownOpen && (
@@ -255,7 +255,7 @@ export default function Navbar() {
           {/* Mobile Hamburger Toggle */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden p-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="xl:hidden p-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
             aria-label="Toggle Navigation Menu"
           >
             {isOpen ? <X size={22} /> : <Menu size={22} />}
@@ -265,7 +265,7 @@ export default function Navbar() {
 
       {/* Mobile Drawer Menu */}
       {isOpen && (
-        <div className="lg:hidden bg-[#061530] border-t border-white/10 px-4 pt-3 pb-6 space-y-2">
+        <div className="xl:hidden bg-[#061530] border-t border-white/10 px-4 pt-3 pb-6 space-y-2">
           <Link
             to="/"
             onClick={() => setIsOpen(false)}

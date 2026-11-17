@@ -51,7 +51,7 @@ export default function SmartCompareView({ allItems = [] }) {
       const matchedConfig = SERVICES_CONFIG.find(
         s => s.searchKey === primaryService || s.name === primaryService
       )
-      const defaultImage = matchedConfig ? matchedConfig.image : '/assets/images/electrician_work.jpg'
+      const defaultImage = matchedConfig ? matchedConfig.image : '/assets/images/electrician_work.webp'
       const photo = isKarigar
         ? (base.profilePhoto || defaultImage)
         : (base.photos && base.photos.length > 0 ? base.photos[0] : defaultImage)
@@ -191,23 +191,63 @@ export default function SmartCompareView({ allItems = [] }) {
   // Render Empty State if fewer than 2 items selected
   if (compareItems.length < 2) {
     return (
-      <div className="bg-white rounded-3xl border border-[#E4EAF2] p-10 text-center shadow-sm max-w-lg mx-auto my-6">
-        <div className="w-16 h-16 rounded-full bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-4">
-          <GitCompare size={28} />
+      <div className="bg-white rounded-3xl border border-[#E4EAF2] p-8 sm:p-12 text-center shadow-sm max-w-xl mx-auto my-8">
+        <div className="w-16 h-16 rounded-2xl bg-orange-50 text-[#FF7A00] flex items-center justify-center mx-auto mb-4 shadow-xs">
+          <GitCompare size={30} />
         </div>
-        <h3 className="font-poppins font-bold text-lg text-[#0A1F44] mb-2">
-          Select at least 2 businesses to compare
+        
+        <h3 className="font-poppins font-extrabold text-xl text-[#0A1F44] mb-2">
+          {compareItems.length === 1 ? '1 Business Selected for Comparison' : 'Smart Business Comparison'}
         </h3>
-        <p className="text-xs sm:text-sm text-[#5A6B84] leading-relaxed mb-6">
-          You currently have {compareItems.length} business selected. Browse the Visual Grid or Explore Areas and click the compare checkbox on cards to see a side-by-side comparison table.
+        
+        <p className="text-xs sm:text-sm text-[#5A6B84] leading-relaxed mb-6 max-w-md mx-auto">
+          {compareItems.length === 1
+            ? `You have "${compareItems[0].name}" in your compare list. Select at least 1 more business from the Visual Grid or Explore Areas to see them side-by-side.`
+            : 'Compare up to 3 local craftsmen and businesses side-by-side. Compare starting rates, customer ratings, distance, verified status, and direct WhatsApp / Call numbers.'}
         </p>
-        <button
-          type="button"
-          onClick={() => setViewMode('grid')}
-          className="bg-[#0A1F44] hover:bg-[#102747] text-white font-bold py-2.5 px-6 rounded-xl text-xs transition-all shadow-md cursor-pointer"
-        >
-          Return to Visual Grid →
-        </button>
+
+        {compareItems.length === 1 && (
+          <div className="bg-[#F8FAFC] border border-[#E4EAF2] rounded-2xl p-3.5 mb-6 max-w-xs mx-auto flex items-center gap-3 text-left">
+            <img
+              src={compareItems[0].photo}
+              alt={compareItems[0].name}
+              className="w-11 h-11 rounded-xl object-cover bg-white flex-shrink-0"
+              onError={(e) => { e.currentTarget.src = '/assets/images/handyman_service.webp' }}
+            />
+            <div className="min-w-0 flex-1">
+              <span className="font-bold text-xs text-[#0A1F44] block truncate">{compareItems[0].name}</span>
+              <span className="text-[11px] text-[#FF7A00] font-semibold block truncate">{compareItems[0].service}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => removeFromCompare(compareItems[0]._id)}
+              className="text-gray-400 hover:text-red-500 p-1"
+              title="Remove"
+            >
+              <X size={15} />
+            </button>
+          </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={() => setViewMode('grid')}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#FF7A00] hover:bg-[#F06400] text-white font-bold py-3 px-6 rounded-xl text-xs sm:text-sm transition-all shadow-md cursor-pointer hover:scale-[1.02]"
+          >
+            <span>{compareItems.length === 1 ? 'Pick 1 More Business from Grid' : 'Browse Visual Grid to Compare'}</span>
+            <ArrowRight size={14} />
+          </button>
+          {compareItems.length === 1 && (
+            <button
+              type="button"
+              onClick={clearCompare}
+              className="w-full sm:w-auto inline-flex items-center justify-center py-3 px-5 rounded-xl border border-[#E4EAF2] text-[#5A6B84] hover:text-[#0A1F44] text-xs font-bold transition-colors cursor-pointer"
+            >
+              Clear Selection
+            </button>
+          )}
+        </div>
       </div>
     )
   }
@@ -309,7 +349,7 @@ export default function SmartCompareView({ allItems = [] }) {
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.target.onerror = null
-                          e.target.src = '/assets/images/electrician_work.jpg'
+                          e.target.src = '/assets/images/electrician_work.webp'
                         }}
                       />
                     </div>
