@@ -360,6 +360,18 @@ export default function FindKarigar() {
     })
   }, [filteredKarigars, filteredListings, filters.sort])
 
+  // Detect if current sort criteria lacks data in current results
+  const isSortDataMissing = useMemo(() => {
+    if (combinedResults.length === 0) return false
+    if (filters.sort === 'price_asc') {
+      return !combinedResults.some(item => item.hourlyRate != null && Number(item.hourlyRate) > 0)
+    }
+    if (filters.sort === 'reviews') {
+      return !combinedResults.some(item => item.reviewsCount != null && Number(item.reviewsCount) > 0)
+    }
+    return false
+  }, [combinedResults, filters.sort])
+
   // Synchronize selected business with combined results to ensure preview stays fresh
   useEffect(() => {
     if (combinedResults.length === 0) {
@@ -521,6 +533,7 @@ export default function FindKarigar() {
             <DiscoverySidebar
               areas={areasData}
               totalCityCount={totalCityCount}
+              isSortDataMissing={isSortDataMissing}
             />
           </div>
 
@@ -547,6 +560,7 @@ export default function FindKarigar() {
                 isLoadingMore={isLoadingMore}
                 onLoadMore={handleLoadMore}
                 totalCount={totalListingsCount}
+                isSortDataMissing={isSortDataMissing}
                 onSelectBusiness={(item) => {
                   setSelectedBusiness(item)
                   if (typeof window !== 'undefined' && window.innerWidth < 1280) {
@@ -601,6 +615,7 @@ export default function FindKarigar() {
             <DiscoverySidebar
               areas={areasData}
               totalCityCount={totalCityCount}
+              isSortDataMissing={isSortDataMissing}
               onCloseMobile={() => setMobileFilterOpen(false)}
             />
 

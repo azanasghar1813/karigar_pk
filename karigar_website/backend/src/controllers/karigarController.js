@@ -10,22 +10,54 @@ const generateToken = (id) => {
 // @access  Public
 const registerKarigar = async (req, res) => {
   try {
-    const { fullName, email, password, phone, services, experience, city, cnicNumber, bio } = req.body;
+    const { fullName, email, password, phone, services, experience, city, cnicNumber, bio, address, hourlyRate, accountType } = req.body;
 
-    const karigarExists = await Karigar.findOne({ email });
-    if (karigarExists) {
-      return res.status(400).json({ message: 'Karigar already exists' });
+    const [karigarExists, userExists] = await Promise.all([
+      Karigar.findOne({ email }),
+      require('../models/User').findOne({ email })
+    ]);
+
+    if (karigarExists || userExists) {
+      return res.status(400).json({ message: 'An account with this email already exists' });
     }
 
-    const cnicFront = req.files && req.files.cnicFrontFile ? req.files.cnicFrontFile[0].path : '';
-    const cnicBack = req.files && req.files.cnicBackFile ? req.files.cnicBackFile[0].path : '';
-    const profilePhoto = req.files && req.files.profilePhoto ? req.files.profilePhoto[0].path : '';
+    const cnicFront = (req.files && (req.files.cnicFront?.[0]?.path || req.files.cnicFrontFile?.[0]?.path)) || '';
+    const cnicBack = (req.files && (req.files.cnicBack?.[0]?.path || req.files.cnicBackFile?.[0]?.path)) || '';
+    const profilePhoto = (req.files && req.files.profilePhoto?.[0]?.path) || '';
 
-    const parsedServices = typeof services === 'string' ? JSON.parse(services) : services;
+    let rawServices = req.body['services[]'] || services || [];
+    let parsedServices = [];
+    if (typeof rawServices === 'string') {
+      try {
+        const parsed = JSON.parse(rawServices);
+        parsedServices = Array.isArray(parsed) ? parsed : [parsed];
+      } catch (e) {
+        parsedServices = [rawServices];
+      }
+    } else if (Array.isArray(rawServices)) {
+      parsedServices = rawServices;
+    }
+
+    if (!parsedServices.length) {
+      parsedServices = ['General Karigar'];
+    }
 
     const karigar = await Karigar.create({
-      fullName, email, password, phone, services: parsedServices, experience, city, cnicNumber, bio,
-      cnicFront, cnicBack, profilePhoto
+      fullName: (fullName || '').trim(),
+      email: (email || '').trim().toLowerCase(),
+      password,
+      phone: (phone || '').trim(),
+      services: parsedServices,
+      experience: Number(experience) || 1,
+      city: city || 'Karachi',
+      address: address || '',
+      hourlyRate: Number(hourlyRate) || 500,
+      cnicNumber: (cnicNumber || '').trim(),
+      bio: bio || '',
+      cnicFront,
+      cnicBack,
+      profilePhoto,
+      verificationStatus: 'pending'
     });
 
     if (karigar) {
@@ -34,13 +66,15 @@ const registerKarigar = async (req, res) => {
         fullName: karigar.fullName,
         email: karigar.email,
         role: 'karigar',
+        verificationStatus: karigar.verificationStatus,
         token: generateToken(karigar._id),
       });
     } else {
       res.status(400).json({ message: 'Invalid karigar data' });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('registerKarigar error:', error);
+    res.status(500).json({ message: error.message || 'Server error during karigar registration' });
   }
 };
 

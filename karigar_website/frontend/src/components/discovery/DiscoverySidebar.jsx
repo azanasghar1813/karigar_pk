@@ -4,7 +4,8 @@ import { useDiscovery } from '../../context/DiscoveryContext'
 export default function DiscoverySidebar({
   areas = [],
   totalCityCount = 0,
-  onCloseMobile = null
+  onCloseMobile = null,
+  isSortDataMissing = false
 }) {
   const {
     city,
@@ -100,6 +101,11 @@ export default function DiscoverySidebar({
           <option value="reviews">Most Reviews & Activity</option>
           <option value="newest">Recently Registered / Added</option>
         </select>
+        {isSortDataMissing && (
+          <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200/80 rounded-xl p-2 font-medium leading-relaxed">
+            Is sort ke liye abhi data nahi — rating ke hisab se dikha rahe hain
+          </p>
+        )}
       </div>
 
       {/* 4. Minimum Rating Filter */}

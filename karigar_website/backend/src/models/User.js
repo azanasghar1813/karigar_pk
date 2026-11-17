@@ -19,12 +19,19 @@ const userSchema = new mongoose.Schema({
   },
   cnic: { 
     type: String, 
-    required: true, 
+    required: false, 
+    default: '',
     trim: true, 
     maxLength: 15,
-    match: [/^[0-9+]{5}-[0-9+]{7}-[0-9]{1}$/, 'Please add a valid CNIC (e.g., 12345-1234567-1)']
+    validate: {
+      validator: function(v) {
+        if (!v || v.trim() === '') return true;
+        return /^[0-9+]{5}-[0-9+]{7}-[0-9]{1}$/.test(v);
+      },
+      message: 'Please add a valid CNIC (e.g., 12345-1234567-1)'
+    }
   },
-  address: { type: String, required: true, trim: true, maxLength: 500 },
+  address: { type: String, required: false, default: 'Pakistan', trim: true, maxLength: 500 },
   password: { type: String, required: true },
   role: { type: String, enum: ['customer', 'admin'], default: 'customer' },
   isRestricted: { type: Boolean, default: false },

@@ -80,12 +80,38 @@ const getKarigars = async (req, res) => {
   try {
     const filter = {};
     if (req.query.status) filter.verificationStatus = req.query.status;
+
+    if (req.query.search && req.query.search.trim()) {
+      const searchRegex = new RegExp(req.query.search.trim(), 'i');
+      filter.$or = [
+        { fullName: searchRegex },
+        { email: searchRegex },
+        { phone: searchRegex },
+        { city: searchRegex },
+        { services: searchRegex }
+      ];
+    }
     
-    const karigars = await Karigar.find(filter)
-      .sort({ createdAt: -1 })
-      .populate('approvedBy', 'fullName email');
+    const [karigars, allCount, pendingCount, approvedCount, rejectedCount] = await Promise.all([
+      Karigar.find(filter)
+        .select('-password +cnicNumber +cnicFront +cnicBack')
+        .sort({ createdAt: -1 })
+        .populate('approvedBy', 'fullName email'),
+      Karigar.countDocuments(),
+      Karigar.countDocuments({ verificationStatus: 'pending' }),
+      Karigar.countDocuments({ verificationStatus: 'approved' }),
+      Karigar.countDocuments({ verificationStatus: 'rejected' })
+    ]);
       
-    res.json(karigars);
+    res.json({
+      karigars,
+      counts: {
+        all: allCount,
+        pending: pendingCount,
+        approved: approvedCount,
+        rejected: rejectedCount
+      }
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error fetching karigars' });
@@ -98,7 +124,7 @@ const getKarigars = async (req, res) => {
 const getKarigarById = async (req, res) => {
   try {
     const karigar = await Karigar.findById(req.params.id)
-      .select('-password')
+      .select('-password +cnicNumber +cnicFront +cnicBack')
       .populate('approvedBy', 'fullName email');
     if (!karigar) return res.status(404).json({ message: 'Karigar not found' });
     res.json(karigar);
@@ -271,9 +297,6 @@ const getBookings = async (req, res) => {
     if (req.query.search) {
       const searchRegex = new RegExp(req.query.search, 'i');
       
-      // We need to look up Customer and Karigar by name/phone. 
-      // The easiest way for a robust search in MongoDB without aggregations is to match on fields directly or use populated matching, but since they are ObjectIds, we either need to aggregate or fetch matching users first.
-      // Let's fetch matching users/karigars.
       const [matchingUsers, matchingKarigars] = await Promise.all([
         User.find({ $or: [{ fullName: searchRegex }, { phone: searchRegex }] }).select('_id'),
         Karigar.find({ $or: [{ fullName: searchRegex }, { phone: searchRegex }] }).select('_id')
@@ -283,6 +306,9 @@ const getBookings = async (req, res) => {
       const karigarIds = matchingKarigars.map(k => k._id);
 
       filter.$or = [
+        { bookingReference: searchRegex },
+        { customerName: searchRegex },
+        { karigarName: searchRegex },
         { serviceType: searchRegex },
         { address: searchRegex },
         { customer: { $in: userIds } },
@@ -294,12 +320,52 @@ const getBookings = async (req, res) => {
     const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
 
-    const bookings = await Booking.find(filter)
+    const rawBookings = await Booking.find(filter)
       .sort({ createdAt: -1 })
       .populate('customer', 'fullName email phone')
       .populate('karigar', 'fullName phone')
       .skip(skip)
       .limit(limit);
+
+    // Collect IDs of bookings where karigar failed to populate
+    const unpopulatedListingIds = [];
+    rawBookings.forEach(b => {
+      if (!b.karigar) {
+        const rawId = b.get ? b.get('karigar') : b.karigar;
+        if (rawId) unpopulatedListingIds.push(rawId);
+      }
+    });
+
+    let listingsMap = {};
+    if (unpopulatedListingIds.length > 0) {
+      const Listing = require('../models/Listing');
+      const foundListings = await Listing.find({ _id: { $in: unpopulatedListingIds } }).select('name phone');
+      foundListings.forEach(l => {
+        listingsMap[l._id.toString()] = { fullName: l.name, phone: l.phone };
+      });
+    }
+
+    const bookings = rawBookings.map(b => {
+      const bObj = b.toObject ? b.toObject() : b;
+      if (!bObj.bookingReference) {
+        bObj.bookingReference = 'BK-' + bObj._id.toString().slice(-6).toUpperCase();
+      }
+      if (!bObj.karigar) {
+        const rawId = (b.get ? b.get('karigar') : b.karigar)?.toString();
+        if (rawId && listingsMap[rawId]) {
+          bObj.karigar = listingsMap[rawId];
+        } else if (bObj.karigarName) {
+          bObj.karigar = { fullName: bObj.karigarName, phone: '' };
+        }
+      }
+      if (!bObj.customer && bObj.customerName) {
+        bObj.customer = { fullName: bObj.customerName, phone: bObj.customerPhone || '' };
+      }
+      if (!bObj.totalAmount) {
+        bObj.totalAmount = (Number(bObj.serviceCharge) || 500) + (Number(bObj.processingFee) || 50);
+      }
+      return bObj;
+    });
 
     const total = await Booking.countDocuments(filter);
     res.json({ data: bookings, total, page, pages: Math.ceil(total / limit) });

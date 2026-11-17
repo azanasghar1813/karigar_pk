@@ -79,6 +79,7 @@ const createBusinessPin = (isSelected = false, isVerified = false) => {
 export default function LocalRadarView({ allItems = [] }) {
   const {
     city,
+    area,
     service,
     filters,
     userLocation,
@@ -107,8 +108,65 @@ export default function LocalRadarView({ allItems = [] }) {
     }
   }, [userLocation.isDefault, userLocation.isDenied, requestUserLocation])
 
-  const centerLat = userLocation?.lat || CITY_COORDINATES[city]?.lat || 31.5204
-  const centerLng = userLocation?.lng || CITY_COORDINATES[city]?.lng || 74.3587
+  // Compute effective center based on selected Area or User Geolocation
+  const { centerLat, centerLng } = useMemo(() => {
+    if (area && area !== 'All Areas') {
+      const areaMatches = allItems.filter(
+        (item) => item.area && item.area.toLowerCase() === area.toLowerCase() && item.coordinates?.lat && item.coordinates?.lng
+      )
+
+      if (areaMatches.length > 0) {
+        const sumLat = areaMatches.reduce((acc, m) => acc + Number(m.coordinates.lat), 0)
+        const sumLng = areaMatches.reduce((acc, m) => acc + Number(m.coordinates.lng), 0)
+        return {
+          centerLat: sumLat / areaMatches.length,
+          centerLng: sumLng / areaMatches.length
+        }
+      }
+
+      // Fallback: check known area coordinates
+      const areaKey = area.toLowerCase().trim()
+      const KNOWN_AREAS = {
+        'gulberg': { lat: 31.5139, lng: 74.3444 },
+        'dha': { lat: 31.4705, lng: 74.3855 },
+        'defence': { lat: 31.4705, lng: 74.3855 },
+        'johar town': { lat: 31.4697, lng: 74.2728 },
+        'model town': { lat: 31.4883, lng: 74.3204 },
+        'bahria town': { lat: 31.3685, lng: 74.1818 },
+        'faisal town': { lat: 31.4795, lng: 74.3031 },
+        'cantt': { lat: 31.5361, lng: 74.3941 },
+        'allama iqbal town': { lat: 31.5034, lng: 74.2858 },
+        'iqbal town': { lat: 31.5034, lng: 74.2858 },
+        'shadman': { lat: 31.5372, lng: 74.3275 },
+        'wapda town': { lat: 31.4326, lng: 74.2644 },
+        'clifton': { lat: 24.8138, lng: 67.0299 },
+        'gulshan': { lat: 24.9207, lng: 67.0982 },
+        'gulshan-e-iqbal': { lat: 24.9207, lng: 67.0982 },
+        'saddar': { lat: 24.8569, lng: 67.0251 },
+        'north nazimabad': { lat: 24.9372, lng: 67.0416 },
+        'pechs': { lat: 24.8682, lng: 67.0652 },
+        'blue area': { lat: 33.7103, lng: 73.0645 },
+        'f-6': { lat: 33.7297, lng: 73.0747 },
+        'f-7': { lat: 33.7215, lng: 73.0565 },
+        'f-8': { lat: 33.7121, lng: 73.0371 },
+        'f-10': { lat: 33.6931, lng: 73.0033 },
+        'f-11': { lat: 33.6841, lng: 72.9856 },
+        'g-9': { lat: 33.6917, lng: 73.0315 },
+        'g-11': { lat: 33.6677, lng: 72.9984 },
+        'i-8': { lat: 33.6685, lng: 73.0763 }
+      }
+
+      for (const [key, coords] of Object.entries(KNOWN_AREAS)) {
+        if (areaKey.includes(key)) {
+          return { centerLat: coords.lat, centerLng: coords.lng }
+        }
+      }
+    }
+
+    const defaultLat = userLocation?.lat || CITY_COORDINATES[city]?.lat || 31.5204
+    const defaultLng = userLocation?.lng || CITY_COORDINATES[city]?.lng || 74.3587
+    return { centerLat: defaultLat, centerLng: defaultLng }
+  }, [area, allItems, userLocation, city])
 
   // Filter items strictly by:
   // 1. MUST have real coordinates (lat & lng)
@@ -220,6 +278,9 @@ export default function LocalRadarView({ allItems = [] }) {
   // Update Center, User Marker, and Radar Rings
   useEffect(() => {
     if (!mapInstanceRef.current || !userLayerRef.current || !ringsLayerRef.current) return
+
+    // Pan map smoothly to the active center (area centroid or user location)
+    mapInstanceRef.current.setView([centerLat, centerLng], mapInstanceRef.current.getZoom() || 13, { animate: true })
 
     userLayerRef.current.clearLayers()
     ringsLayerRef.current.clearLayers()
@@ -455,6 +516,9 @@ export default function LocalRadarView({ allItems = [] }) {
                 : (cleanDigits.startsWith('0') ? `92${cleanDigits.slice(1)}` : `92${cleanDigits}`)
 
               const inCompare = isInCompare(id)
+              const isBookable = isKarigar || isVerified
+              const bookUrl = isBookable ? `/book/${id}` : `/claim/${id}`
+              const bookLabel = isBookable ? 'Book Appointment' : 'Claim to Book'
 
               return (
                 <div className="bg-white rounded-2xl border border-[#E4EAF2] p-4 shadow-[0_12px_40px_rgba(10,31,68,0.22)] relative">
@@ -542,6 +606,19 @@ export default function LocalRadarView({ allItems = [] }) {
                         <ArrowRight size={12} />
                       </Link>
                     </div>
+
+                    {/* Primary Booking / Claim Action */}
+                    <Link
+                      to={bookUrl}
+                      className={`w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-white text-xs font-bold transition-all shadow-xs ${
+                        isBookable
+                          ? 'bg-[#FF7A00] hover:bg-[#e66e00]'
+                          : 'bg-[#0A1F44] hover:bg-[#102747]'
+                      }`}
+                    >
+                      <Calendar size={13} />
+                      <span>{bookLabel}</span>
+                    </Link>
 
                     <div className="grid grid-cols-2 gap-2 pt-1">
                       {phone ? (

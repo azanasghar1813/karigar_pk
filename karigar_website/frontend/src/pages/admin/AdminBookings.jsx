@@ -42,27 +42,37 @@ function BookingRow({ booking, karigars, onStatusChange, onReassign }) {
     <>
       <tr className="hover:bg-slate-800/30 transition-colors cursor-pointer" onClick={() => setExpanded(!expanded)}>
         <td className="px-4 py-3">
-          <p className="text-white font-medium">{booking.customer?.fullName || '—'}</p>
-          {booking.customer?.phone && (
-            <a href={getTelLink(booking.customer.phone)} onClick={(e) => e.stopPropagation()} className="text-slate-500 text-xs hover:text-orange-400 transition-colors">
-              {formatPhone(booking.customer.phone)}
+          <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-orange-500/10 text-orange-400 border border-orange-500/20">
+            {booking.bookingReference || `BK-${booking._id.slice(-6).toUpperCase()}`}
+          </span>
+        </td>
+        <td className="px-4 py-3">
+          <p className="text-white font-medium">{booking.customer?.fullName || booking.customerName || '—'}</p>
+          {(booking.customer?.phone || booking.customerPhone) && (
+            <a href={getTelLink(booking.customer?.phone || booking.customerPhone)} onClick={(e) => e.stopPropagation()} className="text-slate-500 text-xs hover:text-orange-400 transition-colors">
+              {formatPhone(booking.customer?.phone || booking.customerPhone)}
             </a>
           )}
         </td>
         <td className="px-4 py-3 hidden md:table-cell">
-          <p className="text-slate-300">{booking.karigar?.fullName || 'Unassigned'}</p>
+          <p className="text-slate-300 font-medium">{booking.karigar?.fullName || booking.karigarName || 'Assigned Karigar'}</p>
           {booking.karigar?.phone && (
             <a href={getTelLink(booking.karigar.phone)} onClick={(e) => e.stopPropagation()} className="text-slate-500 text-xs hover:text-orange-400 transition-colors">
               {formatPhone(booking.karigar.phone)}
             </a>
           )}
         </td>
-        <td className="px-4 py-3 text-slate-300 hidden sm:table-cell">{booking.serviceType}</td>
+        <td className="px-4 py-3 text-slate-300 hidden sm:table-cell">
+          <span className="bg-slate-800 text-slate-300 px-2 py-0.5 rounded text-xs border border-slate-700">
+            {booking.serviceType}
+          </span>
+        </td>
         <td className="px-4 py-3 text-slate-400 text-xs hidden lg:table-cell">
-          {new Date(booking.createdAt).toLocaleString('en-PK', {
-            year: 'numeric', month: 'short', day: 'numeric',
-            hour: '2-digit', minute: '2-digit'
-          })}
+          <div>{booking.date ? new Date(booking.date).toLocaleDateString('en-PK') : '—'}</div>
+          <div className="text-slate-500 text-[11px]">{booking.time}</div>
+        </td>
+        <td className="px-4 py-3 text-slate-200 font-semibold text-xs whitespace-nowrap">
+          PKR {booking.totalAmount || 550}
         </td>
         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
           <select
@@ -76,13 +86,13 @@ function BookingRow({ booking, karigars, onStatusChange, onReassign }) {
             ))}
           </select>
         </td>
-        <td className="px-4 py-3 text-slate-500">
+        <td className="px-4 py-3 text-slate-500 text-right">
           {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         </td>
       </tr>
       {expanded && (
         <tr className="bg-slate-800/30">
-          <td colSpan={6} className="px-4 py-4 border-b border-slate-800">
+          <td colSpan={8} className="px-4 py-4 border-b border-slate-800">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <h4 className="text-slate-300 font-semibold flex items-center gap-2">
@@ -146,7 +156,9 @@ export default function AdminBookings() {
 
   // Fetch approved karigars for reassignment dropdown
   useEffect(() => {
-    api.get('/admin/karigars?status=approved').then(({ data }) => setApprovedKarigars(data))
+    api.get('/admin/karigars?status=approved').then(({ data }) => {
+      setApprovedKarigars(Array.isArray(data) ? data : (data?.karigars || []))
+    })
   }, [])
 
   const fetchBookings = useCallback(() => {
@@ -243,10 +255,12 @@ export default function AdminBookings() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-800 bg-slate-950/50">
+                  <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide">Ref #</th>
                   <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide">Customer</th>
-                  <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden md:table-cell">Karigar</th>
+                  <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden md:table-cell">Karigar / Pro</th>
                   <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden sm:table-cell">Service</th>
                   <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide hidden lg:table-cell">Requested Time</th>
+                  <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide">Total</th>
                   <th className="text-left text-slate-500 font-semibold px-4 py-3 text-xs uppercase tracking-wide">Status</th>
                   <th className="px-4 py-3"></th>
                 </tr>

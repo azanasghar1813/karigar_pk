@@ -235,6 +235,8 @@ export default function AdminKarigars() {
   const [searchParams, setSearchParams] = useSearchParams()
   const statusFilter = searchParams.get('status') || ''
   const [karigars, setKarigars] = useState([])
+  const [karigarCounts, setKarigarCounts] = useState({ all: 0, pending: 0, approved: 0, rejected: 0 })
+  const [karigarSearch, setKarigarSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [selected, setSelected] = useState(null)
@@ -256,11 +258,26 @@ export default function AdminKarigars() {
 
   const fetchKarigars = useCallback(() => {
     setLoading(true)
-    const params = statusFilter ? `?status=${statusFilter}` : ''
-    api.get(`/admin/karigars${params}`)
-      .then(({ data }) => setKarigars(data))
+    const p = new URLSearchParams()
+    if (statusFilter && statusFilter !== 'claims') p.set('status', statusFilter)
+    if (karigarSearch.trim()) p.set('search', karigarSearch.trim())
+    const qStr = p.toString() ? `?${p.toString()}` : ''
+
+    api.get(`/admin/karigars${qStr}`)
+      .then(({ data }) => {
+        if (Array.isArray(data)) {
+          setKarigars(data)
+        } else if (data && data.karigars) {
+          setKarigars(data.karigars)
+          if (data.counts) setKarigarCounts(data.counts)
+        }
+      })
+      .catch((err) => {
+        console.error(err)
+        showToast('❌ Failed to fetch karigars')
+      })
       .finally(() => setLoading(false))
-  }, [statusFilter])
+  }, [statusFilter, karigarSearch])
 
   const fetchAdminListings = useCallback(() => {
     setLoading(true)
@@ -418,20 +435,60 @@ export default function AdminKarigars() {
 
       {/* Status Tabs */}
       <div className="flex gap-2 mb-6 border-b border-slate-800 pb-4 flex-wrap">
-        {STATUS_TABS.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setSearchParams(key ? { status: key } : {})}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-              statusFilter === key
-                ? 'bg-secondary text-white'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
+        {STATUS_TABS.map(({ key, label }) => {
+          let count = null
+          if (key === '') count = karigarCounts.all
+          else if (key === 'pending') count = karigarCounts.pending
+          else if (key === 'approved') count = karigarCounts.approved
+          else if (key === 'rejected') count = karigarCounts.rejected
+          else if (key === 'claims' && listingCounts) count = listingCounts.all
+
+          return (
+            <button
+              key={key}
+              onClick={() => setSearchParams(key ? { status: key } : {})}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all inline-flex items-center gap-2 ${
+                statusFilter === key
+                  ? 'bg-secondary text-white'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <span>{label}</span>
+              {count !== null && count !== undefined && (
+                <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${
+                  statusFilter === key ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400'
+                }`}>
+                  {count}
+                </span>
+              )}
+            </button>
+          )
+        })}
       </div>
+
+      {statusFilter !== 'claims' && (
+        <div className="mb-6 flex gap-3 max-w-md">
+          <div className="relative flex-1">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <input
+              type="text"
+              placeholder="Search karigars by name, phone, city, service..."
+              value={karigarSearch}
+              onChange={(e) => setKarigarSearch(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-secondary"
+            />
+          </div>
+          {karigarSearch && (
+            <button
+              type="button"
+              onClick={() => setKarigarSearch('')}
+              className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold cursor-pointer"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      )}
 
       {statusFilter === 'claims' ? (
         <div className="space-y-6">

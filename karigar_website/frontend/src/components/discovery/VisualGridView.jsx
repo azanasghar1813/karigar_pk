@@ -10,7 +10,8 @@ export default function VisualGridView({
   hasMore = false,
   isLoadingMore = false,
   onLoadMore = null,
-  totalCount = 0
+  totalCount = 0,
+  isSortDataMissing = false
 }) {
   const {
     query,
@@ -137,6 +138,11 @@ export default function VisualGridView({
   if (isSectioned && topRatedItems.length > 0) {
     return (
       <div className="space-y-8">
+        {isSortDataMissing && (
+          <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium flex items-center gap-2 shadow-2xs">
+            <span>ℹ️ Is sort ke liye abhi data nahi — rating ke hisab se dikha rahe hain</span>
+          </div>
+        )}
         
         {/* SECTION 1: Top-Rated Near You */}
         <div>
@@ -255,6 +261,12 @@ export default function VisualGridView({
   // Default Standard Grid (when search or specific category is active)
   return (
     <div>
+      {isSortDataMissing && (
+        <div className="mb-4 p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium flex items-center gap-2 shadow-2xs">
+          <span>ℹ️ Is sort ke liye abhi data nahi — rating ke hisab se dikha rahe hain</span>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-4">
         <p className="text-xs font-semibold text-[#5A6B84]">
           Showing <span className="font-extrabold text-[#0A1F44]">{items.length}</span> matching businesses in{' '}

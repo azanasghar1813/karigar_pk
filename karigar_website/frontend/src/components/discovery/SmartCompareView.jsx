@@ -378,12 +378,26 @@ export default function SmartCompareView({ allItems = [] }) {
                   <span>Customer Rating</span>
                 </td>
                 {compareItems.map((item) => {
-                  const isHighestRated = bestMatches.highestRatedId === item._id && item.rating !== null
+                  const hasRating = item.rating !== null && Number(item.rating) > 0
+                  const isHighestRated = bestMatches.highestRatedId === item._id && hasRating
+                  const numRating = hasRating ? Number(item.rating).toFixed(1) : null
+                  const ratingLabel = item.reviewsCount && Number(item.reviewsCount) > 0
+                    ? `(${item.reviewsCount} reviews)`
+                    : '(Google rating)'
+
                   return (
                     <td key={item._id} className="p-4">
-                      {item.rating !== null ? (
+                      {hasRating ? (
                         <div className="flex items-center gap-2 flex-wrap">
-                          <RatingBadge rating={item.rating} reviewsCount={item.reviewsCount} size="sm" />
+                          <div className="inline-flex items-center gap-1.5">
+                            <div className="flex items-center gap-1 text-[#0E1E3A]">
+                              <Star size={13} className="fill-[#FFB800] text-[#FFB800]" />
+                              <span className="text-xs font-bold text-[#0A1F44]">{numRating}</span>
+                            </div>
+                            <span className="text-[#5A6B84] text-xs font-medium">
+                              {ratingLabel}
+                            </span>
+                          </div>
                           {isHighestRated && (
                             <span className="bg-amber-100 text-amber-900 text-[10px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
                               <Star size={10} className="fill-amber-600 text-amber-600" />
@@ -392,7 +406,7 @@ export default function SmartCompareView({ allItems = [] }) {
                           )}
                         </div>
                       ) : (
-                        <span className="text-[#5A6B84] font-medium italic">N/A (Directory Record)</span>
+                        <span className="text-[#5A6B84] font-medium text-xs">N/A</span>
                       )}
                     </td>
                   )
@@ -520,30 +534,35 @@ export default function SmartCompareView({ allItems = [] }) {
                   Connect & Book
                 </td>
                 {compareItems.map((item) => {
+                  const isVerifiedKarigar = item.isKarigar || item.isVerified
+                  const bookUrl = isVerifiedKarigar ? `/book/${item._id}` : `/claim/${item._id}`
+                  const bookLabel = isVerifiedKarigar ? 'Book Now' : 'Claim to Book'
                   const profileUrl = item.isKarigar ? `/worker/${item._id}` : `/listing/${item._id}`
-                  const bookUrl = item.isKarigar ? `/book-now/${item._id}` : profileUrl
 
                   return (
                     <td key={item._id} className="p-4 align-top">
                       <div className="space-y-2">
-                        {/* Primary Action Button */}
-                        {item.isKarigar ? (
-                          <Link
-                            to={bookUrl}
-                            className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#FF7A00] hover:bg-[#e66e00] text-white text-xs font-bold transition-all shadow-xs"
-                          >
-                            <Calendar size={13} />
-                            <span>Book Now</span>
-                          </Link>
-                        ) : (
-                          <Link
-                            to={profileUrl}
-                            className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#0A1F44] hover:bg-[#102747] text-white text-xs font-bold transition-all shadow-xs"
-                          >
-                            <span>View Full Profile</span>
-                            <ArrowRight size={13} />
-                          </Link>
-                        )}
+                        {/* Book Button (verified karigar -> /book/:id, unclaimed listing -> /claim/:id) */}
+                        <Link
+                          to={bookUrl}
+                          className={`w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-white text-xs font-bold transition-all shadow-xs ${
+                            isVerifiedKarigar
+                              ? 'bg-[#FF7A00] hover:bg-[#e66e00]'
+                              : 'bg-[#0A1F44] hover:bg-[#102747]'
+                          }`}
+                        >
+                          <Calendar size={13} />
+                          <span>{bookLabel}</span>
+                        </Link>
+
+                        {/* View Full Profile Link */}
+                        <Link
+                          to={profileUrl}
+                          className="w-full inline-flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl border border-[#0A1F44]/20 hover:border-[#FF7A00] text-[#0A1F44] hover:text-[#FF7A00] text-xs font-bold transition-colors"
+                        >
+                          <span>View Full Profile</span>
+                          <ArrowRight size={13} />
+                        </Link>
 
                         {/* Call and WhatsApp row */}
                         <div className="grid grid-cols-2 gap-1.5">

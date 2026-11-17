@@ -6,7 +6,9 @@ const upload = require('../middlewares/uploadMiddleware');
 
 router.route('/').get(getKarigars);
 router.route('/register').post(upload.fields([
+  { name: 'cnicFront', maxCount: 1 },
   { name: 'cnicFrontFile', maxCount: 1 },
+  { name: 'cnicBack', maxCount: 1 },
   { name: 'cnicBackFile', maxCount: 1 },
   { name: 'profilePhoto', maxCount: 1 }
 ]), registerKarigar);

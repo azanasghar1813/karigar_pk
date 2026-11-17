@@ -22,7 +22,14 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const user = await User.create({ fullName, email, password, phone, cnic, address });
+    const user = await User.create({ 
+      fullName, 
+      email, 
+      password, 
+      phone, 
+      cnic: cnic || '', 
+      address: address || 'Pakistan' 
+    });
 
     if (user) {
       res.status(201).json({
@@ -68,6 +75,8 @@ const loginUser = async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: role,
+        verificationStatus: isKarigar ? user.verificationStatus : undefined,
+        city: user.city || undefined,
         token: generateToken(user._id),
       });
     } else {
@@ -282,12 +291,24 @@ const googleLogin = async (req, res) => {
 // @access  Private
 const updateProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    let user = await User.findById(req.user._id);
+    let isKarigar = false;
+
+    if (!user) {
+      const Karigar = require('../models/Karigar');
+      user = await Karigar.findById(req.user._id);
+      if (user) isKarigar = true;
+    }
 
     if (user) {
-      user.fullName = req.body.fullName || user.fullName;
-      user.phone = req.body.phone || user.phone;
-      user.address = req.body.address || user.address;
+      const newName = req.body.fullName || req.body.name;
+      if (newName) user.fullName = newName;
+      if (req.body.phone) user.phone = req.body.phone;
+      const newAddress = req.body.address || req.body.city;
+      if (newAddress) {
+        user.address = newAddress;
+        if (isKarigar) user.city = req.body.city || newAddress;
+      }
 
       const updatedUser = await user.save();
 
@@ -296,7 +317,10 @@ const updateProfile = async (req, res) => {
         fullName: updatedUser.fullName,
         email: updatedUser.email,
         phone: updatedUser.phone,
-        role: updatedUser.role,
+        address: updatedUser.address,
+        city: updatedUser.city || updatedUser.address,
+        role: isKarigar ? 'karigar' : updatedUser.role,
+        verificationStatus: isKarigar ? updatedUser.verificationStatus : undefined,
         token: generateToken(updatedUser._id),
       });
     } else {

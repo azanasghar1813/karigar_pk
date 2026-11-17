@@ -16,7 +16,7 @@ import { getFavorites, removeFavorite } from '../utils/favorites'
 import { SITE_PHONE_DISPLAY, SITE_PHONE_E164, SITE_PHONE_WA, SITE_EMAIL } from '../config/site'
 
 export default function CustomerDashboard() {
-  const { user, logout } = useAuth()
+  const { user, logout, updateUser, setUser } = useAuth()
   const navigate = useNavigate()
   const [bookings, setBookings] = useState([])
   const [savedBusinesses, setSavedBusinesses] = useState([])
@@ -26,11 +26,22 @@ export default function CustomerDashboard() {
 
   // Profile Settings Form State
   const [profileForm, setProfileForm] = useState({
-    name: user?.name || '',
+    name: user?.fullName || user?.name || '',
     phone: user?.phone || '',
-    city: user?.city || 'Karachi'
+    city: user?.city || user?.address || 'Karachi'
   })
   const [savingProfile, setSavingProfile] = useState(false)
+
+  // Keep form in sync when user state hydrates
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        name: user.fullName || user.name || '',
+        phone: user.phone || '',
+        city: user.city || user.address || 'Karachi'
+      })
+    }
+  }, [user])
 
   // Rating Modal State
   const [showRateModal, setShowRateModal] = useState(false)
@@ -110,7 +121,28 @@ export default function CustomerDashboard() {
     e.preventDefault()
     setSavingProfile(true)
     try {
-      await api.put('/auth/profile', profileForm)
+      const payload = {
+        name: profileForm.name.trim(),
+        fullName: profileForm.name.trim(),
+        phone: profileForm.phone.trim(),
+        city: profileForm.city,
+        address: profileForm.city
+      }
+      const { data } = await api.put('/auth/profile', payload)
+      const mergedUser = {
+        ...user,
+        ...data,
+        fullName: data.fullName || data.name || profileForm.name.trim(),
+        name: data.fullName || data.name || profileForm.name.trim(),
+        phone: data.phone || profileForm.phone.trim(),
+        city: data.city || profileForm.city
+      }
+      if (updateUser) {
+        updateUser(mergedUser)
+      } else if (setUser) {
+        localStorage.setItem('karigarUser', JSON.stringify(mergedUser))
+        setUser(mergedUser)
+      }
       toast.success('Profile updated successfully!')
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update profile')
@@ -321,9 +353,14 @@ export default function CustomerDashboard() {
                               textClassName="text-sm font-bold text-white"
                             />
                             <div>
-                              <h4 className="font-poppins font-bold text-sm text-[#0A1F44]">
-                                {b.karigar?.fullName || 'Karigar'}
-                              </h4>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-mono font-bold text-[11px] bg-orange-50 text-[#FF7A00] px-1.5 py-0.5 rounded-md border border-orange-200">
+                                  {b.bookingReference || (b._id ? `BK-${b._id.slice(-6).toUpperCase()}` : 'BK-N/A')}
+                                </span>
+                                <h4 className="font-poppins font-bold text-sm text-[#0A1F44]">
+                                  {b.karigar?.fullName || 'Karigar'}
+                                </h4>
+                              </div>
                               <p className="text-xs text-[#5A6B84]">
                                 {b.serviceType} • {b.address || 'Address provided'}
                               </p>
@@ -444,7 +481,10 @@ export default function CustomerDashboard() {
                             textClassName="text-base font-bold text-white"
                           />
                           <div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-mono font-bold text-xs bg-orange-50 text-[#FF7A00] px-2 py-0.5 rounded-lg border border-orange-200">
+                                {b.bookingReference || (b._id ? `BK-${b._id.slice(-6).toUpperCase()}` : 'BK-N/A')}
+                              </span>
                               <h4 className="font-poppins font-bold text-sm sm:text-base text-[#0A1F44]">
                                 {b.karigar?.fullName || 'Karigar'}
                               </h4>

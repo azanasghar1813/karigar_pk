@@ -11,27 +11,44 @@ const createBooking = async (req, res) => {
     const karigar = req.body.karigar || req.body.karigarId;
     const serviceType = req.body.serviceType || req.body.service;
     const time = req.body.time || req.body.slot;
-    const { date, address, latitude, longitude, notes } = req.body;
+    const { date, address, latitude, longitude, notes, paymentMethod } = req.body;
 
     if (!karigar || !serviceType || !date || !time || !address) {
       return res.status(400).json({ message: 'Please provide all required fields (karigar/karigarId, service/serviceType, date, time/slot, address)' });
     }
 
+    // Resolve karigar or directory listing name
+    let karigarUser = await Karigar.findById(karigar).select('fullName phone hourlyRate fcmToken');
+    let listing = null;
+    if (!karigarUser) {
+      const Listing = require('../models/Listing');
+      listing = await Listing.findById(karigar).select('name phone startingPrice');
+    }
+
+    const resolvedKarigarName = req.body.karigarName || karigarUser?.fullName || listing?.name || 'Verified Pro';
+    const serviceCharge = Number(req.body.serviceCharge) || (karigarUser?.hourlyRate || listing?.startingPrice || 500);
+    const processingFee = req.body.processingFee !== undefined ? Number(req.body.processingFee) : 50;
+    const totalAmount = Number(req.body.totalAmount) || (serviceCharge + processingFee);
+
     const booking = new Booking({
       customer: req.user._id,
+      customerName: (req.body.customerName || req.user.fullName || req.user.name || '').trim(),
+      customerPhone: (req.body.customerPhone || req.user.phone || '').trim(),
       karigar,
+      karigarName: resolvedKarigarName,
       serviceType,
       date,
       time,
       address,
       location: (latitude && longitude) ? { latitude, longitude } : undefined,
+      serviceCharge,
+      processingFee,
+      totalAmount,
+      paymentMethod: paymentMethod || 'Cash on Service',
       notes
     });
 
     const createdBooking = await booking.save();
-
-    // Populate karigar to get fcmToken
-    const karigarUser = await Karigar.findById(karigar);
 
     // Emit Socket.io event to Karigar
     if (req.io) {

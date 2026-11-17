@@ -52,7 +52,7 @@ export default function BookNow() {
     }
   }, [user])
 
-  // Fetch karigar details
+  // Fetch karigar details (with fallback to directory listing)
   useEffect(() => {
     let isMounted = true
     if (!id) return
@@ -72,10 +72,36 @@ export default function BookNow() {
         }
         setLoadingKarigar(false)
       })
-      .catch((err) => {
-        if (!isMounted) return
-        console.warn('Could not load karigar details:', err)
-        setLoadingKarigar(false)
+      .catch(() => {
+        // Fallback to listings endpoint if not registered in Karigar collection
+        api.get(`/listings/${id}`)
+          .then((lRes) => {
+            if (!isMounted) return
+            const lData = lRes.data
+            const adapted = {
+              _id: lData._id,
+              fullName: lData.name,
+              name: lData.name,
+              services: lData.services || (lData.service ? [lData.service] : []),
+              city: lData.city,
+              phone: lData.phone,
+              profilePhoto: lData.photo,
+              hourlyRate: lData.startingPrice || 500,
+              isListing: true
+            }
+            setKarigar(adapted)
+            setFormData((prev) => ({
+              ...prev,
+              serviceType: adapted.services[0] || prev.serviceType,
+              city: adapted.city && CITIES.includes(adapted.city) ? adapted.city : prev.city
+            }))
+          })
+          .catch((lErr) => {
+            console.warn('Could not load karigar or listing details:', lErr)
+          })
+          .finally(() => {
+            if (isMounted) setLoadingKarigar(false)
+          })
       })
 
     return () => {
@@ -142,6 +168,7 @@ export default function BookNow() {
       const payload = {
         karigar: id || undefined,
         karigarId: id || undefined,
+        karigarName: karigar?.fullName || karigar?.name || '',
         service: formData.serviceType,
         serviceType: formData.serviceType,
         slot: formData.time,
@@ -168,6 +195,9 @@ export default function BookNow() {
       setIsSubmitting(false)
     }
   }
+
+  // Alias to ensure any legacy button or form submit reference is never undefined
+  const handleProceedToPayment = handleConfirmBooking
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A] py-8 px-4 sm:px-6 lg:px-8">
@@ -278,12 +308,14 @@ export default function BookNow() {
               <div className="flex justify-between items-center border-b border-[#E4EAF2] pb-2">
                 <span className="text-[#5A6B84]">Booking Reference:</span>
                 <span className="font-mono font-bold text-[#0A1F44] text-xs bg-orange-50 text-[#FF7A00] px-2 py-0.5 rounded border border-orange-200">
-                  {confirmedBooking?._id ? `BK-${confirmedBooking._id.slice(-6).toUpperCase()}` : 'BK-' + Math.random().toString(36).substr(2, 6).toUpperCase()}
+                  {confirmedBooking?.bookingReference || (confirmedBooking?._id ? `BK-${confirmedBooking._id.slice(-6).toUpperCase()}` : 'BK-' + Math.random().toString(36).substr(2, 6).toUpperCase())}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-[#5A6B84]">Professional:</span>
-                <span className="font-bold text-[#0A1F44]">{karigar?.fullName || 'Assigned Karigar'}</span>
+                <span className="font-bold text-[#0A1F44]">
+                  {confirmedBooking?.karigarName || confirmedBooking?.karigar?.fullName || karigar?.fullName || karigar?.name || 'Assigned Karigar'}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-[#5A6B84]">Service:</span>
@@ -365,7 +397,7 @@ export default function BookNow() {
 
                 {currentStep === 2 ? (
                   /* STEP 2: DETAILS FORM */
-                  <form onSubmit={handleProceedToPayment} className="space-y-4">
+                  <form onSubmit={handleConfirmBooking} className="space-y-4">
                     <h2 className="font-poppins font-bold text-xl text-[#0A1F44] mb-1">
                       Book Your Service
                     </h2>
