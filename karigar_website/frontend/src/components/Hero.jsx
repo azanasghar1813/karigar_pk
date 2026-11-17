@@ -7,7 +7,7 @@ const SLIDES = [
   {
     city: 'Lahore',
     landmark: 'Minar-e-Pakistan, Lahore',
-    image: '/assets/images/lahore_minar_hero.webp'
+    image: '/assets/images/karigar-hero-lahore.webp'
   },
   {
     city: 'Karachi',
@@ -92,7 +92,7 @@ export default function Hero() {
 
   return (
     <section className="relative bg-[#F4F7FC] pt-4 pb-5 sm:pt-6 sm:pb-7 overflow-hidden border-b border-[#E4EAF2]/80">
-      
+
       {/* Dynamic 3-City Landmark Slideshow (Lahore, Karachi, Islamabad) with smooth cross-fade */}
       <div className="absolute right-0 top-4 sm:top-6 lg:top-5 w-full lg:w-[48%] xl:w-[50%] h-[240px] sm:h-[310px] pointer-events-none overflow-hidden select-none z-0 opacity-40 lg:opacity-100">
         {SLIDES.map((slide, idx) => (
@@ -100,9 +100,8 @@ export default function Hero() {
             key={slide.city}
             src={slide.image}
             alt={slide.landmark}
-            className={`absolute inset-0 w-full h-full object-cover object-right filter brightness-100 contrast-102 transition-opacity duration-1000 ease-in-out ${
-              idx === slideIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-            }`}
+            className={`absolute inset-0 w-full h-full object-cover object-right filter brightness-100 contrast-102 transition-opacity duration-1000 ease-in-out ${idx === slideIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+              }`}
           />
         ))}
         {/* Subtle, minimal edge blend */}
@@ -111,7 +110,7 @@ export default function Hero() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        
+
         {/* Authentic Directory Trust Badge */}
         <div className="inline-flex items-center gap-2 bg-[#0A1F44] text-white px-3.5 py-1 rounded-full text-xs font-semibold mb-2.5 shadow-xs">
           <ShieldCheck size={13} className="text-[#FF7A00]" />
@@ -138,7 +137,7 @@ export default function Hero() {
         {/* Search Bar Pill: sleek, ~48-52px height, compact and sharp */}
         <form onSubmit={handleSearch} className="max-w-xl mb-5 sm:mb-6">
           <div className="bg-white rounded-full p-1 sm:p-1.5 shadow-[0_6px_20px_rgba(10,31,68,0.07)] border border-[#E4EAF2] flex flex-col sm:flex-row items-center gap-1.5">
-            
+
             {/* Service Input */}
             <div className="flex-1 w-full flex items-center gap-2.5 px-3 py-1 sm:py-0.5">
               <Search size={17} className="text-[#5A6B84] flex-shrink-0" />
