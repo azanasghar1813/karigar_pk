@@ -125,7 +125,7 @@ export default function ListingProfile() {
   const isUnclaimed = !isVerified && !isPendingForClaimant
 
   return (
-    <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A] py-6 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A] py-6 pb-32 md:pb-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         
         {/* Navigation Breadcrumb */}
@@ -528,6 +528,53 @@ export default function ListingProfile() {
         </div>
 
       </div>
+
+      {/* Mobile Sticky Action Bar */}
+      <div className="fixed bottom-[56px] left-0 right-0 z-30 md:hidden bg-white/95 backdrop-blur-md px-3.5 py-2.5 border-t border-slate-200/90 shadow-[0_-4px_20px_rgba(10,31,68,0.1)] flex items-center justify-between gap-2">
+        {rawPhone ? (
+          <a
+            href={`tel:${rawPhone}`}
+            className="flex-1 py-2.5 px-2 rounded-xl bg-[#0A1F44] text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-transform truncate"
+          >
+            <Phone size={13} className="text-[#FF7A00] flex-shrink-0" />
+            <span className="truncate">Call</span>
+          </a>
+        ) : null}
+
+        {rawWhatsApp && cleanDigits.length >= 7 ? (
+          <a
+            href={`https://wa.me/${waNumber}?text=${encodeURIComponent(`Hello ${listing.name}, I found your business listing on KarigarPK and would like to inquire about your services.`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 py-2.5 px-2 rounded-xl bg-[#22C55E] text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-transform truncate"
+          >
+            <MessageCircle size={14} className="flex-shrink-0" />
+            <span className="truncate">WhatsApp</span>
+          </a>
+        ) : null}
+
+        {isVerified ? (
+          <Link
+            to={`/book?listingId=${listing._id}&name=${encodeURIComponent(listing.name)}&service=${encodeURIComponent(listing.service)}&city=${encodeURIComponent(listing.city)}${listing.claimedBy ? `&karigarId=${listing.claimedBy}` : ''}`}
+            className="flex-1 py-2.5 px-3 rounded-xl bg-[#FF7A00] text-white text-xs font-bold inline-flex items-center justify-center gap-1 shadow-md shadow-orange-500/25 active:scale-95 transition-transform truncate"
+          >
+            <CalendarCheck size={14} className="flex-shrink-0" />
+            <span>Book</span>
+          </Link>
+        ) : isPendingForClaimant ? (
+          <span className="flex-1 py-2.5 px-2 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-[11px] font-bold text-center truncate">
+            Under Review
+          </span>
+        ) : (
+          <Link
+            to={`/claim/${listing._id}`}
+            className="flex-1 py-2.5 px-3 rounded-xl bg-[#FF7A00] text-white text-xs font-bold inline-flex items-center justify-center gap-1 shadow-md shadow-orange-500/25 active:scale-95 transition-transform truncate"
+          >
+            <span>Claim Free</span>
+          </Link>
+        )}
+      </div>
+
     </div>
   )
 }

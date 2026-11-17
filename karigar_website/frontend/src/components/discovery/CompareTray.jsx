@@ -165,12 +165,13 @@ export default function CompareTray({ allItems = [] }) {
 
           {/* ======================================================== */}
           {/* MOBILE STICKY BUTTON (Visible on <md screens)            */}
+          {/* Floats above MobileTabBar and opposite WhatsAppFAB        */}
           {/* ======================================================== */}
-          <div className="fixed bottom-5 right-4 z-40 md:hidden">
+          <div className="fixed bottom-[72px] left-4 z-40 md:hidden">
             <button
               type="button"
               onClick={() => setMobileDrawerOpen(true)}
-              className="bg-[#0A1F44] border-2 border-[#FF7A00] text-white px-4 py-2.5 rounded-full shadow-[0_8px_25px_rgba(10,31,68,0.4)] flex items-center gap-2 font-bold text-xs cursor-pointer active:scale-95"
+              className="bg-[#0A1F44]/95 backdrop-blur-md border-2 border-[#FF7A00] text-white px-3.5 py-2 rounded-full shadow-[0_8px_25px_rgba(10,31,68,0.4)] flex items-center gap-2 font-bold text-xs cursor-pointer active:scale-95"
             >
               <GitCompare size={15} className="text-[#FF7A00]" />
               <span>Compare</span>

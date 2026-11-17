@@ -151,7 +151,7 @@ export default function BusinessCard({
             <button
               type="button"
               onClick={handleCompareClick}
-              className={`w-7 h-7 rounded-full backdrop-blur-md flex items-center justify-center shadow-sm transition-all active:scale-90 cursor-pointer ${
+              className={`w-8 h-8 sm:w-7 sm:h-7 rounded-full backdrop-blur-md flex items-center justify-center shadow-sm transition-all active:scale-90 cursor-pointer touch-manipulation ${
                 inCompare
                   ? 'bg-[#FF7A00] text-white ring-2 ring-white'
                   : 'bg-white/90 text-[#0A1F44] hover:bg-white hover:text-[#FF7A00]'
@@ -160,19 +160,19 @@ export default function BusinessCard({
               aria-label="Compare"
             >
               {inCompare ? (
-                <CheckSquare size={14} className="text-white" />
+                <CheckSquare size={15} className="text-white" />
               ) : (
-                <Square size={14} />
+                <Square size={15} />
               )}
             </button>
 
             <button
               type="button"
               onClick={handleHeartClick}
-              className="w-7 h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-gray-500 hover:text-red-500 shadow-sm transition-transform active:scale-90 cursor-pointer"
+              className="w-8 h-8 sm:w-7 sm:h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-gray-500 hover:text-red-500 shadow-sm transition-transform active:scale-90 cursor-pointer touch-manipulation"
               aria-label="Favorite"
             >
-              <Heart size={13} className={favState ? 'fill-red-500 text-red-500' : ''} />
+              <Heart size={14} className={favState ? 'fill-red-500 text-red-500' : ''} />
             </button>
           </div>
         </div>
@@ -237,7 +237,7 @@ export default function BusinessCard({
             <a
               href={`tel:${phone}`}
               onClick={(e) => e.stopPropagation()}
-              className="py-1.5 px-2 rounded-xl bg-[#0A1F44] hover:bg-[#102747] text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs"
+              className="py-2 sm:py-1.5 px-2 rounded-xl bg-[#0A1F44] hover:bg-[#102747] text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs touch-manipulation active:scale-95"
               title="Direct call"
             >
               <Phone size={12} className="text-[#FF7A00]" />
@@ -247,7 +247,7 @@ export default function BusinessCard({
             <button
               disabled
               onClick={(e) => e.stopPropagation()}
-              className="py-1.5 px-2 rounded-xl bg-gray-100 text-gray-400 text-[11px] font-medium inline-flex items-center justify-center gap-1 cursor-not-allowed"
+              className="py-2 sm:py-1.5 px-2 rounded-xl bg-gray-100 text-gray-400 text-[11px] font-medium inline-flex items-center justify-center gap-1 cursor-not-allowed"
             >
               <Phone size={12} />
               <span>Call N/A</span>
@@ -260,7 +260,7 @@ export default function BusinessCard({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="py-1.5 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs"
+              className="py-2 sm:py-1.5 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs touch-manipulation active:scale-95"
               title="Direct WhatsApp"
             >
               <MessageCircle size={12} />
@@ -270,7 +270,7 @@ export default function BusinessCard({
             <button
               disabled
               onClick={(e) => e.stopPropagation()}
-              className="py-1.5 px-2 rounded-xl bg-gray-100 text-gray-400 text-[11px] font-medium inline-flex items-center justify-center gap-1 cursor-not-allowed"
+              className="py-2 sm:py-1.5 px-2 rounded-xl bg-gray-100 text-gray-400 text-[11px] font-medium inline-flex items-center justify-center gap-1 cursor-not-allowed"
             >
               <MessageCircle size={12} />
               <span>WA N/A</span>
@@ -280,7 +280,7 @@ export default function BusinessCard({
 
         <Link
           to={targetUrl}
-          className="w-full inline-flex items-center justify-center gap-1 py-1.5 px-3 rounded-xl border border-[#0A1F44]/20 hover:border-[#FF7A00] hover:bg-[#FF7A00] text-[#0A1F44] hover:text-white font-bold text-xs transition-colors"
+          className="w-full inline-flex items-center justify-center gap-1 py-2 sm:py-1.5 px-3 rounded-xl border border-[#0A1F44]/20 hover:border-[#FF7A00] hover:bg-[#FF7A00] text-[#0A1F44] hover:text-white font-bold text-xs transition-colors touch-manipulation"
         >
           <span>View Profile</span>
           <ArrowRight size={12} />

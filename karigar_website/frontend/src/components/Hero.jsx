@@ -43,7 +43,7 @@ export default function Hero() {
           - Placed cleanly on right side next to text (image k side py text)
           - Ends cleanly above the category cards bar
       */}
-      <div className="absolute right-0 top-4 sm:top-6 lg:top-5 w-full lg:w-[48%] xl:w-[50%] h-[270px] sm:h-[310px] pointer-events-none overflow-hidden select-none z-0">
+      <div className="absolute right-0 top-4 sm:top-6 lg:top-5 w-full lg:w-[48%] xl:w-[50%] h-[240px] sm:h-[310px] pointer-events-none overflow-hidden select-none z-0 opacity-40 lg:opacity-100">
         <img
           src="/assets/images/lahore_minar_hero.jpg"
           alt="Minar-e-Pakistan Landmark Skyline"

@@ -463,11 +463,11 @@ export default function LocalRadarView({ allItems = [] }) {
       )}
 
       {/* 2. Interactive Radar Map Canvas */}
-      <div className="relative rounded-3xl overflow-hidden border border-[#E4EAF2] shadow-sm bg-slate-100 h-[520px] w-full">
+      <div className="relative rounded-3xl overflow-hidden border border-[#E4EAF2] shadow-sm bg-slate-100 h-[400px] sm:h-[520px] w-full">
         <div ref={mapContainerRef} className="h-full w-full" />
 
         {/* Radar Ring Distance Legend Overlay */}
-        <div className="absolute top-4 left-4 z-[400] bg-white/90 backdrop-blur-md border border-[#E4EAF2] rounded-xl px-3 py-2 text-[11px] font-semibold text-[#0A1F44] shadow-sm flex items-center gap-2">
+        <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-[400] bg-white/95 backdrop-blur-md border border-[#E4EAF2] rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 text-[10px] sm:text-[11px] font-semibold text-[#0A1F44] shadow-sm flex items-center gap-1.5 sm:gap-2 max-w-[calc(100%-1.5rem)] flex-wrap">
           <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#2563EB]" />
           <span>You</span>
           <span className="text-gray-300">|</span>
@@ -477,14 +477,14 @@ export default function LocalRadarView({ allItems = [] }) {
           <span className="inline-block w-2.5 h-2.5 rounded-full bg-[#FF7A00]" />
           <span>Directory</span>
           <span className="text-gray-300">|</span>
-          <span className="text-[10px] text-[#5A6B84]">Circles: 1, 3, 5 km</span>
+          <span className="text-[10px] text-[#5A6B84]">1, 3, 5 km</span>
         </div>
 
         {/* ======================================================== */}
         {/* 3. Floating Preview Card upon Marker Click (Req 7)       */}
         {/* ======================================================== */}
         {activeBusiness && (
-          <div className="absolute bottom-5 left-4 right-4 sm:left-auto sm:right-5 sm:w-96 z-[450] animate-in fade-in slide-in-from-bottom-3">
+          <div className="absolute bottom-3 left-3 right-3 sm:bottom-5 sm:left-auto sm:right-5 sm:w-96 z-[450] animate-in fade-in slide-in-from-bottom-3">
             {(() => {
               const isKarigar = activeBusiness.type === 'karigar'
               const id = activeBusiness._id || activeBusiness.id

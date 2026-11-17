@@ -200,7 +200,7 @@ export default function BookNow() {
   const handleProceedToPayment = handleConfirmBooking
 
   return (
-    <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A] py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A] py-8 pb-28 sm:pb-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-[1100px] mx-auto">
         
         {/* Navigation Breadcrumb */}

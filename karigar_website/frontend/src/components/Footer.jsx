@@ -28,7 +28,7 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="bg-[#061530] text-white pt-16 pb-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-t border-white/10">
+    <footer className="bg-[#061530] text-white pt-12 sm:pt-16 pb-24 sm:pb-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-t border-white/10">
       
       {/* Subtle City Skyline Silhouette Graphic along bottom edge */}
       <div className="absolute bottom-0 left-0 right-0 h-28 pointer-events-none opacity-15 overflow-hidden select-none">

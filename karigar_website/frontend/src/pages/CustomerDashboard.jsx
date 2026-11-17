@@ -203,12 +203,65 @@ export default function CustomerDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A]">
-      <div className="max-w-[1280px] mx-auto py-6 sm:py-8 px-4 sm:px-6">
+    <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A] pb-28 md:pb-8">
+      <div className="max-w-[1280px] mx-auto py-4 sm:py-8 px-4 sm:px-6">
+        
+        {/* Mobile Header Banner (< md) */}
+        <div className="md:hidden mb-4 bg-white rounded-2xl border border-[#E4EAF2] p-3.5 shadow-xs flex items-center justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-full bg-[#0A1F44] text-[#FF7A00] flex items-center justify-center font-black text-sm flex-shrink-0 shadow-xs">
+              {displayName[0].toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <h2 className="font-poppins font-bold text-sm text-[#0A1F44] truncate">{displayName}</h2>
+              <p className="text-[11px] text-[#5A6B84] truncate">{user?.email}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              logout()
+              navigate('/')
+            }}
+            className="flex items-center gap-1 text-xs font-bold text-red-500 hover:text-red-600 bg-red-50 px-2.5 py-1.5 rounded-xl transition-colors cursor-pointer flex-shrink-0"
+          >
+            <LogOut size={13} />
+            <span>Logout</span>
+          </button>
+        </div>
+
+        {/* Mobile Horizontal Navigation Tabs (< md) */}
+        <div className="md:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 mb-5 -mx-4 px-4">
+          {menuItems.map((item) => {
+            const Icon = item.icon
+            const isActive = activeMenu === item.id
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveMenu(item.id)}
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                  isActive
+                    ? 'bg-[#0A1F44] text-white shadow-sm'
+                    : 'bg-white border border-[#E4EAF2] text-[#5A6B84] hover:text-[#0A1F44]'
+                }`}
+              >
+                <Icon size={14} className={isActive ? 'text-[#FF7A00]' : ''} />
+                <span>{item.label}</span>
+                {item.badge !== undefined && item.badge > 0 && (
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                    isActive ? 'bg-[#FF7A00] text-white' : 'bg-gray-100 text-[#0A1F44]'
+                  }`}>
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
           
-          {/* LEFT SIDEBAR: Navy Dark matching Reference Design */}
-          <div className="md:col-span-3 bg-[#061530] rounded-3xl p-5 text-white shadow-xl sticky top-20">
+          {/* LEFT SIDEBAR: Navy Dark matching Reference Design (Desktop only) */}
+          <div className="hidden md:block md:col-span-3 bg-[#061530] rounded-3xl p-5 text-white shadow-xl sticky top-20">
             {/* Sidebar Logo */}
             <div className="pb-4 border-b border-white/10 mb-4 px-2">
               <BrandLogo variant="dark" size="sm" />
@@ -234,7 +287,7 @@ export default function CustomerDashboard() {
                   <button
                     key={item.id}
                     onClick={() => setActiveMenu(item.id)}
-                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-left ${
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all text-left cursor-pointer ${
                       isActive
                         ? 'bg-[#FF7A00] text-white shadow-md shadow-orange-500/20'
                         : 'text-gray-300 hover:text-white hover:bg-white/5'

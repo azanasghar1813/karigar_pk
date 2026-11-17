@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Star, ShieldCheck, MapPin, Phone, ArrowLeft, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Star, ShieldCheck, MapPin, Phone, MessageCircle, ArrowLeft, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react'
 import api from '../config/api'
 import { SERVICES_CONFIG, CITY_COORDINATES } from '../config/site'
 import RatingBadge from '../components/RatingBadge'
@@ -149,7 +149,7 @@ export default function WorkerProfile() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A] py-6 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A] py-6 pb-32 md:pb-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         
         {/* Navigation Breadcrumb (No internal IDs exposed in UI) */}
@@ -504,6 +504,36 @@ export default function WorkerProfile() {
         </div>
 
       </div>
+
+      {/* Mobile Sticky Quick Action Bar (Floating above MobileTabBar) */}
+      <div className="fixed bottom-[56px] left-0 right-0 z-30 md:hidden bg-white/95 backdrop-blur-md px-3.5 py-2.5 border-t border-slate-200/90 shadow-[0_-4px_20px_rgba(10,31,68,0.1)] flex items-center justify-between gap-2">
+        <a
+          href={`tel:${phoneForCall}`}
+          className="flex-1 py-2.5 px-3 rounded-xl bg-[#0A1F44] text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-transform"
+        >
+          <Phone size={13} className="text-[#FF7A00]" />
+          <span>Call</span>
+        </a>
+
+        <a
+          href={`https://wa.me/${waNumber}?text=${encodeURIComponent(`Hello ${worker.fullName}, I found your verified profile on KarigarPK and want to inquire about your services.`)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 py-2.5 px-3 rounded-xl bg-[#22C55E] text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-transform"
+        >
+          <MessageCircle size={14} />
+          <span>WhatsApp</span>
+        </a>
+
+        <Link
+          to={`/book?karigarId=${worker._id}${primaryService ? `&service=${encodeURIComponent(primaryService)}` : ''}`}
+          className="flex-1 py-2.5 px-3 rounded-xl bg-[#FF7A00] text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 shadow-md shadow-orange-500/25 active:scale-95 transition-transform"
+        >
+          <span>Book</span>
+          <ArrowRight size={13} />
+        </Link>
+      </div>
+
     </div>
   )
 }

@@ -269,7 +269,15 @@ export default function SmartCompareView({ allItems = [] }) {
 
       {/* 3. True Side-by-Side Comparison Table */}
       <div className="bg-white rounded-3xl border border-[#E4EAF2] shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile Swipe Hint */}
+        <div className="md:hidden flex items-center justify-between px-4 py-2 bg-amber-50/90 border-b border-amber-200/70 text-[11px] font-semibold text-amber-900">
+          <div className="flex items-center gap-1.5">
+            <span>👉</span>
+            <span>Scroll horizontally to compare {compareItems.length} businesses</span>
+          </div>
+          <span className="text-amber-600 font-bold">Swipe ➔</span>
+        </div>
+        <div className="overflow-x-auto no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
           <table className="w-full border-collapse text-left">
             
             {/* Table Header Row: Photo, Name, and Close Action */}

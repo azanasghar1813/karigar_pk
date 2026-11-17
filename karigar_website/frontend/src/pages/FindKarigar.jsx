@@ -397,14 +397,14 @@ export default function FindKarigar() {
   }, [filters, area])
 
   return (
-    <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A]">
+    <div className="min-h-screen bg-[#F5F7FB] text-[#0E1E3A] pb-28 sm:pb-12">
       
       {/* 1. Master Discovery Header & Filter Controls */}
-      <div className="bg-white border-b border-[#E4EAF2] sticky top-[74px] z-30 shadow-xs">
-        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 py-3.5 space-y-3">
+      <div className="bg-white border-b border-[#E4EAF2] sticky top-[60px] sm:top-[62px] z-30 shadow-xs">
+        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 py-3 space-y-2.5">
           
           {/* Top Row: Search & City/Category Dropdowns */}
-          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 sm:gap-3">
             
             {/* Search Input with Natural Language Smart Search */}
             <form onSubmit={handleSearchSubmit} className="relative flex-1">
@@ -428,7 +428,7 @@ export default function FindKarigar() {
             <div className="flex items-center gap-2">
               
               {/* City Dropdown */}
-              <div className="relative min-w-[130px]">
+              <div className="relative flex-1 sm:flex-initial sm:min-w-[130px]">
                 <select
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
@@ -442,7 +442,7 @@ export default function FindKarigar() {
               </div>
 
               {/* Service Category Dropdown */}
-              <div className="relative min-w-[140px]">
+              <div className="relative flex-1 sm:flex-initial sm:min-w-[140px]">
                 <select
                   value={service}
                   onChange={(e) => setService(e.target.value)}
@@ -460,10 +460,10 @@ export default function FindKarigar() {
               <button
                 type="button"
                 onClick={() => setMobileFilterOpen(true)}
-                className="lg:hidden inline-flex items-center gap-1.5 py-2 px-3 rounded-xl border border-[#E4EAF2] bg-[#F8FAFC] text-xs font-bold text-[#0A1F44]"
+                className="lg:hidden flex-shrink-0 inline-flex items-center gap-1.5 py-2 px-3 rounded-xl border border-[#E4EAF2] bg-[#F8FAFC] text-xs font-bold text-[#0A1F44]"
               >
                 <SlidersHorizontal size={14} className="text-[#FF7A00]" />
-                <span>Filters</span>
+                <span className="hidden xs:inline">Filters</span>
                 {activeFiltersCount > 0 && (
                   <span className="w-5 h-5 rounded-full bg-[#FF7A00] text-white text-[10px] font-black flex items-center justify-center">
                     {activeFiltersCount}
